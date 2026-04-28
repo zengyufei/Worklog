@@ -1,6 +1,6 @@
 {
   "name": "worklog",
-  "version": "alpha-0.4.0",
+  "version": "0.5.0-rc",
   "description": "",
   "type": "module",
   "scripts": {
@@ -14,6 +14,7 @@
   },
   "license": "MIT",
   "dependencies": {
+    "@fontsource/ibm-plex-sans": "^5.2.8",
     "@tauri-apps/api": "^2",
     "@tauri-apps/plugin-dialog": "~2",
     "@tauri-apps/plugin-fs": "~2",
