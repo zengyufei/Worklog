@@ -1,11 +1,11 @@
-# Worklog : Local-first Desktop Project Manager 
+# Worklog : Local-first Desktop Project Manager
 
-[![CI](https://github.com/regisx001/Worklog/actions/workflows/ci.yml/badge.svg)](https://github.com/regisx001/Worklog/actions/workflows/ci.yml)
-[![Publish](https://github.com/regisx001/Worklog/actions/workflows/release.yml/badge.svg)](https://github.com/regisx001/Worklog/actions/workflows/release.yml)
+[
+[
 
 <img width="1922" height="818" alt="ChatGPT Image Apr 27, 2026, 04_45_44 PM" src="https://github.com/user-attachments/assets/aee54de1-58de-4bca-a3f4-246ec4dd4713" />
 
----
+***
 
 Worklog is a local-first desktop project manager for small development teams.
 It is designed for fast, keyboard-driven planning with a Kanban workflow, transparent local data, and no cloud dependency for core usage.
@@ -95,9 +95,41 @@ That keeps the app predictable and makes the persistence layer the source of tru
 
 Worklog stores app data inside the selected workspace path:
 
-- .worklog/worklog.db
+- `.worklog/worklog.db`
 
 No cloud backend is required for normal operation.
+
+## Installation
+
+### Debian / Ubuntu
+
+Worklog can be installed through the APT repository using a dedicated keyring file and the `signed-by` option, which is the recommended modern APT setup.[1][2]
+
+```bash
+sudo apt update
+sudo apt install -y ca-certificates curl gnupg
+sudo mkdir -p /usr/share/keyrings
+curl -fsSL https://regisx001.github.io/worklog-apt/pubkey.asc \
+  | sudo gpg --dearmor -o /usr/share/keyrings/worklog-archive-keyring.gpg
+
+echo "deb [signed-by=/usr/share/keyrings/worklog-archive-keyring.gpg] https://regisx001.github.io/worklog-apt any main" \
+  | sudo tee /etc/apt/sources.list.d/worklog.list
+
+sudo apt update
+sudo apt install worklog
+```
+
+If the repository is already configured, future updates can be installed with the normal system update flow using `sudo apt update && sudo apt upgrade`.[2][3]
+
+### Arch Linux / AUR
+
+Worklog is also available from the Arch User Repository, where AUR packages are typically installed through helpers such as `yay`.[4][5]
+
+```bash
+yay -S worklog-bin
+```
+
+If `yay` is not installed yet, install it first and then use the command above to install `worklog-bin` from the AUR.[6][5]
 
 ## Getting Started
 
@@ -159,13 +191,13 @@ Linux dependencies used in CI:
 ```bash
 sudo apt-get update
 sudo apt-get install -y \
-	build-essential \
-	pkg-config \
-	libgtk-3-dev \
-	libwebkit2gtk-4.1-dev \
-	libappindicator3-dev \
-	librsvg2-dev \
-	patchelf
+    build-essential \
+    pkg-config \
+    libgtk-3-dev \
+    libwebkit2gtk-4.1-dev \
+    libappindicator3-dev \
+    librsvg2-dev \
+    patchelf
 ```
 
 ## CI And Releases
