@@ -2,8 +2,9 @@
     import { goto } from "$app/navigation";
     import KanbanBoard from "$lib/components/app/kanban/kanban-board.svelte";
     import TableView from "$lib/components/app/kanban/table-view.svelte";
+    import GanttView from "$lib/components/app/kanban/gantt-view.svelte";
     import { Tabs, Tab, TabContent } from "carbon-components-svelte";
-    import { Dashboard, Table } from "carbon-icons-svelte";
+    import { Dashboard, Table, ChartBarFloating } from "carbon-icons-svelte";
 
     import { getWorkspaceShellContext } from "$lib/hooks/workspace-shell-context";
 
@@ -58,12 +59,16 @@
             <Tabs autoWidth>
                 <Tab label="Board" icon={Dashboard} />
                 <Tab label="Table" icon={Table} />
+                <Tab label="Timeline" icon={ChartBarFloating} />
                 <svelte:fragment slot="content">
                     <TabContent>
                         <KanbanBoard />
                     </TabContent>
                     <TabContent>
                         <TableView />
+                    </TabContent>
+                    <TabContent>
+                        <GanttView />
                     </TabContent>
                 </svelte:fragment>
             </Tabs>
@@ -109,6 +114,7 @@
 
     .workspace-board-content {
         flex: 1;
+        /* height: 100vh; */
         min-height: 0;
         display: flex;
         flex-direction: column;

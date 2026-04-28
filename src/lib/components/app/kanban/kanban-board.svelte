@@ -151,9 +151,11 @@
                         // Optimistic update of local tickets array for smoother UI
                         // svelte-dnd-action already handles the visual dom manipulation but
                         // we need to make sure Svelte state matches immediately before DB call finishes
-                        const ticketIdx = ticketsHook.tickets.findIndex(t => t.id === movedTicketId);
+                        const ticketIdx = ticketsHook.tickets.findIndex(
+                            (t) => t.id === movedTicketId,
+                        );
                         if (ticketIdx !== -1) {
-                           // this relies on ticketsHook not preventing direct mutations or reacting to them if needed
+                            // this relies on ticketsHook not preventing direct mutations or reacting to them if needed
                         }
 
                         actionError = null;
@@ -438,7 +440,6 @@
                     text: TICKET_TYPE_CONFIG[typeKey].label,
                 }))}
             />
-            x
         </div>
         <div class="form-row">
             <DatePicker

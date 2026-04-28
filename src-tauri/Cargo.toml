@@ -1,9 +1,14 @@
 [package]
 name = "worklog"
-version = "0.4.0"
-description = "A Tauri App"
-authors = ["you"]
+version = "0.5.0"
+description = "Local-first desktop project manager for small development teams"
+authors = ["Ezzoubair ZARQI"]
 edition = "2021"
+license = "MIT"
+readme = "../README.md"
+homepage = "https://github.com/regisx001/Worklog"
+repository = "https://github.com/regisx001/Worklog"
+keywords = ["tauri", "sveltekit", "kanban", "project-management", "local-first"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

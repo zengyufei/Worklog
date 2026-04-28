@@ -15,6 +15,7 @@
         Header,
         HeaderUtilities,
         Button,
+        ImageLoader,
         SkipToContent,
     } from "carbon-components-svelte";
 
@@ -30,8 +31,11 @@
 
     const noop = () => {};
 
-    let { showSettings = false, onOpenSettings = noop, onOpenPalette = noop }: AppToolbarProps =
-        $props();
+    let {
+        showSettings = false,
+        onOpenSettings = noop,
+        onOpenPalette = noop,
+    }: AppToolbarProps = $props();
 
     let isMaximized = $state(false);
 
@@ -95,7 +99,8 @@
         };
     });
 
-    let theme: any = $state("white");
+    type ThemeName = "white" | "g100";
+    let theme = $state<ThemeName>("white");
     function toggleTheme() {
         if (theme == "g100") {
             theme = "white";
@@ -104,19 +109,31 @@
         theme = "g100";
     }
 
+    let logo = $derived(
+        theme === "g100" ? "/logo-white.png" : "/logo-black.png",
+    );
+
     // Listen for theme toggle events from the command palette / shortcuts
     $effect(() => {
         const handler = () => toggleTheme();
         window.addEventListener("worklog:toggle-theme", handler);
-        return () => window.removeEventListener("worklog:toggle-theme", handler);
+        return () =>
+            window.removeEventListener("worklog:toggle-theme", handler);
     });
 </script>
 
 <Theme bind:theme persist persistKey="__carbon-theme" />
 
-<Header companyName="WORKLOG" platformName="" isSideNavOpen>
+<Header companyName="" platformName="" isSideNavOpen>
     <svelte:fragment slot="skipToContent"><SkipToContent /></svelte:fragment>
 
+    <img
+        style="position: absolute; margin: 0 1rem;"
+        src={logo}
+        width="100px"
+        alt=""
+        srcset=""
+    />
     <div
         aria-hidden="true"
         class="toolbar-drag-region"
