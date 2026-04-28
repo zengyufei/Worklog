@@ -114,7 +114,7 @@
 
     .workspace-board-content {
         flex: 1;
-        height: 100vh;
+        /* height: 100vh; */
         min-height: 0;
         display: flex;
         flex-direction: column;
