@@ -32,6 +32,8 @@
     } from "carbon-icons-svelte";
     import { useTickets } from "$lib/hooks/tickets.svelte";
     import { getWorkspaceShellContext } from "$lib/hooks/workspace-shell-context";
+    import TicketAddEditModal from "./ticket-add-edit-modal.svelte";
+    import TicketDeleteConfirm from "./ticket-delete-confirm.svelte";
     import {
         type Ticket,
         type TicketStatus,
@@ -184,18 +186,58 @@
     }
 
     // ── Actions ────────────────────────────────────────────────────────────────
+    let editModalOpen = $state(false);
+    let editTicket = $state<Ticket | null>(null);
+    let deleteModalOpen = $state(false);
+    let deleteTarget = $state<Ticket | null>(null);
+
     function handleEdit(ticketId: string) {
-        const event = new CustomEvent("worklog:edit-ticket", {
-            detail: { id: ticketId },
-        });
-        window.dispatchEvent(event);
+        const t = filteredTickets.find((t) => t.id === ticketId);
+        if (t) {
+            editTicket = t;
+            editModalOpen = true;
+        }
     }
 
     function handleDelete(ticketId: string) {
-        const event = new CustomEvent("worklog:delete-ticket", {
-            detail: { id: ticketId },
-        });
-        window.dispatchEvent(event);
+        const t = filteredTickets.find((t) => t.id === ticketId);
+        if (t) {
+            deleteTarget = t;
+            deleteModalOpen = true;
+        }
+    }
+
+    async function submitTicket(data: any) {
+        const boardId = getBoardId();
+        if (!boardId) return;
+        if (data.id) {
+            await ticketsHook.update(data.id, {
+                title: data.title,
+                description: data.description,
+                priority: data.priority,
+                ticket_type: data.ticketType,
+                due_date: data.dueDate || null,
+                labels: data.tags,
+            });
+        } else {
+            await ticketsHook.create({
+                board_id: boardId,
+                title: data.title,
+                description: data.description,
+                status: data.status,
+                priority: data.priority,
+                ticket_type: data.ticketType,
+                due_date: data.dueDate || null,
+                labels: data.tags,
+            });
+        }
+    }
+
+    async function confirmDelete() {
+        if (deleteTarget) {
+            await ticketsHook.remove(deleteTarget.id);
+            deleteTarget = null;
+        }
     }
 
     function copyId(ticketId: string) {
@@ -204,7 +246,7 @@
         }
     }
 
-    // ── Stats ──────────────────────────────────────────────────────────────────
+    // ── Stats ─────────────────────────────────────────────────────────────────
     const totalCount = $derived(filteredTickets.length);
 </script>
 
@@ -396,6 +438,19 @@
         {/each}
     </div>
 </div>
+
+<!-- Modals -->
+<TicketAddEditModal
+    bind:open={editModalOpen}
+    ticket={editTicket}
+    onSubmit={submitTicket}
+/>
+
+<TicketDeleteConfirm
+    bind:open={deleteModalOpen}
+    ticketTitle={deleteTarget?.title ?? ""}
+    onConfirm={confirmDelete}
+/>
 
 <style>
     /* ── Shell ──────────────────────────────────────────────────────────── */

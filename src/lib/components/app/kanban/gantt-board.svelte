@@ -16,6 +16,8 @@
     } from "carbon-icons-svelte";
     import { useTickets } from "$lib/hooks/tickets.svelte";
     import { getWorkspaceShellContext } from "$lib/hooks/workspace-shell-context";
+    import TicketAddEditModal from "./ticket-add-edit-modal.svelte";
+    import TicketDeleteConfirm from "./ticket-delete-confirm.svelte";
     import {
         type Ticket,
         type TicketStatus,
@@ -376,6 +378,51 @@
         window.addEventListener("mousemove", onMove);
         window.addEventListener("mouseup", onUp);
     }
+
+    // ── Edit / Delete modals ─────────────────────────────────────────────
+    let editModalOpen = $state(false);
+    let editTicket = $state<Ticket | null>(null);
+    let deleteModalOpen = $state(false);
+    let deleteTarget = $state<Ticket | null>(null);
+
+    function handleBarClick(ticket: Ticket) {
+        if (dragTicketId) return; // don't open if dragging
+        editTicket = ticket;
+        editModalOpen = true;
+    }
+
+    async function submitTicket(data: any) {
+        const boardId = getBoardId();
+        if (!boardId) return;
+        if (data.id) {
+            await ticketsHook.update(data.id, {
+                title: data.title,
+                description: data.description,
+                priority: data.priority,
+                ticket_type: data.ticketType,
+                due_date: data.dueDate || null,
+                labels: data.tags,
+            });
+        } else {
+            await ticketsHook.create({
+                board_id: boardId,
+                title: data.title,
+                description: data.description,
+                status: data.status,
+                priority: data.priority,
+                ticket_type: data.ticketType,
+                due_date: data.dueDate || null,
+                labels: data.tags,
+            });
+        }
+    }
+
+    async function confirmDelete() {
+        if (deleteTarget) {
+            await ticketsHook.remove(deleteTarget.id);
+            deleteTarget = null;
+        }
+    }
 </script>
 
 <div class="gantt-shell">
@@ -548,6 +595,10 @@
                                     onmouseenter={(e) =>
                                         handleBarHover(e, row.ticket.id)}
                                     onmouseleave={handleBarLeave}
+                                    onclick={() => handleBarClick(row.ticket)}
+                                    onkeydown={(e) => { if (e.key === "Enter") handleBarClick(row.ticket); }}
+                                    role="button"
+                                    tabindex="0"
                                 >
                                     <div
                                         class="bar-fill"
@@ -619,6 +670,19 @@
         </div>
     {/if}
 </div>
+
+<!-- Modals -->
+<TicketAddEditModal
+    bind:open={editModalOpen}
+    ticket={editTicket}
+    onSubmit={submitTicket}
+/>
+
+<TicketDeleteConfirm
+    bind:open={deleteModalOpen}
+    ticketTitle={deleteTarget?.title ?? ""}
+    onConfirm={confirmDelete}
+/>
 
 <style>
     /* ── Shell ────────────────────────────────────────── */
