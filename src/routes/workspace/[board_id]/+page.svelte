@@ -1,7 +1,7 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
     import KanbanBoard from "$lib/components/app/kanban/kanban-board.svelte";
-    import TableView from "$lib/components/app/kanban/table-board.svelte";
+    import TableView from "$lib/components/app/table/table-board.svelte";
     import GanttView from "$lib/components/app/gantt/gantt-board.svelte";
     import { Tabs, Tab, TabContent } from "carbon-components-svelte";
     import { Dashboard, Table, ChartBarFloating } from "carbon-icons-svelte";
