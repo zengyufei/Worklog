@@ -1,32 +1,21 @@
 <!-- src/lib/components/app/kanban/kanban-board.svelte -->
 <script lang="ts">
     import {
-        Modal,
-        TextInput,
-        TextArea,
-        Select,
-        SelectItem,
-        MultiSelect,
         InlineNotification,
-        Dropdown,
         Toolbar,
         ToolbarContent,
         ToolbarSearch,
-        DatePicker,
-        DatePickerInput,
     } from "carbon-components-svelte";
     import KanbanColumn from "./kanban-column.svelte";
+    import TicketAddEditModal from "./ticket-add-edit-modal.svelte";
+    import TicketDeleteConfirm from "./ticket-delete-confirm.svelte";
     import { getWorkspaceShellContext } from "$lib/hooks/workspace-shell-context";
     import { useTickets } from "$lib/hooks/tickets.svelte";
     import {
         type Ticket,
         type TicketStatus,
-        type TicketPriority,
-        type TicketType,
         TICKET_STATUS_CONFIG,
         TICKET_STATUS_ORDER,
-        TICKET_TYPE_CONFIG,
-        TICKET_TYPE_OPTIONS,
     } from "$lib/components/app/types";
 
     type Column = {
@@ -173,129 +162,70 @@
 
     // ── Modal state (Add / Edit) ───────────────────────────────────────────────
     let modalOpen = $state(false);
-    let isEditing = $state(false);
+    let editTicket = $state<Ticket | null>(null);
     let targetStatus = $state<TicketStatus>("todo");
-    let submitting = $state(false);
-
-    let form = $state<{
-        id?: string;
-        title: string;
-        description: string;
-        priority: TicketPriority;
-        ticketType: TicketType;
-        dueDate: string;
-        tags: string[];
-    }>({
-        title: "",
-        description: "",
-        priority: "p2",
-        ticketType: "feature",
-        dueDate: "",
-        tags: [],
-    });
-
-    const TAG_OPTIONS = [
-        "frontend",
-        "backend",
-        "design",
-        "docs",
-        "devops",
-        "auth",
-        "api",
-        "native",
-        "tauri",
-        "svelte",
-        "setup",
-        "blocked",
-    ];
 
     function openAddModal(status: TicketStatus) {
-        isEditing = false;
+        editTicket = null;
         targetStatus = status;
         actionError = null;
-        form = {
-            title: "",
-            description: "",
-            priority: "p2",
-            ticketType: "feature",
-            dueDate: "",
-            tags: [],
-        };
         modalOpen = true;
     }
 
     function openEditModal(ticket: Ticket) {
-        isEditing = true;
+        editTicket = ticket;
         actionError = null;
-        form = {
-            id: ticket.id,
-            title: ticket.title,
-            description: ticket.description,
-            priority: ticket.priority,
-            ticketType: ticket.ticket_type,
-            dueDate: ticket.due_date ?? "",
-            tags: ticket.labels ?? [],
-        };
         modalOpen = true;
     }
 
-    async function handleSubmit() {
-        if (!form.title.trim()) return;
+    async function handleSubmit(data: any) {
         const board_id = getBoardId();
         if (!board_id) return;
-
-        try {
-            submitting = true;
-            actionError = null;
-
-            if (isEditing && form.id !== undefined) {
-                await ticketsHook.update(form.id, {
-                    title: form.title,
-                    description: form.description || "",
-                    priority: form.priority,
-                    ticket_type: form.ticketType,
-                    due_date: form.dueDate || null,
-                    labels: form.tags,
-                });
-            } else {
-                await ticketsHook.create({
-                    board_id,
-                    title: form.title,
-                    description: form.description || "",
-                    status: targetStatus,
-                    priority: form.priority,
-                    ticket_type: form.ticketType,
-                    due_date: form.dueDate || null,
-                    labels: form.tags,
-                });
-            }
-
-            modalOpen = false;
-        } catch (error) {
-            actionError = String(error);
-        } finally {
-            submitting = false;
+        actionError = null;
+        if (data.id) {
+            await ticketsHook.update(data.id, {
+                title: data.title,
+                description: data.description,
+                priority: data.priority,
+                ticket_type: data.ticketType,
+                due_date: data.dueDate || null,
+                labels: data.tags,
+            });
+        } else {
+            await ticketsHook.create({
+                board_id,
+                title: data.title,
+                description: data.description,
+                status: data.status,
+                priority: data.priority,
+                ticket_type: data.ticketType,
+                due_date: data.dueDate || null,
+                labels: data.tags,
+            });
         }
     }
 
-    let deleteTicketId = $state<string | null>(null);
+    let deleteTicketTarget = $state<Ticket | null>(null);
     let deleteTicketModalOpen = $state(false);
 
     function promptDeleteTicket(id: string) {
-        deleteTicketId = id;
-        deleteTicketModalOpen = true;
+        const t = ticketsHook.tickets.find((t) => t.id === id);
+        if (t) {
+            deleteTicketTarget = t;
+            deleteTicketModalOpen = true;
+        }
     }
 
     async function confirmDeleteTicket() {
-        if (!deleteTicketId) return;
+        if (!deleteTicketTarget) return;
         try {
             actionError = null;
-            await ticketsHook.remove(deleteTicketId);
+            await ticketsHook.remove(deleteTicketTarget.id);
         } catch (error) {
             actionError = String(error);
         } finally {
             deleteTicketModalOpen = false;
-            deleteTicketId = null;
+            deleteTicketTarget = null;
         }
     }
 
@@ -398,84 +328,19 @@
     </div>
 </div>
 
-<!-- ── Add / Edit Modal ────────────────────────────────────────────────────── -->
-<Modal
+<!-- ── Add / Edit Modal ──────────────────────────────────────────────────────── -->
+<TicketAddEditModal
     bind:open={modalOpen}
-    modalHeading={isEditing ? "Edit Ticket" : "New Ticket"}
-    primaryButtonText={isEditing ? "Save Changes" : "Create Ticket"}
-    secondaryButtonText="Cancel"
-    on:click:button--primary={handleSubmit}
-    on:click:button--secondary={() => (modalOpen = false)}
-    primaryButtonDisabled={!form.title.trim() || submitting}
-    size="sm"
->
-    <div class="modal-form">
-        <TextInput
-            labelText="Title *"
-            placeholder="e.g. Implement login screen"
-            bind:value={form.title}
-        />
-        <TextArea
-            labelText="Description"
-            placeholder="Describe the ticket…"
-            rows={3}
-            bind:value={form.description}
-        />
-        <div class="form-row">
-            <Dropdown
-                labelText="Priority"
-                bind:selectedId={form.priority}
-                items={[
-                    { id: "p3", text: "Low" },
-                    { id: "p2", text: "Medium" },
-                    { id: "p1", text: "High" },
-                ]}
-            />
+    ticket={editTicket}
+    defaultStatus={targetStatus}
+    onSubmit={handleSubmit}
+/>
 
-            <Dropdown
-                labelText="Type"
-                bind:selectedId={form.ticketType}
-                items={TICKET_TYPE_OPTIONS.map((typeKey) => ({
-                    id: typeKey,
-                    text: TICKET_TYPE_CONFIG[typeKey].label,
-                }))}
-            />
-        </div>
-        <div class="form-row">
-            <DatePicker
-                bind:value={form.dueDate}
-                datePickerType="single"
-                dateFormat="Y-m-d"
-            >
-                <DatePickerInput
-                    labelText="Due Date"
-                    placeholder="yyyy-mm-dd"
-                />
-            </DatePicker>
-        </div>
-        <MultiSelect
-            label="Select tags…"
-            items={TAG_OPTIONS.map((t) => ({ id: t, text: t }))}
-            bind:selectedIds={form.tags}
-        />
-    </div>
-</Modal>
-
-<Modal
-    danger
+<TicketDeleteConfirm
     bind:open={deleteTicketModalOpen}
-    modalHeading="Delete Ticket"
-    primaryButtonText="Delete"
-    size="xs"
-    secondaryButtonText="Cancel"
-    on:click:button--secondary={() => (deleteTicketModalOpen = false)}
-    on:click:button--primary={confirmDeleteTicket}
->
-    <p>
-        Are you sure you want to delete this ticket? This action cannot be
-        undone.
-    </p>
-</Modal>
+    ticketTitle={deleteTicketTarget?.title ?? ""}
+    onConfirm={confirmDeleteTicket}
+/>
 
 <style>
     .board-shell {
@@ -543,19 +408,5 @@
         background: var(--cds-support-02);
         border-radius: 2px;
         transition: width 0.4s ease;
-    }
-
-    /* Modal form */
-    .modal-form {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-        padding-block: 0.5rem;
-    }
-
-    .form-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 1rem;
     }
 </style>
