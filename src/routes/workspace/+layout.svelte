@@ -1,16 +1,20 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
     import { Content } from "carbon-components-svelte";
+    import { Dashboard } from "carbon-icons-svelte";
 
     import WorkspaceSidebar from "$lib/components/app/layout/workspace/workspace-sidebar.svelte";
     import { useBoards } from "$lib/hooks/boards.svelte";
     import { setWorkspaceShellContext } from "$lib/hooks/workspace-shell-context";
     import { useWorkspace } from "$lib/hooks/workspace.svelte";
+    import { useCommandPalette } from "$lib/hooks/command-palette.svelte";
     import { page } from "$app/state";
+    import type { CommandAction } from "$lib/components/app/types";
 
     let { children } = $props();
     const workspace = useWorkspace();
     const boardsApi = useBoards(() => workspace.path);
+    const palette = useCommandPalette();
 
     setWorkspaceShellContext({ workspace, boardsApi });
 
@@ -52,6 +56,35 @@
         void boardsApi.load().catch((error) => {
             boardLoadError = String(error);
             lastLoadedWorkspacePath = null;
+        });
+    });
+
+    // ── Dynamic board-switching commands ────────────────────────────────────
+    $effect(() => {
+        // Read the reactive dependency
+        const boards = boardsApi.boards;
+
+        // Build new board actions (or empty list if no boards)
+        const boardActions: CommandAction[] = boards.map((board) => ({
+            id: `switch-board-${board.id}`,
+            label: `Switch to: ${board.name}`,
+            subtitle: board.description || "Open this board",
+            shortcut: "",
+            category: "Boards",
+            icon: Dashboard,
+            run: () => {
+                boardsApi.setActive(board);
+                void goto(`/workspace/${board.id}`);
+            },
+        }));
+
+        // Use queueMicrotask to defer state writes so they don't
+        // trigger re-entry into this effect synchronously
+        queueMicrotask(() => {
+            palette.removeActionsByPrefix("switch-board-");
+            if (boardActions.length > 0) {
+                palette.appendActions(boardActions);
+            }
         });
     });
 

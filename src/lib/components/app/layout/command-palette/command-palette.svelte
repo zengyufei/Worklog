@@ -24,6 +24,27 @@
             : palette.actions,
     );
 
+    // ── Grouped by category ────────────────────────────────────────────────
+    // Preserves insertion order within each group. Flat index tracks global ↑/↓.
+    interface GroupEntry {
+        category: string;
+        actions: { action: CommandAction; flatIndex: number }[];
+    }
+
+    const grouped = $derived.by(() => {
+        const map = new Map<string, { action: CommandAction; flatIndex: number }[]>();
+        filtered.forEach((action, i) => {
+            const cat = action.category ?? "Commands";
+            if (!map.has(cat)) map.set(cat, []);
+            map.get(cat)!.push({ action, flatIndex: i });
+        });
+        const result: GroupEntry[] = [];
+        for (const [category, actions] of map.entries()) {
+            result.push({ category, actions });
+        }
+        return result;
+    });
+
     // ── Keyboard navigation ────────────────────────────────────────────────
     function handleKeydown(e: KeyboardEvent) {
         if (!palette.isOpen) return;
@@ -77,7 +98,6 @@
 
     $effect(() => {
         if (palette.isOpen && inputRef) {
-            // Slight delay to allow the DOM to render
             requestAnimationFrame(() => {
                 inputRef?.focus();
             });
@@ -124,49 +144,62 @@
                 <kbd class="palette-esc-badge">ESC</kbd>
             </div>
 
-            <!-- Results list -->
+            <!-- Results list (grouped) -->
             <div class="palette-results" role="listbox">
                 {#if filtered.length === 0}
                     <div class="palette-empty">
                         <span>No commands found</span>
                     </div>
                 {:else}
-                    {#each filtered as action, i (action.id)}
-                        <!-- svelte-ignore a11y_click_events_have_key_events -->
-                        <div
-                            id="palette-item-{i}"
-                            class="palette-item"
-                            class:palette-item--selected={i ===
-                                palette.selectedIndex}
-                            role="option"
-                            tabindex="-1"
-                            aria-selected={i === palette.selectedIndex}
-                            onmouseenter={() => palette.setSelectedIndex(i)}
-                            onclick={() => palette.runAction(action)}
-                        >
-                            <div class="palette-item-left">
-                                <ArrowRight
-                                    size={16}
-                                    class="palette-item-icon"
-                                />
-                                <div class="palette-item-text">
-                                    <span class="palette-item-label"
-                                        >{action.label}</span
-                                    >
-                                    {#if action.subtitle}
-                                        <span class="palette-item-subtitle"
-                                            >{action.subtitle}</span
-                                        >
+                    {#each grouped as group}
+                        <div class="palette-group">
+                            <div class="palette-group-header">{group.category}</div>
+                            {#each group.actions as { action, flatIndex } (action.id)}
+                                <!-- svelte-ignore a11y_click_events_have_key_events -->
+                                <div
+                                    id="palette-item-{flatIndex}"
+                                    class="palette-item"
+                                    class:palette-item--selected={flatIndex ===
+                                        palette.selectedIndex}
+                                    role="option"
+                                    tabindex="-1"
+                                    aria-selected={flatIndex === palette.selectedIndex}
+                                    onmouseenter={() => palette.setSelectedIndex(flatIndex)}
+                                    onclick={() => palette.runAction(action)}
+                                >
+                                    <div class="palette-item-left">
+                                        {#if action.icon}
+                                            {@const Icon = action.icon}
+                                            <Icon
+                                                size={16}
+                                                class="palette-item-icon"
+                                            />
+                                        {:else}
+                                            <ArrowRight
+                                                size={16}
+                                                class="palette-item-icon"
+                                            />
+                                        {/if}
+                                        <div class="palette-item-text">
+                                            <span class="palette-item-label"
+                                                >{action.label}</span
+                                            >
+                                            {#if action.subtitle}
+                                                <span class="palette-item-subtitle"
+                                                    >{action.subtitle}</span
+                                                >
+                                            {/if}
+                                        </div>
+                                    </div>
+                                    {#if action.shortcut}
+                                        <div class="palette-item-shortcut">
+                                            {#each formatShortcut(action.shortcut) as key}
+                                                <kbd class="palette-kbd">{key}</kbd>
+                                            {/each}
+                                        </div>
                                     {/if}
                                 </div>
-                            </div>
-                            {#if action.shortcut}
-                                <div class="palette-item-shortcut">
-                                    {#each formatShortcut(action.shortcut) as key}
-                                        <kbd class="palette-kbd">{key}</kbd>
-                                    {/each}
-                                </div>
-                            {/if}
+                            {/each}
                         </div>
                     {/each}
                 {/if}
@@ -288,7 +321,7 @@
     .palette-results {
         flex: 1;
         overflow-y: auto;
-        padding: 0.5rem;
+        padding: 0.25rem;
         scrollbar-width: thin;
         scrollbar-color: var(--cds-ui-04) transparent;
     }
@@ -314,12 +347,34 @@
         font-style: italic;
     }
 
+    /* ── Group ─────────────────────────────────────────────── */
+    .palette-group {
+        padding: 0.25rem 0;
+    }
+
+    .palette-group:not(:first-child) {
+        border-top: 1px solid var(--cds-ui-03);
+        margin-top: 0.25rem;
+        padding-top: 0.5rem;
+    }
+
+    .palette-group-header {
+        font-size: 0.6875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--cds-text-02);
+        padding: 0.25rem 0.75rem 0.375rem;
+        user-select: none;
+    }
+
+    /* ── Item ──────────────────────────────────────────────── */
     .palette-item {
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 0.75rem;
-        padding: 0.625rem 0.75rem;
+        padding: 0.5rem 0.75rem;
         border-radius: 6px;
         cursor: pointer;
         transition:

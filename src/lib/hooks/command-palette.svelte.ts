@@ -5,7 +5,8 @@ import type { CommandAction } from "$lib/components/app/types";
 
 let _open = $state(false);
 let _query = $state("");
-let _actions = $state<CommandAction[]>([]);
+let _baseActions = $state<CommandAction[]>([]);
+let _dynamicActions = $state<CommandAction[]>([]);
 let _selectedIndex = $state(0);
 
 export function useCommandPalette() {
@@ -40,7 +41,20 @@ export function useCommandPalette() {
     }
 
     function registerActions(actions: CommandAction[]) {
-        _actions = actions;
+        _baseActions = actions;
+    }
+
+    function appendActions(actions: CommandAction[]) {
+        // Remove any existing actions with the same IDs first, then add new ones
+        const newIds = new Set(actions.map(a => a.id));
+        _dynamicActions = [
+            ..._dynamicActions.filter(a => !newIds.has(a.id)),
+            ...actions,
+        ];
+    }
+
+    function removeActionsByPrefix(prefix: string) {
+        _dynamicActions = _dynamicActions.filter(a => !a.id.startsWith(prefix));
     }
 
     function runAction(action: CommandAction) {
@@ -51,7 +65,7 @@ export function useCommandPalette() {
     return {
         get isOpen() { return _open; },
         get query() { return _query; },
-        get actions() { return _actions; },
+        get actions() { return [..._baseActions, ..._dynamicActions]; },
         get selectedIndex() { return _selectedIndex; },
         open,
         close,
@@ -59,6 +73,8 @@ export function useCommandPalette() {
         setQuery,
         setSelectedIndex,
         registerActions,
+        appendActions,
+        removeActionsByPrefix,
         runAction,
     };
 }

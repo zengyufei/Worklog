@@ -62,6 +62,10 @@ export interface CommandAction {
     label: string;
     subtitle: string;
     shortcut: string;
+    /** Category for grouping in the palette (e.g. "Navigation", "Actions") */
+    category?: string;
+    /** Carbon icon component to display next to the label */
+    icon?: any;
     run: () => void;
 }
 

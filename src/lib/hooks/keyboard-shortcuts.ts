@@ -1,5 +1,16 @@
 import { useCommandPalette } from "$lib/hooks/command-palette.svelte";
 import type { CommandAction } from "$lib/components/app/types";
+import {
+    Search,
+    Add,
+    Dashboard,
+    Settings,
+    Home,
+    Asleep,
+    Renew,
+    Close,
+    FolderOpen,
+} from "carbon-icons-svelte";
 
 // ── Shortcut Definitions ───────────────────────────────────────────────────
 // Each shortcut maps a key combo to a handler function.
@@ -71,6 +82,8 @@ export function buildCommandActions(callbacks: AppCallbacks): CommandAction[] {
             label: "Command Palette",
             subtitle: "Search and run commands",
             shortcut: formatShortcut({ key: "k", ctrlOrCmd: true, label: "" , run: () => {} }),
+            category: "Application",
+            icon: Search,
             run: () => { /* handled by shortcut directly */ },
         },
         {
@@ -78,6 +91,8 @@ export function buildCommandActions(callbacks: AppCallbacks): CommandAction[] {
             label: "Create Ticket",
             subtitle: "Add a new ticket to the active board",
             shortcut: formatShortcut({ key: "n", ctrlOrCmd: true, label: "", run: () => {} }),
+            category: "Actions",
+            icon: Add,
             run: callbacks.createTicket,
         },
         {
@@ -85,6 +100,8 @@ export function buildCommandActions(callbacks: AppCallbacks): CommandAction[] {
             label: "Create Board",
             subtitle: "Create a new board in the workspace",
             shortcut: formatShortcut({ key: "b", ctrlOrCmd: true, label: "", run: () => {} }),
+            category: "Actions",
+            icon: Dashboard,
             run: callbacks.createBoard,
         },
         {
@@ -92,6 +109,8 @@ export function buildCommandActions(callbacks: AppCallbacks): CommandAction[] {
             label: "Open Settings",
             subtitle: "Workspace preferences and diagnostics",
             shortcut: formatShortcut({ key: ",", ctrlOrCmd: true, label: "", run: () => {} }),
+            category: "Navigation",
+            icon: Settings,
             run: callbacks.openSettings,
         },
         {
@@ -99,6 +118,8 @@ export function buildCommandActions(callbacks: AppCallbacks): CommandAction[] {
             label: "Go to Workspace",
             subtitle: "Navigate to the workspace board list",
             shortcut: formatShortcut({ key: "h", ctrlOrCmd: true, label: "", run: () => {} }),
+            category: "Navigation",
+            icon: Home,
             run: callbacks.goToWorkspace,
         },
         {
@@ -106,6 +127,8 @@ export function buildCommandActions(callbacks: AppCallbacks): CommandAction[] {
             label: "Toggle Theme",
             subtitle: "Switch between light and dark mode",
             shortcut: formatShortcut({ key: "j", ctrlOrCmd: true, label: "", run: () => {} }),
+            category: "Application",
+            icon: Asleep,
             run: callbacks.toggleTheme,
         },
         {
@@ -113,6 +136,8 @@ export function buildCommandActions(callbacks: AppCallbacks): CommandAction[] {
             label: "Refresh Application",
             subtitle: "Reload the application window",
             shortcut: formatShortcut({ key: "r", ctrlOrCmd: true, shift: true, label: "", run: () => {} }),
+            category: "Application",
+            icon: Renew,
             run: callbacks.refreshApp,
         },
         {
@@ -120,6 +145,8 @@ export function buildCommandActions(callbacks: AppCallbacks): CommandAction[] {
             label: "Close Workspace",
             subtitle: "Close the current workspace and return to selector",
             shortcut: formatShortcut({ key: "w", ctrlOrCmd: true, shift: true, label: "", run: () => {} }),
+            category: "Workspace",
+            icon: Close,
             run: callbacks.closeWorkspace,
         },
         {
@@ -127,6 +154,8 @@ export function buildCommandActions(callbacks: AppCallbacks): CommandAction[] {
             label: "Open Workspace",
             subtitle: "Open a different workspace folder",
             shortcut: formatShortcut({ key: "o", ctrlOrCmd: true, label: "", run: () => {} }),
+            category: "Workspace",
+            icon: FolderOpen,
             run: callbacks.openWorkspace,
         },
     ];
