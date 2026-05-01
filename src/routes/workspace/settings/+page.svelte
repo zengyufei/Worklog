@@ -17,6 +17,9 @@
     function refreshWorkspaceState() {
         void workspace.init();
     }
+
+    // @ts-ignore
+    const version = __APP_VERSION__;
 </script>
 
 <main class="workspace-settings">
@@ -57,6 +60,13 @@
             labelText="Workspace path"
             value={workspacePath}
             rows={3}
+            readonly
+        />
+
+        <TextInput
+            id="app-version"
+            labelText="Worklog version"
+            value={version}
             readonly
         />
 

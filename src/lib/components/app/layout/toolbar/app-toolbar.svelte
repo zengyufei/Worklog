@@ -99,11 +99,11 @@
         };
     });
 
-    type ThemeName = "white" | "g100";
-    let theme = $state<ThemeName>("white");
+    type ThemeName = "g10" | "g100";
+    let theme = $state<ThemeName>("g10");
     function toggleTheme() {
         if (theme == "g100") {
-            theme = "white";
+            theme = "g10";
             return;
         }
         theme = "g100";
@@ -120,6 +120,9 @@
         return () =>
             window.removeEventListener("worklog:toggle-theme", handler);
     });
+
+    // @ts-ignore
+    const version = __APP_VERSION__;
 </script>
 
 <Theme bind:theme persist persistKey="__carbon-theme" />

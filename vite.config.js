@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
 import { sveltekit } from "@sveltejs/kit/vite";
 import { optimizeCss } from "carbon-preprocess-svelte";
-
+import pkg from './package.json';
 // @ts-expect-error process is a nodejs global
 const host = process.env.TAURI_DEV_HOST;
 
@@ -23,5 +23,8 @@ export default defineConfig(async () => ({
       // 3. tell Vite to ignore watching `src-tauri`
       ignored: ["**/src-tauri/**"]
     }
+  },
+  define: {
+    __APP_VERSION__: JSON.stringify(pkg.version),
   }
 }));
