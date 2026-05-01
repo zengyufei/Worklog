@@ -24,6 +24,7 @@
         onAddTicket,
         onEditTicket,
         onDeleteTicket,
+        onStatusChange,
     }: {
         label: string;
         status: TicketStatus;
@@ -35,6 +36,7 @@
         onAddTicket?: (status: TicketStatus) => void;
         onEditTicket?: (ticket: Ticket) => void;
         onDeleteTicket?: (id: string) => void;
+        onStatusChange?: (id: string, status: TicketStatus) => void;
     } = $props();
 
     const flipDurationMs = 180;
@@ -124,6 +126,7 @@
                         {ticket}
                         onEdit={onEditTicket}
                         onDelete={onDeleteTicket}
+                        {onStatusChange}
                     />
                 </div>
             {/each}

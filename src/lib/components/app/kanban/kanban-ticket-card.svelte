@@ -27,6 +27,7 @@
     } from "carbon-icons-svelte";
     import {
         type Ticket,
+        type TicketStatus,
         type TicketPriority,
         type TicketType,
         TICKET_TYPE_CONFIG,
@@ -37,10 +38,12 @@
         ticket,
         onEdit,
         onDelete,
+        onStatusChange,
     }: {
         ticket: Ticket;
         onEdit?: (ticket: Ticket) => void;
         onDelete?: (id: string) => void;
+        onStatusChange?: (id: string, status: TicketStatus) => void;
     } = $props();
 
     // Carbon icon map for ticket types
@@ -89,11 +92,47 @@
 
 <article class="ticket-card" bind:this={cardElement}>
     <ContextMenu target={cardElement ? [cardElement] : []}>
-        <ContextMenuOption labelText="Copy Ticket ID" icon={CopyFile} on:click={() => copyToClipboard(ticket.id)} />
-        <ContextMenuOption labelText="Copy Title" icon={CopyFile} on:click={() => copyToClipboard(ticket.title)} />
+        <ContextMenuOption
+            labelText="Copy Ticket ID"
+            icon={CopyFile}
+            on:click={() => copyToClipboard(ticket.id)}
+        />
+        <ContextMenuOption
+            labelText="Copy Title"
+            icon={CopyFile}
+            on:click={() => copyToClipboard(ticket.title)}
+        />
         <ContextMenuDivider />
-        <ContextMenuOption labelText="Edit Ticket" icon={Edit} on:click={() => onEdit?.(ticket)} />
-        <ContextMenuOption kind="danger" labelText="Delete Ticket" icon={TrashCan} on:click={() => onDelete?.(ticket.id)} />
+        <ContextMenuOption labelText="Move to..." icon={ArrowRight}>
+            <ContextMenuOption
+                labelText="Backlog"
+                on:click={() => onStatusChange?.(ticket.id, "backlog")}
+            />
+            <ContextMenuOption
+                labelText="Todo"
+                on:click={() => onStatusChange?.(ticket.id, "todo")}
+            />
+            <ContextMenuOption
+                labelText="In Progress"
+                on:click={() => onStatusChange?.(ticket.id, "in_progress")}
+            />
+            <ContextMenuOption
+                labelText="Done"
+                on:click={() => onStatusChange?.(ticket.id, "done")}
+            />
+        </ContextMenuOption>
+        <ContextMenuDivider />
+        <ContextMenuOption
+            labelText="Edit Ticket"
+            icon={Edit}
+            on:click={() => onEdit?.(ticket)}
+        />
+        <ContextMenuOption
+            kind="danger"
+            labelText="Delete Ticket"
+            icon={TrashCan}
+            on:click={() => onDelete?.(ticket.id)}
+        />
     </ContextMenu>
 
     <!-- Drag handle -->
