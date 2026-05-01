@@ -66,13 +66,13 @@ export class TableState {
     get filteredTickets(): Ticket[] {
         return this.searchQuery.trim()
             ? this.#ticketsHook.tickets.filter(
-                  (t: Ticket) =>
-                      t.title.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-                      t.description?.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-                      t.labels?.some((tag: string) =>
-                          tag.toLowerCase().includes(this.searchQuery.toLowerCase()),
-                      ),
-              )
+                (t: Ticket) =>
+                    t.title.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+                    t.description?.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+                    t.labels?.some((tag: string) =>
+                        tag.toLowerCase().includes(this.searchQuery.toLowerCase()),
+                    ),
+            )
             : this.#ticketsHook.tickets;
     }
 
@@ -123,7 +123,7 @@ export class TableState {
         });
     }
 
-    formatDueDate(dateStr: string | null): {
+    formatDueDate(dateStr: string | null, isDone: boolean = false): {
         text: string;
         overdue: boolean;
     } {
@@ -136,7 +136,7 @@ export class TableState {
         if (diffDays < 0)
             return {
                 text: `${Math.abs(diffDays)}d overdue`,
-                overdue: true,
+                overdue: !isDone,
             };
         if (diffDays === 0) return { text: "Due today", overdue: false };
         if (diffDays === 1) return { text: "Tomorrow", overdue: false };

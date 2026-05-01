@@ -219,6 +219,11 @@ export class GanttState {
         const now = new Date();
         if (!ticket.due_date) return "No due date";
         const diff = Math.ceil((new Date(ticket.due_date).getTime() - now.getTime()) / this.DAY_MS);
+
+        if (ticket.status === "done") {
+            return "Completed";
+        }
+
         if (diff < 0) return `${Math.abs(diff)}d overdue`;
         if (diff === 0) return "Due today";
         if (diff === 1) return "Tomorrow";

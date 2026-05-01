@@ -58,6 +58,7 @@
                         labels: t.labels,
                         dueDate: t.due_date,
                         created: t.created_at,
+                        status: t.status,
                     }))}
                     sort={state.customSort}
                 >
@@ -107,7 +108,7 @@
                                 {/if}
                             </div>
                         {:else if cell.key === "dueDate"}
-                            {@const due = state.formatDueDate(cell.value)}
+                            {@const due = state.formatDueDate(cell.value, row.status === "done")}
                             <div class="cell-due" class:overdue={due.overdue}>
                                 <Calendar size={14} />
                                 <span>{due.text}</span>

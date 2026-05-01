@@ -67,6 +67,19 @@
 
     let cardElement = $state<HTMLElement>();
 
+    const isOverdue = $derived.by(() => {
+        if (!ticket.due_date || ticket.status === "done") return false;
+        
+        // Strip time from both dates for accurate day comparison
+        const due = new Date(ticket.due_date);
+        due.setHours(0, 0, 0, 0);
+        
+        const now = new Date();
+        now.setHours(0, 0, 0, 0);
+        
+        return due < now;
+    });
+
     function copyToClipboard(text: string) {
         if (navigator.clipboard) {
             void navigator.clipboard.writeText(text);
@@ -152,7 +165,7 @@
                     </span>
                 {/if}
                 {#if ticket.due_date}
-                    <span class="meta-item">
+                    <span class="meta-item" class:overdue={isOverdue}>
                         <Calendar size={14} />
                         <span>{ticket.due_date}</span>
                     </span>
@@ -310,5 +323,10 @@
         gap: 0.25rem;
         font-size: 0.6875rem;
         color: var(--cds-text-helper);
+    }
+
+    .meta-item.overdue {
+        color: var(--cds-support-01);
+        font-weight: 500;
     }
 </style>
