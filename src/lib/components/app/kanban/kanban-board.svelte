@@ -229,6 +229,15 @@
         }
     }
 
+    async function handleStatusChange(id: string, status: TicketStatus) {
+        try {
+            actionError = null;
+            await ticketsHook.update(id, { status });
+        } catch (error) {
+            actionError = String(error);
+        }
+    }
+
     // ── Stats (exclude backlog from progress) ─────────────────────────────────
     const activeTickets = $derived(
         columns
@@ -323,6 +332,7 @@
                 onAddTicket={openAddModal}
                 onEditTicket={openEditModal}
                 onDeleteTicket={promptDeleteTicket}
+                onStatusChange={handleStatusChange}
             />
         {/each}
     </div>
