@@ -1,6 +1,6 @@
 export type TicketStatus = "backlog" | "todo" | "in_progress" | "done";
 export type TicketPriority = "p1" | "p2" | "p3";
-export type TicketType = "feature" | "bug" | "chore" | "improvement" | "epic" | "spike";
+export type TicketType = "feature" | "bug" | "chore" | "improvement" | "epic" | "spike" | "story" | "task" | "subtask" | "incident" | "design" | "documentation";
 
 export type SyncState = "up_to_date" | "pending_changes" | "syncing";
 
@@ -21,9 +21,15 @@ export const TICKET_TYPE_CONFIG: Record<TicketType, TicketTypeConfig> = {
     improvement: { label: "Improvement", tagColor: "cyan" },
     epic:        { label: "Epic",        tagColor: "purple" },
     spike:       { label: "Spike",       tagColor: "magenta" },
+    story:       { label: "Story",       tagColor: "blue" },
+    task:        { label: "Task",        tagColor: "cool-gray" },
+    subtask:     { label: "Subtask",     tagColor: "cool-gray" },
+    incident:    { label: "Incident",    tagColor: "high-contrast" },
+    design:      { label: "Design",      tagColor: "magenta" },
+    documentation: { label: "Docs",      tagColor: "green" },
 };
 
-export const TICKET_TYPE_OPTIONS: TicketType[] = ["feature", "bug", "chore", "improvement", "epic", "spike"];
+export const TICKET_TYPE_OPTIONS: TicketType[] = ["feature", "bug", "chore", "improvement", "epic", "spike", "story", "task", "subtask", "incident", "design", "documentation"];
 
 export interface TicketStatusConfig {
     label: string;

@@ -24,6 +24,12 @@
         CopyFile,
         Edit,
         TrashCan,
+        Bookmark,
+        Checkbox,
+        List,
+        Warning,
+        ColorPalette,
+        Document,
     } from "carbon-icons-svelte";
     import {
         type Ticket,
@@ -54,6 +60,12 @@
         improvement: ChartLineSmooth,
         epic: Lightning,
         spike: Explore,
+        story: Bookmark,
+        task: Checkbox,
+        subtask: List,
+        incident: Warning,
+        design: ColorPalette,
+        documentation: Document,
     };
 
     // Carbon icon map for priorities

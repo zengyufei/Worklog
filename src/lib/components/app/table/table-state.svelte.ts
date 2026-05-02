@@ -23,6 +23,12 @@ import {
     ChartLineSmooth,
     Lightning,
     Explore,
+    Bookmark,
+    Checkbox,
+    List,
+    Warning,
+    ColorPalette,
+    Document,
 } from "carbon-icons-svelte";
 
 export const statusIconMap: Record<TicketStatus, any> = {
@@ -39,6 +45,12 @@ export const typeIconMap: Record<TicketType, any> = {
     improvement: ChartLineSmooth,
     epic: Lightning,
     spike: Explore,
+    story: Bookmark,
+    task: Checkbox,
+    subtask: List,
+    incident: Warning,
+    design: ColorPalette,
+    documentation: Document,
 };
 
 export const priorityIconMap: Record<TicketPriority, any> = {
