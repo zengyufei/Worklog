@@ -7,6 +7,13 @@
         RadioButtonGroup,
         RadioButton,
         ButtonSet,
+        Tabs,
+        Tab,
+        TabContent,
+        Toggle,
+        PasswordInput,
+        InlineLoading,
+        Tag,
     } from "carbon-components-svelte";
     import { useWorkspace } from "$lib/hooks/workspace.svelte";
     import { getDb } from "$lib/db";
@@ -14,8 +21,12 @@
     import { importFromFile } from "$lib/db/mappers";
     import { notifications } from "$lib/hooks/notifications.svelte";
     import type { ExportFormat, ExportMode } from "$lib/db/mappers";
+    import { useSyncConfig } from "$lib/sync/sync-config.svelte";
+    import { SyncEngine } from "$lib/sync/sync-engine";
+    import type { SyncStatus } from "$lib/sync/types";
 
     const workspace = useWorkspace();
+    const syncConfig = useSyncConfig();
 
     const workspaceName = $derived(workspace.meta?.name ?? "Workspace");
     const workspacePath = $derived(workspace.path ?? "Not available");
@@ -24,6 +35,164 @@
     let exportFormat = $state<ExportFormat>("json");
     let exportMode = $state<ExportMode>("single-file");
 
+    // ── Sync state ─────────────────────────────────────────────────────────
+    let syncRemoteUrl = $state("");
+    let syncAccessToken = $state("");
+    let syncBranch = $state("main");
+    let syncAutoSync = $state(false);
+    let syncLoading = $state(false);
+    let syncLoadingMessage = $state("");
+    let gitAvailable = $state<boolean | null>(null);
+
+    // Load sync config on mount
+    $effect(() => {
+        if (workspace.status === "ready" && workspace.path) {
+            void loadSyncConfig();
+        }
+    });
+
+    async function loadSyncConfig() {
+        if (!workspace.path) return;
+        try {
+            const db = await getDb(workspace.path);
+            await syncConfig.load(db);
+            syncRemoteUrl = syncConfig.config.remote_url;
+            syncAccessToken = syncConfig.config.access_token;
+            syncBranch = syncConfig.config.branch;
+            syncAutoSync = syncConfig.config.auto_sync;
+
+            // Check git availability
+            const engine = new SyncEngine(workspace.path);
+            gitAvailable = await engine.isGitAvailable();
+        } catch (e) {
+            console.error("Failed to load sync config", e);
+        }
+    }
+
+    async function saveSyncConfig() {
+        if (!workspace.path) return;
+        try {
+            const db = await getDb(workspace.path);
+            syncConfig.config = {
+                remote_url: syncRemoteUrl,
+                access_token: syncAccessToken,
+                branch: syncBranch,
+                auto_sync: syncAutoSync,
+                last_synced_at: syncConfig.config.last_synced_at,
+            };
+            await syncConfig.save(db);
+            notifications.add({
+                kind: "success",
+                title: "Sync Settings Saved",
+                subtitle: "Your Git sync configuration has been updated.",
+                timeout: 3000,
+            });
+        } catch (error) {
+            notifications.add({
+                kind: "error",
+                title: "Save Failed",
+                subtitle: String(error),
+                timeout: 5000,
+            });
+        }
+    }
+
+    async function handleSyncPush() {
+        if (!workspace.path) return;
+        syncLoading = true;
+        syncLoadingMessage = "Pushing to remote...";
+        syncConfig.setStatus("pushing");
+        try {
+            const db = await getDb(workspace.path);
+            const engine = new SyncEngine(workspace.path);
+            await engine.initialize(syncConfig.config);
+            const result = await engine.push(db, syncConfig.config);
+
+            if (result.status === "success") {
+                syncConfig.updateLastSynced(result.timestamp);
+                await syncConfig.save(db);
+                notifications.add({
+                    kind: "success",
+                    title: "Push Successful",
+                    subtitle: result.message,
+                    timeout: 3000,
+                });
+            } else {
+                notifications.add({
+                    kind: "error",
+                    title: "Push Failed",
+                    subtitle: result.message,
+                    timeout: 5000,
+                });
+            }
+            syncConfig.setStatus(result.status === "success" ? "idle" : "error");
+        } catch (error) {
+            notifications.add({
+                kind: "error",
+                title: "Push Failed",
+                subtitle: String(error),
+                timeout: 5000,
+            });
+            syncConfig.setStatus("error");
+        } finally {
+            syncLoading = false;
+            syncLoadingMessage = "";
+        }
+    }
+
+    async function handleSyncPull() {
+        if (!workspace.path) return;
+        syncLoading = true;
+        syncLoadingMessage = "Pulling from remote...";
+        syncConfig.setStatus("pulling");
+        try {
+            const db = await getDb(workspace.path);
+            const engine = new SyncEngine(workspace.path);
+            await engine.initialize(syncConfig.config);
+            const result = await engine.pull(db, syncConfig.config);
+
+            if (result.status === "success") {
+                syncConfig.updateLastSynced(result.timestamp);
+                await syncConfig.save(db);
+                notifications.add({
+                    kind: "success",
+                    title: "Pull Successful",
+                    subtitle: result.message,
+                    timeout: 3000,
+                });
+                window.location.reload();
+            } else if (result.status === "conflict") {
+                notifications.add({
+                    kind: "warning",
+                    title: "Merge Conflict",
+                    subtitle: result.message,
+                    timeout: 8000,
+                });
+                syncConfig.setStatus("conflict");
+            } else {
+                notifications.add({
+                    kind: "error",
+                    title: "Pull Failed",
+                    subtitle: result.message,
+                    timeout: 5000,
+                });
+                syncConfig.setStatus("error");
+            }
+        } catch (error) {
+            notifications.add({
+                kind: "error",
+                title: "Pull Failed",
+                subtitle: String(error),
+                timeout: 5000,
+            });
+            syncConfig.setStatus("error");
+        } finally {
+            syncLoading = false;
+            syncLoadingMessage = "";
+        }
+    }
+
+    // ── Navigation ─────────────────────────────────────────────────────────
     function goToBoards() {
         void goto("/workspace");
     }
@@ -32,6 +201,7 @@
         void workspace.init();
     }
 
+    // ── Export / Import ────────────────────────────────────────────────────
     async function handleExport() {
         if (workspace.status !== "ready" || !workspace.path) return;
         try {
@@ -69,7 +239,6 @@
                     subtitle: `Created ${result.boardsCreated} boards, ${result.ticketsCreated} tickets. Updated ${result.ticketsUpdated} tickets.`,
                     timeout: 5000,
                 });
-                // Reload the workspace to reflect imported data
                 window.location.reload();
             }
         } catch (error) {
@@ -82,6 +251,29 @@
             });
         }
     }
+
+    // ── Derived ────────────────────────────────────────────────────────────
+    const syncConfigured = $derived(
+        syncRemoteUrl.length > 0 && syncAccessToken.length > 0,
+    );
+    const syncStatusLabel = $derived.by(() => {
+        const s = syncConfig.status;
+        if (s === "not_configured") return "Not configured";
+        if (s === "idle") return "Ready";
+        if (s === "pushing") return "Pushing…";
+        if (s === "pulling") return "Pulling…";
+        if (s === "conflict") return "Conflict";
+        if (s === "error") return "Error";
+        return s;
+    });
+    const syncStatusColor = $derived.by((): "green" | "red" | "blue" | "warm-gray" | "magenta" => {
+        const s = syncConfig.status;
+        if (s === "idle") return "green";
+        if (s === "pushing" || s === "pulling") return "blue";
+        if (s === "error") return "red";
+        if (s === "conflict") return "magenta";
+        return "warm-gray";
+    });
 
     // @ts-ignore
     const version = __APP_VERSION__;
@@ -100,80 +292,188 @@
         </Button>
     </section>
 
-    <section
-        class="workspace-settings-section"
-        aria-labelledby="workspace-info-title"
-    >
-        <h2 id="workspace-info-title">Workspace</h2>
+    <Tabs>
+        <Tab label="General" />
+        <Tab label="Data" />
+        <Tab label="Git Sync" />
 
-        <TextInput
-            id="workspace-name"
-            labelText="Workspace name"
-            value={workspaceName}
-            readonly
-        />
+        <svelte:fragment slot="content">
+            <!-- ── General Tab ────────────────────────────────────────── -->
+            <TabContent>
+                <section class="tab-section" aria-labelledby="workspace-info-title">
+                    <h2 id="workspace-info-title">Workspace</h2>
 
-        <TextInput
-            id="workspace-status"
-            labelText="Workspace status"
-            value={workspaceStatus}
-            readonly
-        />
+                    <TextInput
+                        id="workspace-name"
+                        labelText="Workspace name"
+                        value={workspaceName}
+                        readonly
+                    />
+                    <TextInput
+                        id="workspace-status"
+                        labelText="Workspace status"
+                        value={workspaceStatus}
+                        readonly
+                    />
+                    <TextArea
+                        id="workspace-path"
+                        labelText="Workspace path"
+                        value={workspacePath}
+                        rows={3}
+                        readonly
+                    />
+                    <TextInput
+                        id="app-version"
+                        labelText="Worklog version"
+                        value={version}
+                        readonly
+                    />
+                </section>
+            </TabContent>
 
-        <TextArea
-            id="workspace-path"
-            labelText="Workspace path"
-            value={workspacePath}
-            rows={3}
-            readonly
-        />
+            <!-- ── Data Tab ───────────────────────────────────────────── -->
+            <TabContent>
+                <section class="tab-section" aria-labelledby="data-management-title">
+                    <h2 id="data-management-title">Export / Import</h2>
+                    <p class="section-desc">
+                        Export or import your workspace data as JSON or CSV.
+                    </p>
 
-        <TextInput
-            id="app-version"
-            labelText="Worklog version"
-            value={version}
-            readonly
-        />
-    </section>
+                    <div class="data-controls">
+                        <div class="data-control-group">
+                            <RadioButtonGroup
+                                legendText="Format"
+                                bind:selected={exportFormat}
+                            >
+                                <RadioButton labelText="JSON" value="json" />
+                                <RadioButton labelText="CSV" value="csv" />
+                            </RadioButtonGroup>
+                        </div>
 
-    <section
-        class="workspace-settings-section"
-        aria-labelledby="data-management-title"
-    >
-        <h2 id="data-management-title">Data Management</h2>
-        <p class="section-desc">Export or import your workspace data.</p>
+                        <div class="data-control-group">
+                            <RadioButtonGroup
+                                legendText="Mode"
+                                bind:selected={exportMode}
+                            >
+                                <RadioButton labelText="Single file" value="single-file" />
+                                <RadioButton labelText="Per-board folder" value="folder" />
+                            </RadioButtonGroup>
+                        </div>
+                    </div>
 
-        <div class="data-controls">
-            <div class="data-control-group">
-                <RadioButtonGroup
-                    legendText="Format"
-                    bind:selected={exportFormat}
-                >
-                    <RadioButton labelText="JSON" value="json" />
-                    <RadioButton labelText="CSV" value="csv" />
-                </RadioButtonGroup>
-            </div>
+                    <ButtonSet>
+                        <Button kind="primary" onclick={handleExport}>
+                            Export
+                        </Button>
+                        <Button kind="tertiary" onclick={handleImport}>
+                            Import
+                        </Button>
+                    </ButtonSet>
+                </section>
+            </TabContent>
 
-            <div class="data-control-group">
-                <RadioButtonGroup
-                    legendText="Mode"
-                    bind:selected={exportMode}
-                >
-                    <RadioButton labelText="Single file" value="single-file" />
-                    <RadioButton labelText="Per-board folder" value="folder" />
-                </RadioButtonGroup>
-            </div>
-        </div>
+            <!-- ── Git Sync Tab ───────────────────────────────────────── -->
+            <TabContent>
+                <section class="tab-section" aria-labelledby="git-sync-title">
+                    <div class="section-header-row">
+                        <h2 id="git-sync-title">Git Synchronization</h2>
+                        <Tag type={syncStatusColor} size="sm">{syncStatusLabel}</Tag>
+                    </div>
+                    <p class="section-desc">
+                        Sync your workspace to a private GitHub repository using a Personal Access Token.
+                    </p>
 
-        <ButtonSet>
-            <Button kind="primary" onclick={handleExport}>
-                Export
-            </Button>
-            <Button kind="tertiary" onclick={handleImport}>
-                Import
-            </Button>
-        </ButtonSet>
-    </section>
+                    {#if gitAvailable === false}
+                        <aside class="git-warning" role="alert">
+                            <strong>Git not found.</strong>
+                            <span>
+                                The <code>git</code> command was not found on your system.
+                                Install Git to use this feature.
+                            </span>
+                        </aside>
+                    {/if}
+
+                    <div class="sync-form">
+                        <TextInput
+                            id="sync-remote-url"
+                            labelText="Remote URL"
+                            placeholder="https://github.com/user/repo.git"
+                            bind:value={syncRemoteUrl}
+                            disabled={gitAvailable === false}
+                        />
+
+                        <PasswordInput
+                            id="sync-access-token"
+                            labelText="Access Token"
+                            placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
+                            bind:value={syncAccessToken}
+                            disabled={gitAvailable === false}
+                        />
+
+                        <TextInput
+                            id="sync-branch"
+                            labelText="Branch"
+                            placeholder="main"
+                            bind:value={syncBranch}
+                            disabled={gitAvailable === false}
+                        />
+
+                        <Toggle
+                            id="sync-auto-sync"
+                            labelText="Auto-sync"
+                            labelA="Off"
+                            labelB="On"
+                            bind:toggled={syncAutoSync}
+                            disabled={gitAvailable === false}
+                        />
+
+                        {#if syncConfig.config.last_synced_at}
+                            <TextInput
+                                id="sync-last-synced"
+                                labelText="Last synced"
+                                value={new Date(syncConfig.config.last_synced_at).toLocaleString()}
+                                readonly
+                            />
+                        {/if}
+                    </div>
+
+                    <ButtonSet>
+                        <Button
+                            kind="primary"
+                            onclick={saveSyncConfig}
+                            disabled={gitAvailable === false}
+                        >
+                            Save Configuration
+                        </Button>
+                    </ButtonSet>
+
+                    {#if syncConfigured && gitAvailable !== false}
+                        <div class="sync-actions">
+                            <h3>Actions</h3>
+                            {#if syncLoading}
+                                <InlineLoading description={syncLoadingMessage} />
+                            {:else}
+                                <ButtonSet>
+                                    <Button
+                                        kind="primary"
+                                        onclick={handleSyncPush}
+                                    >
+                                        Push
+                                    </Button>
+                                    <Button
+                                        kind="tertiary"
+                                        onclick={handleSyncPull}
+                                    >
+                                        Pull
+                                    </Button>
+                                </ButtonSet>
+                            {/if}
+                        </div>
+                    {/if}
+                </section>
+            </TabContent>
+        </svelte:fragment>
+    </Tabs>
 </main>
 
 <style>
@@ -201,23 +501,32 @@
         opacity: 0.8;
     }
 
-    .workspace-settings-section {
-        display: grid;
-        gap: var(--cds-spacing-04, 0.75rem);
-        margin: 2rem 0;
-        padding: var(--cds-spacing-05, 1rem);
-        border-radius: 0.5rem;
-        border: 1px solid
-            color-mix(
-                in srgb,
-                var(--color-border-primary, #525252) 45%,
-                transparent
-            );
+    .workspace-settings-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--cds-spacing-03, 0.5rem);
     }
 
-    .workspace-settings-section h2 {
+    .workspace-settings-actions :global(.bx--btn) {
+        margin: 0;
+    }
+
+    /* Tab content sections */
+    .tab-section {
+        display: grid;
+        gap: var(--cds-spacing-04, 0.75rem);
+        padding: var(--cds-spacing-05, 1rem) 0;
+    }
+
+    .tab-section h2 {
         margin: 0;
         font-size: 1rem;
+    }
+
+    .tab-section h3 {
+        margin: 0;
+        font-size: 0.875rem;
+        font-weight: 600;
     }
 
     .section-desc {
@@ -226,6 +535,13 @@
         opacity: 0.7;
     }
 
+    .section-header-row {
+        display: flex;
+        align-items: center;
+        gap: var(--cds-spacing-03, 0.5rem);
+    }
+
+    /* Data export controls */
     .data-controls {
         display: flex;
         flex-wrap: wrap;
@@ -237,13 +553,49 @@
         min-width: 10rem;
     }
 
-    .workspace-settings-actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: var(--cds-spacing-03, 0.5rem);
+    /* Sync form */
+    .sync-form {
+        display: grid;
+        gap: var(--cds-spacing-04, 0.75rem);
     }
 
-    .workspace-settings-actions :global(.bx--btn) {
-        margin: 0;
+    .sync-actions {
+        display: grid;
+        gap: var(--cds-spacing-04, 0.75rem);
+        margin-top: var(--cds-spacing-04, 0.75rem);
+        padding-top: var(--cds-spacing-04, 0.75rem);
+        border-top: 1px solid
+            color-mix(
+                in srgb,
+                var(--color-border-primary, #525252) 30%,
+                transparent
+            );
+    }
+
+    .git-warning {
+        padding: var(--cds-spacing-04, 0.75rem);
+        display: grid;
+        gap: var(--cds-spacing-02, 0.25rem);
+        border: 1px solid
+            color-mix(in srgb, var(--cds-support-03, #f1c21b) 40%, transparent);
+        border-radius: 0.5rem;
+        background: color-mix(
+            in srgb,
+            var(--cds-support-03, #f1c21b) 10%,
+            transparent
+        );
+        font-size: 0.8125rem;
+    }
+
+    .git-warning code {
+        font-family: var(--cds-code-01-font-family, "IBM Plex Mono", monospace);
+        font-size: 0.8125rem;
+        background: color-mix(
+            in srgb,
+            var(--cds-ui-03, #e0e0e0) 40%,
+            transparent
+        );
+        padding: 0.1em 0.3em;
+        border-radius: 2px;
     }
 </style>
