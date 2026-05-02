@@ -11,13 +11,18 @@
         Tab,
         TabContent,
         Toggle,
+        Select,
+        SelectItem,
         PasswordInput,
         InlineLoading,
         Tag,
     } from "carbon-components-svelte";
     import { useWorkspace } from "$lib/hooks/workspace.svelte";
     import { getDb } from "$lib/db";
-    import { exportDatabaseWithOptions, type ExportOptions } from "$lib/db/export";
+    import {
+        exportDatabaseWithOptions,
+        type ExportOptions,
+    } from "$lib/db/export";
     import { importFromFile } from "$lib/db/mappers";
     import { notifications } from "$lib/hooks/notifications.svelte";
     import type { ExportFormat, ExportMode } from "$lib/db/mappers";
@@ -31,6 +36,7 @@
     const workspaceName = $derived(workspace.meta?.name ?? "Workspace");
     const workspacePath = $derived(workspace.path ?? "Not available");
     const workspaceStatus = $derived(workspace.status);
+    const schemaVersion = $derived(workspace.meta?.schema_version ?? "Unknown");
 
     let exportFormat = $state<ExportFormat>("json");
     let exportMode = $state<ExportMode>("single-file");
@@ -42,6 +48,7 @@
     let syncGitName = $state("");
     let syncGitEmail = $state("");
     let syncAutoSync = $state(false);
+    let syncAutoSyncInterval = $state(15);
     let syncLoading = $state(false);
     let syncLoadingMessage = $state("");
     let gitAvailable = $state<boolean | null>(null);
@@ -64,6 +71,7 @@
             syncGitName = syncConfig.config.git_name;
             syncGitEmail = syncConfig.config.git_email;
             syncAutoSync = syncConfig.config.auto_sync;
+            syncAutoSyncInterval = syncConfig.config.auto_sync_interval;
 
             // Check git availability
             const engine = new SyncEngine(workspace.path);
@@ -84,6 +92,7 @@
                 git_name: syncGitName,
                 git_email: syncGitEmail,
                 auto_sync: syncAutoSync,
+                auto_sync_interval: syncAutoSyncInterval,
                 last_synced_at: syncConfig.config.last_synced_at,
             };
             await syncConfig.save(db);
@@ -131,7 +140,9 @@
                     timeout: 5000,
                 });
             }
-            syncConfig.setStatus(result.status === "success" ? "idle" : "error");
+            syncConfig.setStatus(
+                result.status === "success" ? "idle" : "error",
+            );
         } catch (error) {
             notifications.add({
                 kind: "error",
@@ -212,7 +223,10 @@
         if (workspace.status !== "ready" || !workspace.path) return;
         try {
             const db = await getDb(workspace.path);
-            const options: ExportOptions = { format: exportFormat, mode: exportMode };
+            const options: ExportOptions = {
+                format: exportFormat,
+                mode: exportMode,
+            };
             const success = await exportDatabaseWithOptions(db, options);
             if (success) {
                 notifications.add({
@@ -272,14 +286,16 @@
         if (s === "error") return "Error";
         return s;
     });
-    const syncStatusColor = $derived.by((): "green" | "red" | "blue" | "warm-gray" | "magenta" => {
-        const s = syncConfig.status;
-        if (s === "idle") return "green";
-        if (s === "pushing" || s === "pulling") return "blue";
-        if (s === "error") return "red";
-        if (s === "conflict") return "magenta";
-        return "warm-gray";
-    });
+    const syncStatusColor = $derived.by(
+        (): "green" | "red" | "blue" | "warm-gray" | "magenta" => {
+            const s = syncConfig.status;
+            if (s === "idle") return "green";
+            if (s === "pushing" || s === "pulling") return "blue";
+            if (s === "error") return "red";
+            if (s === "conflict") return "magenta";
+            return "warm-gray";
+        },
+    );
 
     // @ts-ignore
     const version = __APP_VERSION__;
@@ -306,7 +322,10 @@
         <svelte:fragment slot="content">
             <!-- ── General Tab ────────────────────────────────────────── -->
             <TabContent>
-                <section class="tab-section" aria-labelledby="workspace-info-title">
+                <section
+                    class="tab-section"
+                    aria-labelledby="workspace-info-title"
+                >
                     <h2 id="workspace-info-title">Workspace</h2>
 
                     <TextInput
@@ -319,6 +338,12 @@
                         id="workspace-status"
                         labelText="Workspace status"
                         value={workspaceStatus}
+                        readonly
+                    />
+                    <TextInput
+                        id="workspace-schema"
+                        labelText="Database schema version"
+                        value={schemaVersion}
                         readonly
                     />
                     <TextArea
@@ -339,7 +364,10 @@
 
             <!-- ── Data Tab ───────────────────────────────────────────── -->
             <TabContent>
-                <section class="tab-section" aria-labelledby="data-management-title">
+                <section
+                    class="tab-section"
+                    aria-labelledby="data-management-title"
+                >
                     <h2 id="data-management-title">Export / Import</h2>
                     <p class="section-desc">
                         Export or import your workspace data as JSON or CSV.
@@ -361,8 +389,14 @@
                                 legendText="Mode"
                                 bind:selected={exportMode}
                             >
-                                <RadioButton labelText="Single file" value="single-file" />
-                                <RadioButton labelText="Per-board folder" value="folder" />
+                                <RadioButton
+                                    labelText="Single file"
+                                    value="single-file"
+                                />
+                                <RadioButton
+                                    labelText="Per-board folder"
+                                    value="folder"
+                                />
                             </RadioButtonGroup>
                         </div>
                     </div>
@@ -383,18 +417,21 @@
                 <section class="tab-section" aria-labelledby="git-sync-title">
                     <div class="section-header-row">
                         <h2 id="git-sync-title">Git Synchronization</h2>
-                        <Tag type={syncStatusColor} size="sm">{syncStatusLabel}</Tag>
+                        <Tag type={syncStatusColor} size="sm"
+                            >{syncStatusLabel}</Tag
+                        >
                     </div>
                     <p class="section-desc">
-                        Sync your workspace to a private GitHub repository using a Personal Access Token.
+                        Sync your workspace to a private GitHub repository using
+                        a Personal Access Token.
                     </p>
 
                     {#if gitAvailable === false}
                         <aside class="git-warning" role="alert">
                             <strong>Git not found.</strong>
                             <span>
-                                The <code>git</code> command was not found on your system.
-                                Install Git to use this feature.
+                                The <code>git</code> command was not found on your
+                                system. Install Git to use this feature.
                             </span>
                         </aside>
                     {/if}
@@ -449,11 +486,36 @@
                             disabled={gitAvailable === false}
                         />
 
+                        {#if syncAutoSync}
+                            <Select
+                                id="sync-auto-sync-interval"
+                                labelText="Sync Interval"
+                                bind:selected={syncAutoSyncInterval}
+                                disabled={gitAvailable === false}
+                            >
+                                <SelectItem value={1} text="Every 1 minutes" />
+                                <SelectItem value={5} text="Every 5 minutes" />
+                                <SelectItem
+                                    value={15}
+                                    text="Every 15 minutes"
+                                />
+                                <SelectItem
+                                    value={30}
+                                    text="Every 30 minutes"
+                                />
+                                <SelectItem value={60} text="Every 1 hour" />
+                                <SelectItem value={120} text="Every 2 hours" />
+                                <SelectItem value={360} text="Every 6 hours" />
+                            </Select>
+                        {/if}
+
                         {#if syncConfig.config.last_synced_at}
                             <TextInput
                                 id="sync-last-synced"
                                 labelText="Last synced"
-                                value={new Date(syncConfig.config.last_synced_at).toLocaleString()}
+                                value={new Date(
+                                    syncConfig.config.last_synced_at,
+                                ).toLocaleString()}
                                 readonly
                             />
                         {/if}
@@ -473,7 +535,9 @@
                         <div class="sync-actions">
                             <h3>Actions</h3>
                             {#if syncLoading}
-                                <InlineLoading description={syncLoadingMessage} />
+                                <InlineLoading
+                                    description={syncLoadingMessage}
+                                />
                             {:else}
                                 <ButtonSet>
                                     <Button

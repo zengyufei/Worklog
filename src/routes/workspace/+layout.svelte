@@ -10,6 +10,8 @@
     import { useCommandPalette } from "$lib/hooks/command-palette.svelte";
     import { page } from "$app/state";
     import type { CommandAction } from "$lib/components/app/types";
+    import { initSyncScheduler, destroySyncScheduler } from "$lib/sync/sync-scheduler.svelte";
+    import { onDestroy } from "svelte";
 
     let { children } = $props();
     const workspace = useWorkspace();
@@ -53,6 +55,9 @@
         lastLoadedWorkspacePath = workspacePath;
         boardLoadError = null;
 
+        // Start auto-sync interval checking
+        initSyncScheduler();
+
         void boardsApi.load().catch((error) => {
             boardLoadError = String(error);
             lastLoadedWorkspacePath = null;
@@ -89,6 +94,10 @@
     });
 
     const isSettingsRoute = $derived(page.route.id === "/workspace/settings");
+
+    onDestroy(() => {
+        destroySyncScheduler();
+    });
 </script>
 
 <!-- <h1>Hello World</h1>

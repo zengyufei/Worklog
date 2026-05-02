@@ -302,6 +302,7 @@ async function migrate_v9(db: Database): Promise<void> {
             git_name        TEXT NOT NULL DEFAULT '',
             git_email       TEXT NOT NULL DEFAULT '',
             auto_sync       INTEGER NOT NULL DEFAULT 0,
+            auto_sync_interval INTEGER NOT NULL DEFAULT 15,
             last_synced_at  TEXT,
             updated_at      TEXT NOT NULL DEFAULT ''
         )
@@ -324,6 +325,18 @@ async function migrate_v10(db: Database) {
         await db.execute(`ALTER TABLE sync_config ADD COLUMN git_email TEXT NOT NULL DEFAULT ''`);
     } catch {
         // Ignore if column already exists
+    }
+}
+
+/**
+ * Migration v11:
+ * Add auto_sync_interval to sync_config.
+ */
+async function migrate_v11(db: Database) {
+    try {
+        await db.execute(`ALTER TABLE sync_config ADD COLUMN auto_sync_interval INTEGER NOT NULL DEFAULT 15`);
+    } catch (e) {
+        console.error("migrate_v11 error:", e);
     }
 }
 
@@ -371,6 +384,10 @@ export async function runMigrations(db: Database): Promise<void> {
 
     if (current < 10) {
         await migrate_v10(db);
+    }
+
+    if (current < 11) {
+        await migrate_v11(db);
     }
 
     await db.execute(

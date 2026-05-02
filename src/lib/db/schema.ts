@@ -1,4 +1,4 @@
-export const SCHEMA_VERSION = 10;
+export const SCHEMA_VERSION = 11;
 
 export const CREATE_TABLES = `
   CREATE TABLE IF NOT EXISTS workspace_meta (
@@ -54,6 +54,7 @@ export const CREATE_TABLES = `
     git_name        TEXT NOT NULL DEFAULT '',
     git_email       TEXT NOT NULL DEFAULT '',
     auto_sync       INTEGER NOT NULL DEFAULT 0,
+    auto_sync_interval INTEGER NOT NULL DEFAULT 15,
     last_synced_at  TEXT,
     updated_at      TEXT NOT NULL
   );
