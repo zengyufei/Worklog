@@ -2,19 +2,22 @@
 	import { goto } from "$app/navigation";
 
 	import "carbon-components-svelte/css/all.css";
-	import { Loading } from "carbon-components-svelte";
+	import { Loading, NotificationQueue } from "carbon-components-svelte";
 	import "./layout.css";
 	// @ts-ignore
 	import AppToolbar from "$lib/components/app/layout/toolbar/app-toolbar.svelte";
 	import CommandPalette from "$lib/components/app/layout/command-palette/command-palette.svelte";
 	import { useWorkspace } from "$lib/hooks/workspace.svelte";
 	import { useCommandPalette } from "$lib/hooks/command-palette.svelte";
+	import { notifications } from "$lib/hooks/notifications.svelte";
 	import {
 		buildCommandActions,
 		buildShortcuts,
 		handleGlobalShortcut,
 		type ShortcutDef,
 	} from "$lib/hooks/keyboard-shortcuts";
+	import { getDb } from "$lib/db";
+	import { exportDatabaseToFile } from "$lib/db/export";
 
 	let { children } = $props();
 	const workspace = useWorkspace();
@@ -58,6 +61,30 @@
 		void workspace.pick();
 	}
 
+	async function exportData() {
+		if (workspace.status !== "ready" || !workspace.path) return;
+		try {
+			const db = await getDb(workspace.path);
+			const success = await exportDatabaseToFile(db);
+			if (success) {
+				notifications.add({
+					kind: "success",
+					title: "Export Successful",
+					subtitle: "Your workspace data has been saved.",
+					timeout: 3000,
+				});
+			}
+		} catch (error) {
+			console.error("Failed to export data", error);
+			notifications.add({
+				kind: "error",
+				title: "Export Failed",
+				subtitle: String(error),
+				timeout: 5000,
+			});
+		}
+	}
+
 	// ── Command palette actions & shortcuts ────────────────────────────────
 	const appCallbacks = {
 		openSettings,
@@ -68,6 +95,7 @@
 		refreshApp,
 		closeWorkspace,
 		openWorkspace: openWorkspaceFolder,
+		exportData,
 	};
 
 	const commandActions = buildCommandActions(appCallbacks);
@@ -129,6 +157,9 @@
 
 <!-- Command Palette (always rendered, visibility managed internally) -->
 <CommandPalette />
+
+<!-- Global Notifications Queue -->
+<NotificationQueue bind:this={notifications.queue} />
 
 <style>
 	:global(html),

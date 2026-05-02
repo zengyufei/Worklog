@@ -73,6 +73,7 @@ export interface AppCallbacks {
     refreshApp: () => void;
     closeWorkspace: () => void;
     openWorkspace: () => void;
+    exportData: () => void;
 }
 
 export function buildCommandActions(callbacks: AppCallbacks): CommandAction[] {
@@ -158,6 +159,15 @@ export function buildCommandActions(callbacks: AppCallbacks): CommandAction[] {
             icon: FolderOpen,
             run: callbacks.openWorkspace,
         },
+        {
+            id: "export-data",
+            label: "Export Data",
+            subtitle: "Export all workspace data to a JSON file",
+            shortcut: formatShortcut({ key: "e", ctrlOrCmd: true, shift: true, label: "", run: () => {} }),
+            category: "Actions",
+            // Assuming no specific icon for now, could use a Download or Document icon
+            run: callbacks.exportData,
+        },
     ];
 }
 
@@ -175,6 +185,7 @@ export function buildShortcuts(callbacks: AppCallbacks & { openCommandPalette: (
         { key: "r", ctrlOrCmd: true, shift: true, label: "Refresh Application", run: callbacks.refreshApp },
         { key: "w", ctrlOrCmd: true, shift: true, label: "Close Workspace", run: callbacks.closeWorkspace },
         { key: "o", ctrlOrCmd: true, label: "Open Workspace", run: callbacks.openWorkspace },
+        { key: "e", ctrlOrCmd: true, shift: true, label: "Export Data", run: callbacks.exportData },
     ];
 }
 

@@ -22,7 +22,9 @@
     "store:allow-set",
     "store:allow-save",
     "dialog:allow-open",
+    "dialog:allow-save",
     "fs:default",
+    "fs:write-all",
     {
       "identifier": "fs:allow-mkdir",
       "allow": [

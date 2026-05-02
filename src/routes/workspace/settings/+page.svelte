@@ -3,6 +3,9 @@
     import { Button, TextArea, TextInput } from "carbon-components-svelte";
     // import { Theme } from "carbon-components-svelte";
     import { useWorkspace } from "$lib/hooks/workspace.svelte";
+    import { getDb } from "$lib/db";
+    import { exportDatabaseToFile } from "$lib/db/export";
+    import { notifications } from "$lib/hooks/notifications.svelte";
 
     const workspace = useWorkspace();
 
@@ -18,6 +21,30 @@
         void workspace.init();
     }
 
+    async function handleExport() {
+        if (workspace.status !== "ready" || !workspace.path) return;
+        try {
+            const db = await getDb(workspace.path);
+            const success = await exportDatabaseToFile(db);
+            if (success) {
+                notifications.add({
+                    kind: "success",
+                    title: "Export Successful",
+                    subtitle: "Your workspace data has been saved.",
+                    timeout: 3000,
+                });
+            }
+        } catch (error) {
+            console.error("Failed to export data", error);
+            notifications.add({
+                kind: "error",
+                title: "Export Failed",
+                subtitle: String(error),
+                timeout: 5000,
+            });
+        }
+    }
+
     // @ts-ignore
     const version = __APP_VERSION__;
 </script>
@@ -30,6 +57,9 @@
 
     <section class="workspace-settings-actions" aria-label="Settings actions">
         <Button kind="secondary" onclick={goToBoards}>Back to workspace</Button>
+        <Button kind="primary" onclick={handleExport}>
+            Export Data
+        </Button>
         <Button kind="ghost" onclick={refreshWorkspaceState}>
             Refresh workspace state
         </Button>
