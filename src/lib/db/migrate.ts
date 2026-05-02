@@ -299,11 +299,32 @@ async function migrate_v9(db: Database): Promise<void> {
             remote_url      TEXT NOT NULL DEFAULT '',
             access_token    TEXT NOT NULL DEFAULT '',
             branch          TEXT NOT NULL DEFAULT 'main',
+            git_name        TEXT NOT NULL DEFAULT '',
+            git_email       TEXT NOT NULL DEFAULT '',
             auto_sync       INTEGER NOT NULL DEFAULT 0,
             last_synced_at  TEXT,
             updated_at      TEXT NOT NULL DEFAULT ''
         )
     `);
+}
+
+/**
+ * Migration v10:
+ * Add git_name and git_email columns to sync_config table for users who
+ * already migrated to v9 before those fields were added.
+ */
+async function migrate_v10(db: Database) {
+    try {
+        await db.execute(`ALTER TABLE sync_config ADD COLUMN git_name TEXT NOT NULL DEFAULT ''`);
+    } catch {
+        // Ignore if column already exists (e.g. from fresh creation of v9 schema)
+    }
+    
+    try {
+        await db.execute(`ALTER TABLE sync_config ADD COLUMN git_email TEXT NOT NULL DEFAULT ''`);
+    } catch {
+        // Ignore if column already exists
+    }
 }
 
 
@@ -346,6 +367,10 @@ export async function runMigrations(db: Database): Promise<void> {
 
     if (current < 9) {
         await migrate_v9(db);
+    }
+
+    if (current < 10) {
+        await migrate_v10(db);
     }
 
     await db.execute(

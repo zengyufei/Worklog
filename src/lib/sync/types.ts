@@ -7,6 +7,10 @@ export interface SyncConfig {
     access_token: string;
     /** Branch to sync against (default: 'main') */
     branch: string;
+    /** Git committer name */
+    git_name: string;
+    /** Git committer email */
+    git_email: string;
     /** Whether to automatically push after every save */
     auto_sync: boolean;
     /** ISO timestamp of last successful sync, or null */
@@ -31,6 +35,8 @@ export const DEFAULT_SYNC_CONFIG: SyncConfig = {
     remote_url: '',
     access_token: '',
     branch: 'main',
+    git_name: '',
+    git_email: '',
     auto_sync: false,
     last_synced_at: null,
 };

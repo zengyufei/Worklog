@@ -46,7 +46,7 @@ export class SyncEngine {
 
         // Configure remote and user
         await this.git.setRemote(config.remote_url, config.access_token);
-        await this.git.setUser('Worklog', 'worklog@sync');
+        await this.git.setUser(config.git_name || 'Worklog', config.git_email || 'worklog@sync');
     }
 
     /**

@@ -39,6 +39,8 @@
     let syncRemoteUrl = $state("");
     let syncAccessToken = $state("");
     let syncBranch = $state("main");
+    let syncGitName = $state("");
+    let syncGitEmail = $state("");
     let syncAutoSync = $state(false);
     let syncLoading = $state(false);
     let syncLoadingMessage = $state("");
@@ -59,6 +61,8 @@
             syncRemoteUrl = syncConfig.config.remote_url;
             syncAccessToken = syncConfig.config.access_token;
             syncBranch = syncConfig.config.branch;
+            syncGitName = syncConfig.config.git_name;
+            syncGitEmail = syncConfig.config.git_email;
             syncAutoSync = syncConfig.config.auto_sync;
 
             // Check git availability
@@ -77,6 +81,8 @@
                 remote_url: syncRemoteUrl,
                 access_token: syncAccessToken,
                 branch: syncBranch,
+                git_name: syncGitName,
+                git_email: syncGitEmail,
                 auto_sync: syncAutoSync,
                 last_synced_at: syncConfig.config.last_synced_at,
             };
@@ -415,6 +421,22 @@
                             labelText="Branch"
                             placeholder="main"
                             bind:value={syncBranch}
+                            disabled={gitAvailable === false}
+                        />
+
+                        <TextInput
+                            id="sync-git-name"
+                            labelText="Git Name"
+                            placeholder="Worklog User"
+                            bind:value={syncGitName}
+                            disabled={gitAvailable === false}
+                        />
+
+                        <TextInput
+                            id="sync-git-email"
+                            labelText="Git Email"
+                            placeholder="user@example.com"
+                            bind:value={syncGitEmail}
                             disabled={gitAvailable === false}
                         />
 

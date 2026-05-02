@@ -15,7 +15,7 @@ export function useSyncConfig() {
     async function load(db: Database): Promise<void> {
         try {
             const rows = await db.select<any[]>(
-                `SELECT remote_url, access_token, branch, auto_sync, last_synced_at
+                `SELECT remote_url, access_token, branch, git_name, git_email, auto_sync, last_synced_at
                  FROM sync_config WHERE id = 1`
             );
 
@@ -25,6 +25,8 @@ export function useSyncConfig() {
                     remote_url: row.remote_url || '',
                     access_token: row.access_token || '',
                     branch: row.branch || 'main',
+                    git_name: row.git_name || '',
+                    git_email: row.git_email || '',
                     auto_sync: Boolean(row.auto_sync),
                     last_synced_at: row.last_synced_at || null,
                 };
@@ -43,12 +45,14 @@ export function useSyncConfig() {
     async function save(db: Database): Promise<void> {
         const now = new Date().toISOString();
         await db.execute(
-            `INSERT INTO sync_config (id, remote_url, access_token, branch, auto_sync, last_synced_at, updated_at)
-             VALUES (1, ?, ?, ?, ?, ?, ?)
+            `INSERT INTO sync_config (id, remote_url, access_token, branch, git_name, git_email, auto_sync, last_synced_at, updated_at)
+             VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?)
              ON CONFLICT(id) DO UPDATE SET
                 remote_url = excluded.remote_url,
                 access_token = excluded.access_token,
                 branch = excluded.branch,
+                git_name = excluded.git_name,
+                git_email = excluded.git_email,
                 auto_sync = excluded.auto_sync,
                 last_synced_at = excluded.last_synced_at,
                 updated_at = excluded.updated_at`,
@@ -56,6 +60,8 @@ export function useSyncConfig() {
                 _config.remote_url,
                 _config.access_token,
                 _config.branch,
+                _config.git_name,
+                _config.git_email,
                 _config.auto_sync ? 1 : 0,
                 _config.last_synced_at,
                 now,
