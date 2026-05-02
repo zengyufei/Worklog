@@ -32,6 +32,7 @@
             description: string;
             priority: TicketPriority;
             ticketType: TicketType;
+            startDate: string;
             dueDate: string;
             tags: string[];
             status: TicketStatus;
@@ -49,6 +50,7 @@
         description: string;
         priority: TicketPriority;
         ticketType: TicketType;
+        startDate: string;
         dueDate: string;
         tags: string[];
     }>({
@@ -56,6 +58,7 @@
         description: "",
         priority: "p2",
         ticketType: "feature",
+        startDate: "",
         dueDate: "",
         tags: [],
     });
@@ -86,6 +89,7 @@
                     description: ticket.description,
                     priority: ticket.priority,
                     ticketType: ticket.ticket_type,
+                    startDate: ticket.start_date ?? "",
                     dueDate: ticket.due_date ?? "",
                     tags: ticket.labels ?? [],
                 };
@@ -95,6 +99,7 @@
                     description: "",
                     priority: "p2",
                     ticketType: "feature",
+                    startDate: "",
                     dueDate: "",
                     tags: [],
                 };
@@ -113,6 +118,7 @@
                 description: form.description || "",
                 priority: form.priority,
                 ticketType: form.ticketType,
+                startDate: form.startDate,
                 dueDate: form.dueDate,
                 tags: form.tags,
                 status: defaultStatus,
@@ -171,6 +177,16 @@
             />
         </div>
         <div class="form-row">
+            <DatePicker
+                bind:value={form.startDate}
+                datePickerType="single"
+                dateFormat="Y-m-d"
+            >
+                <DatePickerInput
+                    labelText="Start Date"
+                    placeholder="yyyy-mm-dd"
+                />
+            </DatePicker>
             <DatePicker
                 bind:value={form.dueDate}
                 datePickerType="single"

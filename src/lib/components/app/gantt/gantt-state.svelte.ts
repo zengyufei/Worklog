@@ -90,14 +90,14 @@ export class GanttState {
         let minDate = now.getTime();
         let maxDate = now.getTime();
         for (const t of tickets) {
-            const created = new Date(t.created_at).getTime();
-            if (created < minDate) minDate = created;
+            const start = new Date(t.start_date ?? t.created_at).getTime();
+            if (start < minDate) minDate = start;
+            if (start > maxDate) maxDate = start;
             if (t.due_date) {
                 const due = new Date(t.due_date).getTime();
                 if (due > maxDate) maxDate = due;
                 if (due < minDate) minDate = due;
             }
-            if (created > maxDate) maxDate = created;
         }
         const pad = 3 * this.DAY_MS;
         return {
@@ -186,27 +186,27 @@ export class GanttState {
 
     getBarLeft(ticket: Ticket): number {
         const rangeStart = this.timeRange.start.getTime();
-        const created = new Date(ticket.created_at).getTime();
-        return Math.max(0, (created - rangeStart) / this.DAY_MS) * this.colWidth;
+        const start = new Date(ticket.start_date ?? ticket.created_at).getTime();
+        return Math.max(0, (start - rangeStart) / this.DAY_MS) * this.colWidth;
     }
 
     getBarWidth(ticket: Ticket): number {
         const now = new Date();
-        const created = new Date(ticket.created_at).getTime();
+        const start = new Date(ticket.start_date ?? ticket.created_at).getTime();
         if (!ticket.due_date) {
-            return Math.max(this.colWidth, ((now.getTime() - created) / this.DAY_MS) * this.colWidth);
+            return Math.max(this.colWidth, ((now.getTime() - start) / this.DAY_MS) * this.colWidth);
         }
         const due = new Date(ticket.due_date).getTime();
-        return Math.max(this.colWidth, ((due - created) / this.DAY_MS) * this.colWidth);
+        return Math.max(this.colWidth, ((due - start) / this.DAY_MS) * this.colWidth);
     }
 
     getElapsedPercent(ticket: Ticket): number {
         const now = new Date();
         if (!ticket.due_date) return 100;
-        const created = new Date(ticket.created_at).getTime();
+        const start = new Date(ticket.start_date ?? ticket.created_at).getTime();
         const due = new Date(ticket.due_date).getTime();
-        if (due <= created) return 100;
-        return Math.min(100, Math.max(0, ((now.getTime() - created) / (due - created)) * 100));
+        if (due <= start) return 100;
+        return Math.min(100, Math.max(0, ((now.getTime() - start) / (due - start)) * 100));
     }
 
     isOverdue(ticket: Ticket): boolean {
@@ -247,8 +247,18 @@ export class GanttState {
         return newDue.toISOString().split("T")[0];
     }
 
+    getDragStartDate(barLeftPx: number): string {
+        const dayOffset = barLeftPx / this.colWidth;
+        const newStart = new Date(this.timeRange.start.getTime() + dayOffset * this.DAY_MS);
+        return newStart.toISOString().split("T")[0];
+    }
+
     async updateDueDate(ticketId: string, dueDate: string) {
         await this.#ticketsHook.update(ticketId, { due_date: dueDate });
+    }
+
+    async updateStartDate(ticketId: string, startDate: string) {
+        await this.#ticketsHook.update(ticketId, { start_date: startDate });
     }
 }
 
