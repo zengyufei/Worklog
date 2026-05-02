@@ -13,6 +13,8 @@ export interface SyncConfig {
     git_email: string;
     /** Whether to automatically push after every save */
     auto_sync: boolean;
+    /** Interval in minutes for auto sync */
+    auto_sync_interval: number;
     /** ISO timestamp of last successful sync, or null */
     last_synced_at: string | null;
 }
@@ -38,5 +40,6 @@ export const DEFAULT_SYNC_CONFIG: SyncConfig = {
     git_name: '',
     git_email: '',
     auto_sync: false,
+    auto_sync_interval: 15,
     last_synced_at: null,
 };
