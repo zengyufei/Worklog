@@ -1,17 +1,28 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
-    import { Button, TextArea, TextInput } from "carbon-components-svelte";
-    // import { Theme } from "carbon-components-svelte";
+    import {
+        Button,
+        TextArea,
+        TextInput,
+        RadioButtonGroup,
+        RadioButton,
+        ButtonSet,
+    } from "carbon-components-svelte";
     import { useWorkspace } from "$lib/hooks/workspace.svelte";
     import { getDb } from "$lib/db";
-    import { exportDatabaseToFile } from "$lib/db/export";
+    import { exportDatabaseWithOptions, type ExportOptions } from "$lib/db/export";
+    import { importFromFile } from "$lib/db/mappers";
     import { notifications } from "$lib/hooks/notifications.svelte";
+    import type { ExportFormat, ExportMode } from "$lib/db/mappers";
 
     const workspace = useWorkspace();
 
     const workspaceName = $derived(workspace.meta?.name ?? "Workspace");
     const workspacePath = $derived(workspace.path ?? "Not available");
     const workspaceStatus = $derived(workspace.status);
+
+    let exportFormat = $state<ExportFormat>("json");
+    let exportMode = $state<ExportMode>("single-file");
 
     function goToBoards() {
         void goto("/workspace");
@@ -25,12 +36,13 @@
         if (workspace.status !== "ready" || !workspace.path) return;
         try {
             const db = await getDb(workspace.path);
-            const success = await exportDatabaseToFile(db);
+            const options: ExportOptions = { format: exportFormat, mode: exportMode };
+            const success = await exportDatabaseWithOptions(db, options);
             if (success) {
                 notifications.add({
                     kind: "success",
                     title: "Export Successful",
-                    subtitle: "Your workspace data has been saved.",
+                    subtitle: `Workspace exported as ${exportFormat.toUpperCase()} (${exportMode}).`,
                     timeout: 3000,
                 });
             }
@@ -39,6 +51,32 @@
             notifications.add({
                 kind: "error",
                 title: "Export Failed",
+                subtitle: String(error),
+                timeout: 5000,
+            });
+        }
+    }
+
+    async function handleImport() {
+        if (workspace.status !== "ready" || !workspace.path) return;
+        try {
+            const db = await getDb(workspace.path);
+            const result = await importFromFile(db, "merge");
+            if (result) {
+                notifications.add({
+                    kind: "success",
+                    title: "Import Successful",
+                    subtitle: `Created ${result.boardsCreated} boards, ${result.ticketsCreated} tickets. Updated ${result.ticketsUpdated} tickets.`,
+                    timeout: 5000,
+                });
+                // Reload the workspace to reflect imported data
+                window.location.reload();
+            }
+        } catch (error) {
+            console.error("Failed to import data", error);
+            notifications.add({
+                kind: "error",
+                title: "Import Failed",
                 subtitle: String(error),
                 timeout: 5000,
             });
@@ -57,9 +95,6 @@
 
     <section class="workspace-settings-actions" aria-label="Settings actions">
         <Button kind="secondary" onclick={goToBoards}>Back to workspace</Button>
-        <Button kind="primary" onclick={handleExport}>
-            Export Data
-        </Button>
         <Button kind="ghost" onclick={refreshWorkspaceState}>
             Refresh workspace state
         </Button>
@@ -99,19 +134,45 @@
             value={version}
             readonly
         />
+    </section>
 
-        <!-- <Theme
-            persistKey="_carbon-theme"
-            persist
-            render="toggle"
-            toggle={{
-                themes: ["g10", "g100"],
-                labelA: "Enable dark mode",
-                labelB: "Enable dark mode",
-                hideLabel: true,
-                size: "sm",
-            }}
-        /> -->
+    <section
+        class="workspace-settings-section"
+        aria-labelledby="data-management-title"
+    >
+        <h2 id="data-management-title">Data Management</h2>
+        <p class="section-desc">Export or import your workspace data.</p>
+
+        <div class="data-controls">
+            <div class="data-control-group">
+                <RadioButtonGroup
+                    legendText="Format"
+                    bind:selected={exportFormat}
+                >
+                    <RadioButton labelText="JSON" value="json" />
+                    <RadioButton labelText="CSV" value="csv" />
+                </RadioButtonGroup>
+            </div>
+
+            <div class="data-control-group">
+                <RadioButtonGroup
+                    legendText="Mode"
+                    bind:selected={exportMode}
+                >
+                    <RadioButton labelText="Single file" value="single-file" />
+                    <RadioButton labelText="Per-board folder" value="folder" />
+                </RadioButtonGroup>
+            </div>
+        </div>
+
+        <ButtonSet>
+            <Button kind="primary" onclick={handleExport}>
+                Export
+            </Button>
+            <Button kind="tertiary" onclick={handleImport}>
+                Import
+            </Button>
+        </ButtonSet>
     </section>
 </main>
 
@@ -157,6 +218,23 @@
     .workspace-settings-section h2 {
         margin: 0;
         font-size: 1rem;
+    }
+
+    .section-desc {
+        margin: 0;
+        font-size: 0.8125rem;
+        opacity: 0.7;
+    }
+
+    .data-controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--cds-spacing-05, 1rem);
+    }
+
+    .data-control-group {
+        flex: 1;
+        min-width: 10rem;
     }
 
     .workspace-settings-actions {

@@ -291,6 +291,21 @@ async function migrate_v8(db: Database): Promise<void> {
     }
 }
 
+async function migrate_v9(db: Database): Promise<void> {
+    // Add sync_config table for GitHub sync settings
+    await db.execute(`
+        CREATE TABLE IF NOT EXISTS sync_config (
+            id              INTEGER PRIMARY KEY CHECK (id = 1),
+            remote_url      TEXT NOT NULL DEFAULT '',
+            access_token    TEXT NOT NULL DEFAULT '',
+            branch          TEXT NOT NULL DEFAULT 'main',
+            auto_sync       INTEGER NOT NULL DEFAULT 0,
+            last_synced_at  TEXT,
+            updated_at      TEXT NOT NULL DEFAULT ''
+        )
+    `);
+}
+
 
 export async function runMigrations(db: Database): Promise<void> {
     const rows = await db.select<{ schema_version: number }[]>(
@@ -327,6 +342,10 @@ export async function runMigrations(db: Database): Promise<void> {
 
     if (current < 8) {
         await migrate_v8(db);
+    }
+
+    if (current < 9) {
+        await migrate_v9(db);
     }
 
     await db.execute(

@@ -26,6 +26,16 @@
     "fs:default",
     "fs:write-all",
     {
+      "identifier": "shell:allow-execute",
+      "allow": [
+        {
+          "name": "git",
+          "cmd": "git",
+          "args": true
+        }
+      ]
+    },
+    {
       "identifier": "fs:allow-mkdir",
       "allow": [
         {
