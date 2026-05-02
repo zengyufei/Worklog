@@ -6,31 +6,47 @@
 
     let { onTicketClick }: { onTicketClick: (ticket: Ticket) => void } = $props();
 
-    // ── Drag-resize state (local so Svelte reactivity is guaranteed) ──────
+    // ── Drag-resize state ────────────────────────────────────────────────
+    type DragEdge = "left" | "right";
     let dragTicketId = $state<string | null>(null);
+    let dragEdge = $state<DragEdge>("right");
     let dragStartX = 0;
     let dragOriginalWidth = 0;
+    let dragOriginalLeft = 0;
     let dragCurrentWidth = $state(0);
-    let dragBarLeft = 0;
+    let dragCurrentLeft = $state(0);
     let wasDragging = $state(false);
 
-    function onResizeStart(e: MouseEvent, ticket: Ticket) {
+    function onResizeStart(e: MouseEvent, ticket: Ticket, edge: DragEdge) {
         e.preventDefault();
         e.stopPropagation();
 
         dragTicketId = ticket.id;
+        dragEdge = edge;
         wasDragging = false;
         dragStartX = e.clientX;
         dragOriginalWidth = s.getBarWidth(ticket);
+        dragOriginalLeft = s.getBarLeft(ticket);
         dragCurrentWidth = dragOriginalWidth;
-        dragBarLeft = s.getBarLeft(ticket);
+        dragCurrentLeft = dragOriginalLeft;
         s.dragTicketId = ticket.id;
         s.hoveredTicketId = null;
 
         const onMove = (ev: MouseEvent) => {
             const dx = ev.clientX - dragStartX;
-            dragCurrentWidth = Math.max(s.colWidth, dragOriginalWidth + dx);
             if (Math.abs(dx) > 2) wasDragging = true;
+
+            if (edge === "right") {
+                dragCurrentWidth = Math.max(s.colWidth, dragOriginalWidth + dx);
+            } else {
+                // Left edge: move left, expand width inversely
+                const newLeft = dragOriginalLeft + dx;
+                const newWidth = dragOriginalWidth - dx;
+                if (newWidth >= s.colWidth) {
+                    dragCurrentLeft = newLeft;
+                    dragCurrentWidth = newWidth;
+                }
+            }
         };
 
         const onUp = async () => {
@@ -39,15 +55,21 @@
 
             const ticketId = dragTicketId;
             const moved = wasDragging;
+            const currentEdge = dragEdge;
             dragTicketId = null;
             s.dragTicketId = null;
 
             if (ticketId && moved) {
-                const newDue = s.getDragDueDate(dragBarLeft, dragCurrentWidth);
                 try {
-                    await s.updateDueDate(ticketId, newDue);
+                    if (currentEdge === "right") {
+                        const newDue = s.getDragDueDate(dragCurrentLeft, dragCurrentWidth);
+                        await s.updateDueDate(ticketId, newDue);
+                    } else {
+                        const newStart = s.getDragStartDate(dragCurrentLeft);
+                        await s.updateStartDate(ticketId, newStart);
+                    }
                 } catch (err) {
-                    console.error("Failed to update due date:", err);
+                    console.error("Failed to update date:", err);
                 }
             }
 
@@ -106,7 +128,7 @@
                 ></div>
             {:else}
                 {@const isDragging = dragTicketId === row.ticket.id}
-                {@const barLeft = s.getBarLeft(row.ticket)}
+                {@const barLeft = isDragging ? dragCurrentLeft : s.getBarLeft(row.ticket)}
                 {@const barWidth = isDragging ? dragCurrentWidth : s.getBarWidth(row.ticket)}
                 <div
                     class="canvas-row"
@@ -134,14 +156,25 @@
                         <span class="bar-label">{row.ticket.title}</span>
                     </div>
 
-                    <!-- Resize handle — outside bar so overflow:hidden doesn't interfere -->
+                    <!-- Left resize handle (start date) -->
                     <!-- svelte-ignore a11y_no_static_element_interactions -->
                     <!-- svelte-ignore a11y_click_events_have_key_events -->
                     <div
-                        class="bar-resize-handle"
-                        class:handle--dragging={isDragging}
+                        class="bar-resize-handle bar-resize-handle--left"
+                        class:handle--dragging={isDragging && dragEdge === "left"}
+                        style="left:{barLeft - 4}px"
+                        onmousedown={(e) => onResizeStart(e, row.ticket, "left")}
+                        onclick={(e) => e.stopPropagation()}
+                    ></div>
+
+                    <!-- Right resize handle (due date) -->
+                    <!-- svelte-ignore a11y_no_static_element_interactions -->
+                    <!-- svelte-ignore a11y_click_events_have_key_events -->
+                    <div
+                        class="bar-resize-handle bar-resize-handle--right"
+                        class:handle--dragging={isDragging && dragEdge === "right"}
                         style="left:{barLeft + barWidth - 6}px"
-                        onmousedown={(e) => onResizeStart(e, row.ticket)}
+                        onmousedown={(e) => onResizeStart(e, row.ticket, "right")}
                         onclick={(e) => e.stopPropagation()}
                     ></div>
                 </div>
@@ -228,7 +261,7 @@
     }
     .bar--dragging { z-index: 10; outline: 1px solid var(--cds-interactive-01); }
 
-    /* ── Resize handle ─────────────────────────────────── */
+    /* ── Resize handles ─────────────────────────────────── */
     .bar-resize-handle {
         position: absolute;
         top: 5px; height: 26px; width: 10px;

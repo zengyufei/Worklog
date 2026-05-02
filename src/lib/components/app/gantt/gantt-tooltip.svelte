@@ -39,9 +39,22 @@
                 >{state.getDaysLeft(state.hoveredTicket)}</span
             >
         </div>
+        {#if state.hoveredTicket.start_date}
+            <div class="tip-row">
+                <Calendar size={12} />
+                <span class="tip-label">Start</span>
+                <span class="tip-val"
+                    >{new Date(state.hoveredTicket.start_date).toLocaleDateString(
+                        "en-US",
+                        { month: "short", day: "numeric", year: "numeric" },
+                    )}</span
+                >
+            </div>
+        {/if}
         {#if state.hoveredTicket.due_date}
             <div class="tip-row">
                 <Calendar size={12} />
+                <span class="tip-label">Due</span>
                 <span class="tip-val"
                     >{new Date(state.hoveredTicket.due_date).toLocaleDateString(
                         "en-US",

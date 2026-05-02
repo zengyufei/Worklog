@@ -217,6 +217,15 @@ async function migrate_v6(db: Database): Promise<void> {
     await db.execute(`CREATE INDEX IF NOT EXISTS idx_tickets_position ON tickets(position)`);
 }
 
+async function migrate_v7(db: Database): Promise<void> {
+    // Add start_date column for Gantt start date support
+    const columns = await db.select<Array<{ name: string }>>(`PRAGMA table_info(tickets)`);
+    const hasStartDate = columns.some((column) => column.name === 'start_date');
+    if (!hasStartDate) {
+        await db.execute(`ALTER TABLE tickets ADD COLUMN start_date TEXT`);
+    }
+}
+
 export async function runMigrations(db: Database): Promise<void> {
     const rows = await db.select<{ schema_version: number }[]>(
         `SELECT schema_version FROM workspace_meta WHERE id = 1`
@@ -244,6 +253,10 @@ export async function runMigrations(db: Database): Promise<void> {
 
     if (current < 6) {
         await migrate_v6(db);
+    }
+
+    if (current < 7) {
+        await migrate_v7(db);
     }
 
     await db.execute(

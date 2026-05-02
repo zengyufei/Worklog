@@ -1,4 +1,4 @@
-export const SCHEMA_VERSION = 6;
+export const SCHEMA_VERSION = 7;
 
 export const CREATE_TABLES = `
   CREATE TABLE IF NOT EXISTS workspace_meta (
@@ -30,6 +30,7 @@ export const CREATE_TABLES = `
                 CHECK (ticket_type IN ('feature', 'bug', 'chore', 'improvement', 'epic', 'spike')),
     position    REAL NOT NULL DEFAULT 0,
     due_date    TEXT,
+    start_date  TEXT,
     labels      TEXT NOT NULL DEFAULT '[]',
     comments    TEXT NOT NULL DEFAULT '[]',
     created_at  TEXT NOT NULL,
