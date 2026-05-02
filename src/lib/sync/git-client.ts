@@ -3,6 +3,10 @@ import { Command } from '@tauri-apps/plugin-shell';
 /**
  * Thin wrapper around the system `git` CLI, executed via tauri-plugin-shell.
  * All operations run in the specified working directory.
+ *
+ * NOTE: The first argument to Command.create() must match the "name" field
+ * in the shell scope configuration (src-tauri/capabilities/default.json).
+ * We use "git" which maps to the "git" binary via the scope's "cmd" field.
  */
 export class GitClient {
     private workDir: string;
@@ -29,11 +33,14 @@ export class GitClient {
 
     /**
      * Check if git is available on the system.
+     * Uses a temporary directory-independent check.
      */
     async isGitAvailable(): Promise<boolean> {
         try {
-            await this.exec('--version');
-            return true;
+            // Run git --version without depending on workDir existing
+            const cmd = Command.create('git', ['--version']);
+            const output = await cmd.execute();
+            return output.code === 0;
         } catch {
             return false;
         }
