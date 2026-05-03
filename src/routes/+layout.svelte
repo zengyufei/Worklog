@@ -27,10 +27,6 @@
 	const appZoom = useAppZoom();
 	let hasInitializedWorkspace = $state(false);
 
-	$effect(() => {
-		appZoom.init();
-	});
-
 	// ── App-level callbacks ────────────────────────────────────────────────
 	function openSettings() {
 		void goto("/workspace/settings");
@@ -195,7 +191,7 @@
 
 <svelte:window onkeydown={onKeydown} />
 
-<div class="layout-shell" style="zoom: {appZoom.zoom}">
+<div class="layout-shell">
 	<AppToolbar
 		showSettings={workspace.status === "ready"}
 		onOpenSettings={openSettings}
@@ -222,16 +218,22 @@
 
 	:global(body) {
 		overflow: hidden;
+		transform: scale(var(--app-zoom, 1));
+		transform-origin: top left;
+		width: calc(100% / var(--app-zoom, 1)) !important;
+		height: calc(100% / var(--app-zoom, 1)) !important;
 	}
 
 	.layout-shell {
-		height: 100vh;
+		height: 100%;
+		display: flex;
+		flex-direction: column;
 	}
 
 	:global(.layout-content.bx--content) {
 		box-sizing: border-box;
 		min-height: 0;
-		height: calc(100vh - var(--cds-spacing-09, 3rem));
+		flex: 1;
 		overflow-x: hidden;
 		overflow-y: auto;
 	}
