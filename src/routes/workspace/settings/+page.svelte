@@ -420,7 +420,10 @@
             <TabContent>
                 <section class="tab-section" aria-labelledby="git-sync-title">
                     <div class="section-header-row">
-                        <h2 id="git-sync-title">Git Synchronization</h2>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <h2 id="git-sync-title">Git Synchronization</h2>
+                            <Tag type="teal" size="sm">Experimental</Tag>
+                        </div>
                         <Tag type={syncStatusColor} size="sm"
                             >{syncStatusLabel}</Tag
                         >
@@ -566,7 +569,10 @@
             <!-- ── Zoom Tab ───────────────────────────────────────────── -->
             <TabContent>
                 <section class="tab-section" aria-labelledby="zoom-title">
-                    <h2 id="zoom-title">Application Zoom</h2>
+                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                        <h2 id="zoom-title" style="margin: 0;">Application Zoom</h2>
+                        <Tag type="teal" size="sm">Experimental</Tag>
+                    </div>
                     <p class="section-desc">
                         Adjust the global scale of the application interface.
                         You can also use <kbd>Ctrl</kbd> + <kbd>+</kbd> and <kbd>Ctrl</kbd> + <kbd>-</kbd> anywhere.

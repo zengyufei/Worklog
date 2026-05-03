@@ -55,12 +55,20 @@
         lastLoadedWorkspacePath = workspacePath;
         boardLoadError = null;
 
-        // Start auto-sync interval checking
-        initSyncScheduler();
-
         void boardsApi.load().catch((error) => {
             boardLoadError = String(error);
             lastLoadedWorkspacePath = null;
+        });
+
+        // Load sync config and start auto-sync interval
+        import("$lib/db").then(({ getDb }) => {
+            getDb(workspacePath).then((db) => {
+                import("$lib/sync/sync-config.svelte").then(({ useSyncConfig }) => {
+                    useSyncConfig().load(db).then(() => {
+                        initSyncScheduler();
+                    });
+                });
+            });
         });
     });
 
