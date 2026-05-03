@@ -17,7 +17,6 @@ export function snapshotToFolderJsonFiles(snapshot: WorklogSnapshot): Map<string
     // metadata.json — export envelope
     files.set('metadata.json', JSON.stringify({
         export_version: snapshot.export_version,
-        exported_at: snapshot.exported_at,
     }, null, 2));
 
     // workspace.json

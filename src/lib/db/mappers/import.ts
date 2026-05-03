@@ -42,14 +42,14 @@ export async function importSnapshot(
             if (strategy === 'merge') {
                 await db.execute(
                     `UPDATE boards SET name = ?, description = ?, updated_at = ? WHERE id = ?`,
-                    [board.name, board.description, now, board.id]
+                    [board.name, board.description, board.updated_at || now, board.id]
                 );
                 result.boardsUpdated++;
             }
         } else {
             await db.execute(
                 `INSERT INTO boards (id, name, description, created_at, updated_at) VALUES (?, ?, ?, ?, ?)`,
-                [board.id, board.name, board.description, board.created_at || now, now]
+                [board.id, board.name, board.description, board.created_at || now, board.updated_at || now]
             );
             result.boardsCreated++;
         }
@@ -76,7 +76,7 @@ export async function importSnapshot(
                             ticket.board_id, ticket.title, ticket.description, ticket.status,
                             ticket.priority, ticket.ticket_type, ticket.position,
                             ticket.due_date, ticket.start_date, labelsJson, commentsJson,
-                            now, ticket.id
+                            ticket.updated_at || now, ticket.id
                         ]
                     );
                     result.ticketsUpdated++;
@@ -94,7 +94,7 @@ export async function importSnapshot(
                         ticket.id, ticket.board_id, ticket.title, ticket.description,
                         ticket.status, ticket.priority, ticket.ticket_type, ticket.position,
                         ticket.due_date, ticket.start_date, labelsJson, commentsJson,
-                        ticket.created_at || now, now
+                        ticket.created_at || now, ticket.updated_at || now
                     ]
                 );
                 result.ticketsCreated++;
