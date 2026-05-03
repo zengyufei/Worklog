@@ -1,8 +1,5 @@
 # Worklog : Local-first Desktop Project Manager
 
-[
-[
-
 <img width="1922" height="818" alt="ChatGPT Image Apr 27, 2026, 04_45_44 PM" src="https://github.com/user-attachments/assets/aee54de1-58de-4bca-a3f4-246ec4dd4713" />
 
 ***
