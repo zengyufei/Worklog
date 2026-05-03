@@ -1,5 +1,11 @@
 <script lang="ts">
-    import { Settings, CopyFile, Launch, TrashCan } from "carbon-icons-svelte";
+    import {
+        Settings,
+        CopyFile,
+        Launch,
+        TrashCan,
+        Edit,
+    } from "carbon-icons-svelte";
 
     import {
         Button,
@@ -159,6 +165,45 @@
     let deleteBoardId = $state<string | null>(null);
     let deleteModalOpen = $state(false);
 
+    let editBoardId = $state<string | null>(null);
+    let editModalOpen = $state(false);
+    let editDraftName = $state("");
+    let editDraftDescription = $state("");
+    let editError = $state<string | null>(null);
+    let editingBoard = $state(false);
+
+    function promptEditBoard(board: {
+        id: string;
+        name: string;
+        description?: string;
+    }) {
+        editBoardId = board.id;
+        editDraftName = board.name;
+        editDraftDescription = board.description || "";
+        editError = null;
+        editModalOpen = true;
+    }
+
+    async function confirmEditBoard() {
+        if (!editBoardId || !editDraftName.trim()) return;
+
+        editingBoard = true;
+        editError = null;
+
+        try {
+            await boardsApi.rename(
+                editBoardId,
+                editDraftName.trim(),
+                editDraftDescription.trim() || "",
+            );
+            editModalOpen = false;
+        } catch (error) {
+            editError = String(error);
+        } finally {
+            editingBoard = false;
+        }
+    }
+
     function promptDeleteBoard(id: string) {
         deleteBoardId = id;
         deleteModalOpen = true;
@@ -237,6 +282,11 @@
                             on:click={() => openBoard(board.id)}
                         />
                         <ContextMenuOption
+                            labelText="Edit Board"
+                            icon={Edit}
+                            on:click={() => promptEditBoard(board)}
+                        />
+                        <ContextMenuOption
                             labelText="Copy Board ID"
                             icon={CopyFile}
                             on:click={() => copyToClipboard(board.id)}
@@ -305,6 +355,54 @@
         </Button>
         <Button onclick={createBoard} disabled={!canCreateBoard}>
             {creatingBoard ? "Creating..." : "Create board"}
+        </Button>
+    </ModalFooter>
+</ComposedModal>
+
+<ComposedModal
+    bind:open={editModalOpen}
+    size="sm"
+    preventCloseOnClickOutside={editingBoard}
+>
+    <ModalHeader title="Edit board" />
+
+    <ModalBody hasForm>
+        <TextInput
+            labelText="Name"
+            placeholder="Board name"
+            bind:value={editDraftName}
+            maxlength={40}
+            invalid={Boolean(editError && !editDraftName.trim())}
+            invalidText="Board name is required."
+            data-modal-primary-focus
+        />
+
+        <TextArea
+            labelText="Description"
+            placeholder="Short board description"
+            bind:value={editDraftDescription}
+            rows={4}
+            maxlength={180}
+        />
+
+        {#if editError && editDraftName.trim()}
+            <p class="workspace-modal-error" role="alert">{editError}</p>
+        {/if}
+    </ModalBody>
+
+    <ModalFooter>
+        <Button
+            kind="secondary"
+            on:click={() => (editModalOpen = false)}
+            disabled={editingBoard}
+        >
+            Cancel
+        </Button>
+        <Button
+            on:click={confirmEditBoard}
+            disabled={!editDraftName.trim() || editingBoard}
+        >
+            {editingBoard ? "Saving..." : "Save changes"}
         </Button>
     </ModalFooter>
 </ComposedModal>
