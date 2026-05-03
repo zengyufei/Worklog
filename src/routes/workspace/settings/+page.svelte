@@ -29,9 +29,12 @@
     import { useSyncConfig } from "$lib/sync/sync-config.svelte";
     import { SyncEngine } from "$lib/sync/sync-engine";
     import type { SyncStatus } from "$lib/sync/types";
+    import { useAppZoom } from "$lib/hooks/app-zoom.svelte";
+    import ZoomControls from "$lib/components/app/layout/workspace/zoom-controls.svelte";
 
     const workspace = useWorkspace();
     const syncConfig = useSyncConfig();
+    const appZoom = useAppZoom();
 
     const workspaceName = $derived(workspace.meta?.name ?? "Workspace");
     const workspacePath = $derived(workspace.path ?? "Not available");
@@ -318,6 +321,7 @@
         <Tab label="General" />
         <Tab label="Data" />
         <Tab label="Git Sync" />
+        <Tab label="Zoom" />
 
         <svelte:fragment slot="content">
             <!-- ── General Tab ────────────────────────────────────────── -->
@@ -556,6 +560,20 @@
                             {/if}
                         </div>
                     {/if}
+                </section>
+            </TabContent>
+
+            <!-- ── Zoom Tab ───────────────────────────────────────────── -->
+            <TabContent>
+                <section class="tab-section" aria-labelledby="zoom-title">
+                    <h2 id="zoom-title">Application Zoom</h2>
+                    <p class="section-desc">
+                        Adjust the global scale of the application interface.
+                        You can also use <kbd>Ctrl</kbd> + <kbd>+</kbd> and <kbd>Ctrl</kbd> + <kbd>-</kbd> anywhere.
+                    </p>
+                    <div style="max-width: 16rem;">
+                        <ZoomControls />
+                    </div>
                 </section>
             </TabContent>
         </svelte:fragment>

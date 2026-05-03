@@ -5,7 +5,6 @@
     import GanttView from "$lib/components/app/gantt/gantt-board.svelte";
     import { Tabs, Tab, TabContent } from "carbon-components-svelte";
     import { Dashboard, Table, ChartBarFloating } from "carbon-icons-svelte";
-
     import { getWorkspaceShellContext } from "$lib/hooks/workspace-shell-context";
 
     import type { PageProps } from "./$types";
@@ -108,6 +107,12 @@
         gap: var(--cds-spacing-04, 0.75rem);
     }
 
+    .workspace-board-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
     .workspace-board-header h1 {
         margin: 0;
     }
@@ -129,5 +134,6 @@
         flex: 1;
         min-height: 0;
         padding: 0 !important;
+        overflow: hidden;
     }
 </style>
