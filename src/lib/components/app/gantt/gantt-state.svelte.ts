@@ -5,6 +5,7 @@ import {
     TICKET_STATUS_ORDER,
     TICKET_STATUS_CONFIG
 } from "$lib/components/app/types";
+import { useTicketSort } from "$lib/hooks/ticket-sort.svelte";
 import { Pending, TaskComplete, InProgress as InProgressIcon, CheckmarkFilled } from "carbon-icons-svelte";
 
 export type RowItem =
@@ -41,6 +42,7 @@ export class GanttState {
     GROUP_H = 32;
 
     #ticketsHook: any;
+    #sortHook = useTicketSort();
 
     searchQuery = $state("");
     zoomLevel = $state<"day" | "week" | "month">("day");
@@ -60,13 +62,15 @@ export class GanttState {
     }
 
     get filteredTickets(): Ticket[] {
-        return this.searchQuery.trim()
+        const tickets = this.searchQuery.trim()
             ? this.#ticketsHook.tickets.filter(
                 (t: Ticket) =>
                     t.title.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
                     t.description?.toLowerCase().includes(this.searchQuery.toLowerCase())
             )
             : this.#ticketsHook.tickets;
+
+        return this.#sortHook.sortTickets(tickets);
     }
 
     get groupedTickets() {

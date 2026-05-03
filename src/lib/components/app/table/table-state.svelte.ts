@@ -9,6 +9,7 @@ import {
     TICKET_PRIORITY_CONFIG,
     TICKET_TYPE_CONFIG,
 } from "$lib/components/app/types";
+import { useTicketSort } from "$lib/hooks/ticket-sort.svelte";
 import {
     Pending,
     TaskComplete,
@@ -68,6 +69,7 @@ const statusAccentMap: Record<TicketStatus, string> = {
 
 export class TableState {
     #ticketsHook: any;
+    #sortHook = useTicketSort();
 
     searchQuery = $state("");
 
@@ -76,7 +78,7 @@ export class TableState {
     }
 
     get filteredTickets(): Ticket[] {
-        return this.searchQuery.trim()
+        const tickets = this.searchQuery.trim()
             ? this.#ticketsHook.tickets.filter(
                 (t: Ticket) =>
                     t.title.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
@@ -86,6 +88,8 @@ export class TableState {
                     ),
             )
             : this.#ticketsHook.tickets;
+
+        return this.#sortHook.sortTickets(tickets);
     }
 
     get groupedTickets() {

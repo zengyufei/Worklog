@@ -11,6 +11,13 @@
     import TicketDeleteConfirm from "./ticket-delete-confirm.svelte";
     import { getWorkspaceShellContext } from "$lib/hooks/workspace-shell-context";
     import { useTickets } from "$lib/hooks/tickets.svelte";
+    import { useTicketSort } from "$lib/hooks/ticket-sort.svelte";
+    import {
+        Dropdown,
+        SelectItem,
+        Button as CarbonButton,
+    } from "carbon-components-svelte";
+    import { ArrowUp, ArrowDown } from "carbon-icons-svelte";
     import {
         type Ticket,
         type TicketStatus,
@@ -30,6 +37,16 @@
     const getBoardId = () => shell.boardsApi.active?.id ?? null;
 
     const ticketsHook = useTickets(getWorkspacePath, getBoardId);
+    const sortHook = useTicketSort();
+
+    const sortItems = [
+        { id: "position", text: "Manual Order" },
+        { id: "priority", text: "Priority" },
+        { id: "due_date", text: "Due Date" },
+        { id: "created_at", text: "Date Created" },
+        { id: "title", text: "Title" },
+        { id: "ticket_type", text: "Ticket Type" },
+    ];
 
     let loadError = $state<string | null>(null);
     let actionError = $state<string | null>(null);
@@ -60,12 +77,15 @@
     }));
 
     let columns = $derived(
-        columnsDef.map((def) => ({
-            ...def,
-            tickets: ticketsHook.tickets.filter(
+        columnsDef.map((def) => {
+            const columnTickets = ticketsHook.tickets.filter(
                 (ticket) => ticket.status === def.status,
-            ),
-        })),
+            );
+            return {
+                ...def,
+                tickets: sortHook.sortTickets(columnTickets),
+            };
+        }),
     );
 
     // ── Search / filter ────────────────────────────────────────────────────────
@@ -276,6 +296,28 @@
                 placeholder="Search tickets…"
                 persistent
             />
+            <div class="toolbar-sort">
+                <Dropdown
+                    size="sm"
+                    hideLabel
+                    items={sortItems}
+                    bind:selectedId={sortHook.sortBy}
+                />
+                <CarbonButton
+                    kind="ghost"
+                    size="small"
+                    iconDescription={sortHook.sortOrder === "asc"
+                        ? "Sort Ascending"
+                        : "Sort Descending"}
+                    onclick={() => sortHook.toggleOrder()}
+                >
+                    {#if sortHook.sortOrder === "asc"}
+                        <ArrowUp />
+                    {:else}
+                        <ArrowDown />
+                    {/if}
+                </CarbonButton>
+            </div>
             <div class="toolbar-stats">
                 <span class="stats-text"
                     >{doneCount} / {activeTickets} done</span
@@ -390,6 +432,23 @@
     }
 
     /* Toolbar extras */
+    .toolbar-sort {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding-left: 0.5rem;
+    }
+
+    :global(.toolbar-sort .bx--dropdown) {
+        width: auto;
+        min-width: 140px;
+        border-bottom: none;
+    }
+
+    :global(.toolbar-sort .bx--dropdown-text) {
+        font-size: 0.875rem;
+    }
+
     .toolbar-stats {
         display: flex;
         align-items: center;
