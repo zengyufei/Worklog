@@ -7,7 +7,14 @@
 Worklog is a local-first desktop project manager for small development teams.
 It is designed for fast, keyboard-driven planning with a Kanban workflow, transparent local data, and no cloud dependency for core usage.
 
-<img width="1920" height="1045" alt="image" src="https://github.com/user-attachments/assets/c8da5403-76b6-4b9b-8915-8ff4805a2a76" />
+<img width="1920" height="1043" alt="Screenshot From 2026-05-03 02-08-32" src="https://github.com/user-attachments/assets/d594e8a5-478c-481d-8c85-77a51831994c" />
+<img width="1920" height="1043" alt="Screenshot From 2026-05-03 02-08-38" src="https://github.com/user-attachments/assets/5f490ae9-9a70-4d48-a857-2a931747d9d3" />
+<img width="1920" height="1043" alt="Screenshot From 2026-05-03 02-08-43" src="https://github.com/user-attachments/assets/ef247d55-a48c-40dd-93d8-81e4d2f6accb" />
+<img width="1920" height="1043" alt="Screenshot From 2026-05-03 02-08-48" src="https://github.com/user-attachments/assets/b440515b-fc2e-47fc-a829-ee895010b133" />
+<img width="1920" height="1043" alt="Screenshot From 2026-05-03 02-08-52" src="https://github.com/user-attachments/assets/c24f6428-204c-49e6-962e-f37fee2ed120" />
+<img width="1920" height="1043" alt="Screenshot From 2026-05-03 02-09-02" src="https://github.com/user-attachments/assets/86a387f0-abce-4e89-bbac-0fb3e36212b5" />
+<img width="1920" height="1043" alt="Screenshot From 2026-05-03 02-09-34" src="https://github.com/user-attachments/assets/dff3f483-0a7d-4d7e-ac1f-41ce2eb95403" />
+
 
 ## What Worklog Is
 
