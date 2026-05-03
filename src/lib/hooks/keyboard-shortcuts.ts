@@ -10,6 +10,8 @@ import {
     Renew,
     Close,
     FolderOpen,
+    Download,
+    Upload,
 } from "carbon-icons-svelte";
 
 // ── Shortcut Definitions ───────────────────────────────────────────────────
@@ -74,6 +76,7 @@ export interface AppCallbacks {
     closeWorkspace: () => void;
     openWorkspace: () => void;
     exportData: () => void;
+    importData: () => void;
 }
 
 export function buildCommandActions(callbacks: AppCallbacks): CommandAction[] {
@@ -165,8 +168,17 @@ export function buildCommandActions(callbacks: AppCallbacks): CommandAction[] {
             subtitle: "Export all workspace data to a JSON file",
             shortcut: formatShortcut({ key: "e", ctrlOrCmd: true, shift: true, label: "", run: () => {} }),
             category: "Actions",
-            // Assuming no specific icon for now, could use a Download or Document icon
+            icon: Download,
             run: callbacks.exportData,
+        },
+        {
+            id: "import-data",
+            label: "Import Data",
+            subtitle: "Import workspace data from a JSON or CSV file",
+            shortcut: "",
+            category: "Actions",
+            icon: Upload,
+            run: callbacks.importData,
         },
     ];
 }

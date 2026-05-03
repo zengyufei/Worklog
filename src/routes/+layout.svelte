@@ -19,6 +19,7 @@
 	} from "$lib/hooks/keyboard-shortcuts";
 	import { getDb } from "$lib/db";
 	import { exportDatabaseToFile } from "$lib/db/export";
+	import { importFromFile } from "$lib/db/mappers";
 
 	let { children } = $props();
 	const workspace = useWorkspace();
@@ -91,6 +92,32 @@
 		}
 	}
 
+	async function importData() {
+		if (workspace.status !== "ready" || !workspace.path) return;
+		try {
+			const db = await getDb(workspace.path);
+			const result = await importFromFile(db, 'merge');
+			if (result) {
+				notifications.add({
+					kind: "success",
+					title: "Import Successful",
+					subtitle: `Created ${result.boardsCreated} boards, ${result.ticketsCreated} tickets. Updated ${result.ticketsUpdated} tickets.`,
+					timeout: 5000,
+				});
+				// Reload the workspace to pick up new data
+				window.location.reload();
+			}
+		} catch (error) {
+			console.error("Failed to import data", error);
+			notifications.add({
+				kind: "error",
+				title: "Import Failed",
+				subtitle: String(error),
+				timeout: 5000,
+			});
+		}
+	}
+
 	// ── Command palette actions & shortcuts ────────────────────────────────
 	const appCallbacks = {
 		openSettings,
@@ -102,6 +129,7 @@
 		closeWorkspace,
 		openWorkspace: openWorkspaceFolder,
 		exportData,
+		importData,
 	};
 
 	const commandActions = buildCommandActions(appCallbacks);
