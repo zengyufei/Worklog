@@ -9,6 +9,7 @@
 	import CommandPalette from "$lib/components/app/layout/command-palette/command-palette.svelte";
 	import { useWorkspace } from "$lib/hooks/workspace.svelte";
 	import { useCommandPalette } from "$lib/hooks/command-palette.svelte";
+	import { useAppZoom } from "$lib/hooks/app-zoom.svelte";
 	import { notifications } from "$lib/hooks/notifications.svelte";
 	import {
 		buildCommandActions,
@@ -22,7 +23,12 @@
 	let { children } = $props();
 	const workspace = useWorkspace();
 	const palette = useCommandPalette();
+	const appZoom = useAppZoom();
 	let hasInitializedWorkspace = $state(false);
+
+	$effect(() => {
+		appZoom.init();
+	});
 
 	// ── App-level callbacks ────────────────────────────────────────────────
 	function openSettings() {
@@ -111,6 +117,25 @@
 
 	// ── Global keyboard handler ────────────────────────────────────────────
 	function onKeydown(e: KeyboardEvent) {
+		// Zoom Shortcuts
+		if (e.ctrlKey || e.metaKey) {
+			if (e.key === "=" || e.key === "+") {
+				e.preventDefault();
+				appZoom.zoomIn();
+				return;
+			}
+			if (e.key === "-") {
+				e.preventDefault();
+				appZoom.zoomOut();
+				return;
+			}
+			if (e.key === "0") {
+				e.preventDefault();
+				appZoom.reset();
+				return;
+			}
+		}
+
 		// Let the command palette handle its own internal keys when open
 		if (palette.isOpen) return;
 
@@ -142,7 +167,7 @@
 
 <svelte:window onkeydown={onKeydown} />
 
-<div class="layout-shell">
+<div class="layout-shell" style="zoom: {appZoom.zoom}">
 	<AppToolbar
 		showSettings={workspace.status === "ready"}
 		onOpenSettings={openSettings}

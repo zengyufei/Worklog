@@ -6,8 +6,11 @@
     import { getDb } from "$lib/db";
     import { exportDatabaseToFile } from "$lib/db/export";
     import { notifications } from "$lib/hooks/notifications.svelte";
+    import { useAppZoom } from "$lib/hooks/app-zoom.svelte";
+    import ZoomControls from "$lib/components/app/layout/workspace/zoom-controls.svelte";
 
     const workspace = useWorkspace();
+    const appZoom = useAppZoom();
 
     const workspaceName = $derived(workspace.meta?.name ?? "Workspace");
     const workspacePath = $derived(workspace.path ?? "Not available");
@@ -112,6 +115,18 @@
                 size: "sm",
             }}
         /> -->
+    </section>
+
+    <!-- Application Zoom -->
+    <section class="workspace-settings-section">
+        <h2>Application Zoom</h2>
+        <p style="margin-bottom: var(--cds-spacing-05); color: var(--cds-text-secondary);">
+            Adjust the global scale of the application interface.
+            You can also use <kbd>Ctrl</kbd> + <kbd>+</kbd> and <kbd>Ctrl</kbd> + <kbd>-</kbd> anywhere.
+        </p>
+        <div style="max-width: 16rem;">
+            <ZoomControls />
+        </div>
     </section>
 </main>
 
