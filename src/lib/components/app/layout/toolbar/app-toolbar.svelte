@@ -20,6 +20,7 @@
     } from "carbon-components-svelte";
 
     import { Theme } from "carbon-components-svelte";
+    import { syncState } from "$lib/sync/sync-scheduler.svelte";
 
     type WindowControlAction = "minimize" | "toggle-maximize" | "close";
 
@@ -123,6 +124,16 @@
 
     // @ts-ignore
     const version = __APP_VERSION__;
+
+    const formattedSyncTime = $derived.by(() => {
+        if (syncState.isSyncing) return "Syncing...";
+        if (!syncState.nextSyncAt) return "";
+        const totalSeconds = Math.ceil(syncState.timeRemainingMs / 1000);
+        if (totalSeconds <= 0) return "Syncing soon...";
+        const m = Math.floor(totalSeconds / 60);
+        const s = totalSeconds % 60;
+        return `Next sync in ${m}m ${s}s`;
+    });
 </script>
 
 <Theme bind:theme persist persistKey="__carbon-theme" />
@@ -143,6 +154,12 @@
         data-tauri-drag-region
         ondblclick={() => runWindowControl("toggle-maximize")}
     ></div>
+
+    {#if formattedSyncTime}
+        <div class="sync-status">
+            {formattedSyncTime}
+        </div>
+    {/if}
 
     <HeaderUtilities>
         <Button
@@ -211,5 +228,16 @@
 
     :global(.bx--header__global) {
         margin-left: 0;
+    }
+    .sync-status {
+        position: absolute;
+        right: 25rem;
+        top: 0;
+        height: 3rem;
+        display: flex;
+        align-items: center;
+        font-size: 0.75rem;
+        color: var(--cds-text-secondary);
+        opacity: 0.8;
     }
 </style>

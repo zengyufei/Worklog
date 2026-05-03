@@ -1,16 +1,75 @@
 # Worklog : Local-first Desktop Project Manager
 
-[
-[
-
-<img width="1922" height="818" alt="ChatGPT Image Apr 27, 2026, 04_45_44 PM" src="https://github.com/user-attachments/assets/aee54de1-58de-4bca-a3f4-246ec4dd4713" />
+<img width="1922" height="818" alt="Worklog banner" src="https://github.com/user-attachments/assets/aee54de1-58de-4bca-a3f4-246ec4dd4713" />
 
 ***
 
 Worklog is a local-first desktop project manager for small development teams.
 It is designed for fast, keyboard-driven planning with a Kanban workflow, transparent local data, and no cloud dependency for core usage.
 
-<img width="1920" height="1045" alt="image" src="https://github.com/user-attachments/assets/c8da5403-76b6-4b9b-8915-8ff4805a2a76" />
+<table>
+  <tr>
+    <td><img src="https://github.com/user-attachments/assets/d594e8a5-478c-481d-8c85-77a51831994c" alt="Kanban board view" /></td>
+    <td><img src="https://github.com/user-attachments/assets/5f490ae9-9a70-4d48-a857-2a931747d9d3" alt="Board detail" /></td>
+    <td><img src="https://github.com/user-attachments/assets/ef247d55-a48c-40dd-93d8-81e4d2f6accb" alt="Ticket detail panel" /></td>
+    <td><img src="https://github.com/user-attachments/assets/b440515b-fc2e-47fc-a829-ee895010b133" alt="Table view" /></td>
+  </tr>
+  <tr>
+    <td><img src="https://github.com/user-attachments/assets/c24f6428-204c-49e6-962e-f37fee2ed120" alt="Timeline view" /></td>
+    <td><img src="https://github.com/user-attachments/assets/86a387f0-abce-4e89-bbac-0fb3e36212b5" alt="Workspace settings" /></td>
+    <td><img src="https://github.com/user-attachments/assets/dff3f483-0a7d-4d7e-ac1f-41ce2eb95403" alt="Command palette" /></td>
+    <td></td>
+  </tr>
+</table>
+
+***
+
+## 🎉 Latest Release — v1.2
+
+> **[Download v1.2.0 for your platform →](https://github.com/regisx001/Worklog/releases/tag/app-v1.2.0)**
+
+v1.2 is a major power-user update that moves Worklog beyond basic task management and into deeper workflow integration. It introduces background Git synchronization, adaptive UI scaling, and direct board management — all without touching the local-first, offline-first foundation.
+
+<table>
+  <tr>
+    <td align="center">
+      <img src="https://github.com/user-attachments/assets/d419804a-734a-4398-99e0-89fdbafe66af" alt="Worklog Kanban board with Backlog, To Do, In Progress, and Done columns" />
+      <br /><strong>Kanban Board — full workspace overview</strong>
+    </td>
+    <td align="center">
+      <img src="https://github.com/user-attachments/assets/dbbf244f-0700-494c-a0ea-78895de22f00" alt="Git Sync settings panel with remote URL, access token, branch, and auto-sync toggle" />
+      <br /><strong>Git Auto-Sync — configure and forget</strong>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="https://github.com/user-attachments/assets/126f120e-8453-4cba-bc39-15ccc1921da4" alt="Application Zoom settings showing 190% scale with Ctrl+/- hint" />
+      <br /><strong>Global Zoom — 50 % to 200 % with keyboard shortcuts</strong>
+    </td>
+    <td align="center">
+      <img src="https://github.com/user-attachments/assets/fc58155e-e808-46b1-9fc5-8daf260b426d" alt="Board context menu showing Open Board, Edit Board, Copy Board ID, and Delete Board" />
+      <br /><strong>Board Context Menu — rename and edit without leaving the sidebar</strong>
+    </td>
+  </tr>
+</table>
+
+### What shipped in v1.2
+
+**🔄 Git Auto-Sync**
+Background scheduler keeps your local workspace in parity with a private GitHub repository. Configure the remote URL, personal access token, branch, and sync interval (1 minute to 6 hours) directly from Settings → Git Sync. Uses a pull-before-push strategy to keep history clean. Toggle auto-sync on or off at any time.
+
+**🔍 Global Application Zoom**
+Scale the entire UI from 50 % to 200 % using the Zoom settings tab or live keyboard shortcuts (`Ctrl/Cmd` + `+`, `-`, `0`). The preference is persisted locally and restored on the next launch, so the app always opens at the scale you chose.
+
+**✏️ Edit Board from Sidebar**
+Right-click any board in the sidebar to open a context menu with options to open, edit, copy the board ID, or delete. The Edit Board action lets you update the board name and description inline without navigating away from your current view.
+
+**🛠️ Schema Migration Infrastructure**
+A professional SQLite migration system (now at schema version 11) ensures that every future feature addition safely migrates existing data with no manual steps and no data loss.
+
+**Full changelog:** https://github.com/regisx001/Worklog/compare/app-v1.1.0...app-v1.2.0
+
+***
 
 ## What Worklog Is
 
@@ -44,11 +103,15 @@ The product direction centers on:
 The app already supports:
 
 - workspace, board, and ticket management
-- a Kanban board with Todo, In Progress, and Done columns
+- a Kanban board with Backlog, Todo, In Progress, and Done columns
 - ticket details with inline editing and comments
-- board and ticket context actions
+- board and ticket context actions via right-click menus
 - command palette and keyboard shortcuts
 - workspace persistence with restore on startup
+- background Git auto-sync with configurable intervals and pull-before-push strategy
+- global application zoom (50 % – 200 %) with keyboard shortcuts and persistence
+- Edit Board action from the sidebar context menu
+- SQLite schema migration infrastructure for safe, lossless upgrades
 
 ## Future Plans
 
@@ -173,12 +236,15 @@ bun run tauri:build
 
 ## Keyboard Shortcuts
 
-- Ctrl/Cmd + K: open command palette
-- Ctrl/Cmd + N: create ticket
-- Ctrl/Cmd + B: open create board dialog
-- Ctrl/Cmd + S: manual sync action
-- M on a focused ticket: move it to the next status
-- Escape: close the ticket detail panel
+- `Ctrl/Cmd` + `K`: open command palette
+- `Ctrl/Cmd` + `N`: create ticket
+- `Ctrl/Cmd` + `B`: open create board dialog
+- `Ctrl/Cmd` + `S`: manual sync action
+- `Ctrl/Cmd` + `+`: zoom in
+- `Ctrl/Cmd` + `-`: zoom out
+- `Ctrl/Cmd` + `0`: reset zoom to 100 %
+- `M` on a focused ticket: move it to the next status
+- `Escape`: close the ticket detail panel
 
 ## Prerequisites
 
