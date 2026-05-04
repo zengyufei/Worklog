@@ -12,12 +12,16 @@
             return;
         }
 
-        const firstBoard = boardsApi.boards[0];
-        if (!firstBoard) {
+        const lastBoardId = localStorage.getItem("worklog:last_board_id");
+        const boardToOpen = lastBoardId 
+            ? boardsApi.boards.find(b => b.id === lastBoardId) || boardsApi.boards[0]
+            : boardsApi.boards[0];
+
+        if (!boardToOpen) {
             return;
         }
 
-        void goto(`/workspace/${firstBoard.id}`, { replaceState: true });
+        void goto(`/workspace/${boardToOpen.id}`, { replaceState: true });
     });
 </script>
 

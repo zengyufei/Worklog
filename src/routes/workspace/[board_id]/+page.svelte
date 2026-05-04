@@ -21,16 +21,43 @@
         void goto("/workspace");
     }
 
+    let selectedTab = $state(0);
+    let lastRestoredBoardId = $state<string | null>(null);
+
     $effect(() => {
         if (!board) {
             return;
         }
+
+        // Save last board ID globally
+        localStorage.setItem("worklog:last_board_id", board.id);
 
         if (boardsApi.active?.id === board.id) {
             return;
         }
 
         boardsApi.setActive(board);
+    });
+
+    // Save/Restore tab index (Board-specific)
+    $effect(() => {
+        if (!board) return;
+
+        if (lastRestoredBoardId !== board.id) {
+            const saved = localStorage.getItem(`worklog:last_tab_index:${board.id}`);
+            if (saved !== null) {
+                selectedTab = parseInt(saved, 10);
+            } else {
+                // Global fallback or default to Kanban (0)
+                const globalSaved = localStorage.getItem("worklog:last_tab_index");
+                selectedTab = globalSaved !== null ? parseInt(globalSaved, 10) : 0;
+            }
+            lastRestoredBoardId = board.id;
+        } else {
+            // Save both board-specific and global preference
+            localStorage.setItem(`worklog:last_tab_index:${board.id}`, selectedTab.toString());
+            localStorage.setItem("worklog:last_tab_index", selectedTab.toString());
+        }
     });
 </script>
 
@@ -55,7 +82,7 @@
         </header>
 
         <section class="workspace-board-content" aria-label="Board content">
-            <Tabs autoWidth>
+            <Tabs autoWidth bind:selected={selectedTab}>
                 <Tab label="Board" icon={Dashboard} />
                 <Tab label="Table" icon={Table} />
                 <Tab label="Timeline" icon={ChartBarFloating} />

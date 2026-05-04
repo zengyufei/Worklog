@@ -973,21 +973,4 @@
         color: var(--cds-text-helper);
         margin: 0;
     }
-
-    /* Custom scrollbar */
-    .content-body::-webkit-scrollbar {
-        width: 10px;
-    }
-    .content-body::-webkit-scrollbar-track {
-        background: transparent;
-    }
-    .content-body::-webkit-scrollbar-thumb {
-        background: var(--cds-ui-03);
-        border: 2px solid transparent;
-        background-clip: padding-box;
-        border-radius: 10px;
-    }
-    .content-body::-webkit-scrollbar-thumb:hover {
-        background: var(--cds-ui-04);
-    }
 </style>
