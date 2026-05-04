@@ -9,6 +9,9 @@ on:
 permissions:
   contents: write
 
+env:
+  RUSTC_WRAPPER: sccache
+
 jobs:
   publish-tauri:
     permissions:
@@ -30,11 +33,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Bun setup + cache
       - name: setup bun
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
 
+      - name: cache bun
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.bun/install/cache
+            node_modules
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+
+      # Rust toolchain
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
 
@@ -42,23 +55,42 @@ jobs:
         if: matrix.platform == 'macos-latest'
         run: rustup target add aarch64-apple-darwin x86_64-apple-darwin
 
+      # sccache (major speedup)
+      - name: setup sccache
+        uses: mozilla-actions/sccache-action@v0.0.4
+
+      - name: cache sccache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/sccache
+          key: ${{ runner.os }}-sccache-${{ hashFiles('**/Cargo.lock') }}
+
+      # Rust cache (you already had this, keep it)
       - name: Rust cache
         uses: swatinem/rust-cache@v2
         with:
           workspaces: ./src-tauri -> target
 
+      # Linux deps
       - name: install dependencies (ubuntu only)
         if: matrix.platform == 'ubuntu-22.04'
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
 
+      # Frontend install (now cached)
       - name: install frontend dependencies
         run: bun install --frozen-lockfile
 
+      # Optional: build frontend once explicitly (avoids rebuild inside tauri)
+      - name: build frontend
+        run: bun run build
+
+      # Tauri build
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SCCACHE_GHA_ENABLED: "true"
         with:
           tagName: app-v__VERSION__
           releaseName: Worklog v__VERSION__
@@ -66,105 +98,3 @@ jobs:
           releaseDraft: false
           prerelease: false
           args: ${{ matrix.args }}
-
-  # build-aur:
-  #   if: startsWith(github.ref, 'refs/tags/app-v')
-  #   needs: publish-tauri
-  #   runs-on: ubuntu-22.04
-
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v4
-
-  #     # Extract version from tag (app-v1.2.3 → 1.2.3)
-  #     - name: Extract version
-  #       id: version
-  #       run: |
-  #         VERSION=$(echo "${GITHUB_REF_NAME}" | sed 's/app-v//')
-  #         echo "version=$VERSION" >> $GITHUB_OUTPUT
-
-  #     # Download Linux release asset and compute checksum
-  #     - name: Download .deb from release
-  #       id: asset
-  #       run: |
-  #         VERSION=${{ steps.version.outputs.version }}
-  #         DEB_NAME="worklog_${VERSION}_amd64.deb"
-  #         ASSET_URL="https://github.com/${{ github.repository }}/releases/download/app-v${VERSION}/${DEB_NAME}"
-
-  #         curl -fL -o "${DEB_NAME}" "${ASSET_URL}"
-
-  #         SHA256=$(sha256sum "${DEB_NAME}" | awk '{print $1}')
-  #         echo "deb_name=${DEB_NAME}" >> $GITHUB_OUTPUT
-  #         echo "sha256=${SHA256}" >> $GITHUB_OUTPUT
-
-  #     # Generate PKGBUILD
-  #     - name: Generate PKGBUILD
-  #       run: |
-  #         VERSION=${{ steps.version.outputs.version }}
-  #         SHA256=${{ steps.asset.outputs.sha256 }}
-
-  #         cat <<EOF > PKGBUILD
-  #         pkgname=worklog-bin
-  #         pkgver=${VERSION}
-  #         pkgrel=1
-  #         arch=('x86_64')
-  #         depends=(
-  #           'gtk3'
-  #           'webkit2gtk-4.1'
-  #           'libsoup3'
-  #           'glib2'
-  #           'gcc-libs'
-  #         )
-  #         source=("https://github.com/${{ github.repository }}/releases/download/app-v\${pkgver}/worklog_\${pkgver}_amd64.deb")
-  #         sha256sums=('${SHA256}')
-
-  #         package() {
-  #           cd "\$srcdir"
-  #           ar x worklog_\${pkgver}_amd64.deb
-  #           tar -xf data.tar.* -C "\$pkgdir"
-  #         }
-  #         EOF
-
-  #     # Generate .SRCINFO and validate package build using Arch container
-  #     - name: Generate .SRCINFO and Validate Build (Arch)
-  #       uses: addnab/docker-run-action@v3
-  #       with:
-  #         image: archlinux:latest
-  #         options: -v ${{ github.workspace }}:/workspace
-  #         run: |
-  #           pacman -Sy --noconfirm base-devel
-  #           WS_UID=$(stat -c '%u' /workspace)
-  #           WS_GID=$(stat -c '%g' /workspace)
-
-  #           if ! getent group "$WS_GID" >/dev/null; then
-  #             groupadd -g "$WS_GID" buildergrp
-  #           fi
-
-  #           if ! id -u builder >/dev/null 2>&1; then
-  #             useradd -m -u "$WS_UID" -g "$WS_GID" builder
-  #           fi
-
-  #           su builder -c 'cd /workspace && makepkg --printsrcinfo > .SRCINFO && makepkg -f --nodeps --noconfirm'
-
-  #     # Upload AUR-ready files
-  #     - name: Upload AUR package
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: worklog-aur-package
-  #         path: |
-  #           PKGBUILD
-  #           .SRCINFO
-  #           worklog_*.deb
-  #           *.pkg.tar.zst
-
-  #     - name: Bundle AUR release asset
-  #       run: |
-  #         VERSION=${{ steps.version.outputs.version }}
-  #         tar -czf worklog-aur-package-${VERSION}.tar.gz PKGBUILD .SRCINFO worklog_*.deb *.pkg.tar.zst
-
-  #     - name: Upload AUR bundle to GitHub release
-  #       env:
-  #         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #       run: |
-  #         VERSION=${{ steps.version.outputs.version }}
-  #         gh release upload "app-v${VERSION}" "worklog-aur-package-${VERSION}.tar.gz" --clobber
