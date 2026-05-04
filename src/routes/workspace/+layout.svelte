@@ -5,6 +5,7 @@
 
     import WorkspaceSidebar from "$lib/components/app/layout/workspace/workspace-sidebar.svelte";
     import { useBoards } from "$lib/hooks/boards.svelte";
+    import { useTicketTypes } from "$lib/hooks/ticket-types.svelte";
     import { setWorkspaceShellContext } from "$lib/hooks/workspace-shell-context";
     import { useWorkspace } from "$lib/hooks/workspace.svelte";
     import { useCommandPalette } from "$lib/hooks/command-palette.svelte";
@@ -16,9 +17,10 @@
     let { children } = $props();
     const workspace = useWorkspace();
     const boardsApi = useBoards(() => workspace.path);
+    const ticketTypesApi = useTicketTypes(() => workspace.path);
     const palette = useCommandPalette();
 
-    setWorkspaceShellContext({ workspace, boardsApi });
+    setWorkspaceShellContext({ workspace, boardsApi, ticketTypesApi });
 
     let lastLoadedWorkspacePath = $state<string | null>(null);
     let boardLoadError = $state<string | null>(null);
@@ -55,7 +57,10 @@
         lastLoadedWorkspacePath = workspacePath;
         boardLoadError = null;
 
-        void boardsApi.load().catch((error) => {
+        void Promise.all([
+            boardsApi.load(),
+            ticketTypesApi.load()
+        ]).catch((error) => {
             boardLoadError = String(error);
             lastLoadedWorkspacePath = null;
         });

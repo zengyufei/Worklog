@@ -7,10 +7,17 @@
         TICKET_PRIORITY_CONFIG,
     } from "$lib/components/app/types";
 
+    import { getWorkspaceShellContext } from "$lib/hooks/workspace-shell-context";
+
     const state = getGanttState();
+    const context = getWorkspaceShellContext();
+    const ticketTypesApi = context?.ticketTypesApi;
 </script>
 
 {#if state.hoveredTicket}
+    {@const customType = ticketTypesApi?.types?.find(
+        (t) => t.id === state.hoveredTicket?.ticket_type,
+    )}
     <div
         class="gantt-tip"
         style="left:{state.tooltipX + 14}px;top:{state.tooltipY - 8}px"
@@ -23,12 +30,28 @@
             >
         </div>
         <div class="tip-row">
-            <span class="tip-label">Priority</span>
+            <span class="tip-label">Type</span>
             <Tag
-                type={TICKET_PRIORITY_CONFIG[state.hoveredTicket.priority as keyof typeof TICKET_PRIORITY_CONFIG]?.tagColor || "blue"}
+                style="background-color: {customType?.color ||
+                    '#525252'}; color: white;"
                 size="sm"
             >
-                {TICKET_PRIORITY_CONFIG[state.hoveredTicket.priority as keyof typeof TICKET_PRIORITY_CONFIG]?.label}
+                {customType?.name || state.hoveredTicket.ticket_type}
+            </Tag>
+        </div>
+        <div class="tip-row">
+            <span class="tip-label">Priority</span>
+            <Tag
+                type={TICKET_PRIORITY_CONFIG[
+                    state.hoveredTicket
+                        .priority as keyof typeof TICKET_PRIORITY_CONFIG
+                ]?.tagColor || "blue"}
+                size="sm"
+            >
+                {TICKET_PRIORITY_CONFIG[
+                    state.hoveredTicket
+                        .priority as keyof typeof TICKET_PRIORITY_CONFIG
+                ]?.label}
             </Tag>
         </div>
         <div class="tip-row">
@@ -44,10 +67,13 @@
                 <Calendar size={12} />
                 <span class="tip-label">Start</span>
                 <span class="tip-val"
-                    >{new Date(state.hoveredTicket.start_date).toLocaleDateString(
-                        "en-US",
-                        { month: "short", day: "numeric", year: "numeric" },
-                    )}</span
+                    >{new Date(
+                        state.hoveredTicket.start_date,
+                    ).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                    })}</span
                 >
             </div>
         {/if}

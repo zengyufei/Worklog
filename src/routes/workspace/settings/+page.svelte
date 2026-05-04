@@ -40,18 +40,36 @@
         Search,
         ArrowLeft,
         Renew,
+        MagicWand,
+        ColorPalette,
+        TrashCan,
+        Add,
+        Checkmark,
+        Close,
     } from "carbon-icons-svelte";
+    import { getWorkspaceShellContext } from "$lib/hooks/workspace-shell-context";
 
     type SettingsCategory =
         | "general"
         | "appearance"
+        | "customization"
         | "data"
         | "sync"
         | "advanced";
     let activeCategory = $state<SettingsCategory>("general");
+
+    const categories = [
+        { id: "general", label: "General", icon: Settings },
+        { id: "appearance", label: "Appearance", icon: View },
+        { id: "customization", label: "Customization", icon: MagicWand },
+        { id: "data", label: "Data Management", icon: DataBase },
+        { id: "sync", label: "Synchronization", icon: Cloud },
+        { id: "advanced", label: "Advanced", icon: Code },
+    ] as const;
     let searchQuery = $state("");
 
     const workspace = useWorkspace();
+    const { ticketTypesApi } = getWorkspaceShellContext();
     const syncConfig = useSyncConfig();
     const appZoom = useAppZoom();
 
@@ -62,6 +80,40 @@
 
     let exportFormat = $state<ExportFormat>("json");
     let exportMode = $state<ExportMode>("single-file");
+
+    // ── Customization State ───────────────────────────────────────────────
+    let newTypeName = $state("");
+    let newTypeColor = $state("#525252");
+    let editingTypeId = $state<string | null>(null);
+    let editingTypeName = $state("");
+    let editingTypeColor = $state("");
+
+    async function handleAddType() {
+        if (!newTypeName.trim()) return;
+        await ticketTypesApi.create({
+            name: newTypeName.trim(),
+            color: newTypeColor,
+            is_default: ticketTypesApi.types.length === 0,
+        });
+        newTypeName = "";
+    }
+
+    async function handleUpdateType(id: string) {
+        if (!editingTypeName.trim()) return;
+        await ticketTypesApi.update(id, {
+            name: editingTypeName.trim(),
+            color: editingTypeColor,
+        });
+        editingTypeId = null;
+    }
+
+    async function handleDeleteType(id: string) {
+        await ticketTypesApi.remove(id);
+    }
+
+    async function handleSetDefaultType(id: string) {
+        await ticketTypesApi.update(id, { is_default: true });
+    }
 
     // ── Sync state ─────────────────────────────────────────────────────────
     let syncRemoteUrl = $state("");
@@ -321,15 +373,6 @@
 
     // @ts-ignore
     const version = __APP_VERSION__;
-
-    const categories = [
-        { id: "general", label: "General", icon: Settings },
-        { id: "appearance", label: "Appearance", icon: View },
-        { id: "data", label: "Data Management", icon: DataBase },
-        { id: "sync", label: "Synchronization", icon: Cloud },
-        { id: "advanced", label: "Advanced", icon: Code },
-    ] as const;
-
     function matchesSearch(text: string) {
         if (!searchQuery) return true;
         return text.toLowerCase().includes(searchQuery.toLowerCase());
@@ -456,6 +499,144 @@
                             </p>
                             <div class="control-box">
                                 <ZoomControls />
+                            </div>
+                        </section>
+                    {/if}
+                </div>
+            {/if}
+
+            <!-- ── Customization Category ──────────────────────────────── -->
+            {#if activeCategory === "customization"}
+                <div class="category-view">
+                    {#if matchesSearch("Ticket Types Customization Colors Icons")}
+                        <section class="settings-section">
+                            <h2>Ticket Types</h2>
+                            <p class="section-desc">
+                                Manage the types of tickets available in your
+                                workspace. Each type can have its own color and
+                                icon.
+                            </p>
+
+                            <div class="type-management-list">
+                                {#each ticketTypesApi.types as type}
+                                    <div
+                                        class="type-item"
+                                        class:is-default={type.is_default}
+                                    >
+                                        {#if editingTypeId === type.id}
+                                            <div class="type-edit-form">
+                                                <TextInput
+                                                    size="sm"
+                                                    bind:value={editingTypeName}
+                                                />
+                                                <input
+                                                    type="color"
+                                                    bind:value={
+                                                        editingTypeColor
+                                                    }
+                                                    class="color-input-sm"
+                                                />
+                                                <Button
+                                                    size="small"
+                                                    kind="ghost"
+                                                    icon={Checkmark}
+                                                    iconDescription="Save"
+                                                    onclick={() =>
+                                                        handleUpdateType(
+                                                            type.id,
+                                                        )}
+                                                />
+                                                <Button
+                                                    size="small"
+                                                    kind="ghost"
+                                                    icon={Close}
+                                                    iconDescription="Cancel"
+                                                    onclick={() =>
+                                                        (editingTypeId = null)}
+                                                />
+                                            </div>
+                                        {:else}
+                                            <div class="type-display">
+                                                <div
+                                                    class="type-color-dot"
+                                                    style="background-color: {type.color}"
+                                                ></div>
+                                                <span class="type-name"
+                                                    >{type.name}</span
+                                                >
+                                                {#if type.is_default}
+                                                    <Tag size="sm" type="blue"
+                                                        >Default</Tag
+                                                    >
+                                                {/if}
+                                            </div>
+                                            <div class="type-actions">
+                                                {#if !type.is_default}
+                                                    <Button
+                                                        size="small"
+                                                        kind="ghost"
+                                                        onclick={() =>
+                                                            handleSetDefaultType(
+                                                                type.id,
+                                                            )}
+                                                    >
+                                                        Set Default
+                                                    </Button>
+                                                {/if}
+                                                <Button
+                                                    size="small"
+                                                    kind="ghost"
+                                                    icon={Code}
+                                                    iconDescription="Edit"
+                                                    onclick={() => {
+                                                        editingTypeId = type.id;
+                                                        editingTypeName =
+                                                            type.name;
+                                                        editingTypeColor =
+                                                            type.color;
+                                                    }}
+                                                />
+                                                <Button
+                                                    size="small"
+                                                    kind="ghost"
+                                                    icon={TrashCan}
+                                                    iconDescription="Delete"
+                                                    onclick={() =>
+                                                        handleDeleteType(
+                                                            type.id,
+                                                        )}
+                                                />
+                                            </div>
+                                        {/if}
+                                    </div>
+                                {/each}
+                            </div>
+
+                            <div class="add-type-form">
+                                <h3>Add New Type</h3>
+                                <div class="add-type-inputs">
+                                    <TextInput
+                                        labelText="Name"
+                                        placeholder="e.g. Research"
+                                        bind:value={newTypeName}
+                                    />
+                                    <div class="color-picker-group">
+                                        <label for="new-type-color">Color</label
+                                        >
+                                        <input
+                                            id="new-type-color"
+                                            type="color"
+                                            bind:value={newTypeColor}
+                                        />
+                                    </div>
+                                    <Button
+                                        kind="secondary"
+                                        icon={Add}
+                                        onclick={handleAddType}
+                                    >
+                                        Add Type
+                                    </Button>
+                                </div>
                             </div>
                         </section>
                     {/if}
@@ -972,5 +1153,109 @@
         font-size: 0.8125rem;
         color: var(--cds-text-helper);
         margin: 0;
+    }
+
+    /* ── Customization Category ────────────────────────────────────────── */
+    .type-management-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        background: var(--cds-ui-02);
+        padding: 0.5rem;
+        border-radius: 4px;
+        border: 1px solid var(--cds-ui-03);
+    }
+
+    .type-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+        background: var(--cds-ui-01);
+        border-radius: 4px;
+        border: 1px solid transparent;
+        transition: all 0.1s ease;
+    }
+
+    .type-item:hover {
+        border-color: var(--cds-ui-03);
+    }
+
+    .type-item.is-default {
+        border-left: 4px solid var(--cds-interactive-01);
+    }
+
+    .type-display,
+    .type-edit-form {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex: 1;
+    }
+
+    .type-color-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .type-name {
+        font-size: 0.875rem;
+        color: var(--cds-text-primary);
+        font-weight: 500;
+    }
+
+    .type-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .color-input-sm {
+        width: 24px;
+        height: 24px;
+        padding: 0;
+        border: none;
+        background: none;
+        cursor: pointer;
+    }
+
+    .add-type-form {
+        margin-top: 1rem;
+        padding: 1.5rem;
+        background: var(--cds-ui-02);
+        border-radius: 4px;
+        border: 1px solid var(--cds-ui-03);
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .add-type-inputs {
+        display: flex;
+        align-items: flex-end;
+        gap: 1.5rem;
+    }
+
+    .color-picker-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .color-picker-group label {
+        font-size: 0.75rem;
+        color: var(--cds-text-secondary);
+    }
+
+    .color-picker-group input {
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        border: 1px solid var(--cds-ui-03);
+        background: var(--cds-ui-01);
+        border-radius: 4px;
+        cursor: pointer;
     }
 </style>

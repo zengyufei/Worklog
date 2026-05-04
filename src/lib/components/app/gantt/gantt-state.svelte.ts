@@ -42,6 +42,7 @@ export class GanttState {
     GROUP_H = 32;
 
     #ticketsHook: any;
+    #ticketTypesApi: any;
     #sortHook = useTicketSort();
 
     searchQuery = $state("");
@@ -57,8 +58,9 @@ export class GanttState {
 
     dragTicketId = $state<string | null>(null);
 
-    constructor(ticketsHook: any) {
+    constructor(ticketsHook: any, ticketTypesApi: any) {
         this.#ticketsHook = ticketsHook;
+        this.#ticketTypesApi = ticketTypesApi;
     }
 
     get filteredTickets(): Ticket[] {
@@ -169,7 +171,8 @@ export class GanttState {
         for (const g of this.groupedTickets) {
             rows.push({ kind: "group", status: g.status, label: g.label, color: g.color, icon: g.icon, count: g.tickets.length });
             for (const t of g.tickets) {
-                rows.push({ kind: "ticket", ticket: t, color: g.color });
+                const customType = this.#ticketTypesApi.types.find((tt: any) => tt.id === t.ticket_type);
+                rows.push({ kind: "ticket", ticket: t, color: customType?.color || g.color });
             }
         }
         return rows;

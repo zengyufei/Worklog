@@ -40,6 +40,8 @@
         TICKET_PRIORITY_CONFIG,
     } from "$lib/components/app/types";
 
+    import { getWorkspaceShellContext } from "$lib/hooks/workspace-shell-context";
+
     let {
         ticket,
         onEdit,
@@ -52,8 +54,11 @@
         onStatusChange?: (id: string, status: TicketStatus) => void;
     } = $props();
 
-    // Carbon icon map for ticket types
-    const typeIconMap: Record<TicketType, any> = {
+    const context = getWorkspaceShellContext();
+    const ticketTypesApi = context?.ticketTypesApi;
+
+    // Carbon icon map for fallback/default icons
+    const typeIconMap: Record<string, any> = {
         feature: StarFilled,
         bug: Debug,
         chore: SettingsAdjust,
@@ -75,8 +80,21 @@
         p3: ArrowDown,
     };
 
-    const typeConfig = $derived(TICKET_TYPE_CONFIG[ticket.ticket_type]);
-    const TypeIcon = $derived(typeIconMap[ticket.ticket_type]);
+    const customType = $derived(
+        ticketTypesApi?.types?.find((t) => t.id === ticket.ticket_type)
+    );
+
+    const typeConfig = $derived({
+        label: customType?.name ?? ticket.ticket_type,
+        color: customType?.color ?? "#525252",
+    });
+
+    const TypeIcon = $derived(
+        (customType?.icon && typeIconMap[customType.icon]) || 
+        typeIconMap[ticket.ticket_type] || 
+        Bookmark
+    );
+
     const priorityConfig = $derived(TICKET_PRIORITY_CONFIG[ticket.priority]);
     const PriorityIcon = $derived(priorityIconMap[ticket.priority]);
 
@@ -200,7 +218,10 @@
                         {priorityConfig.label}
                     </span>
                 </Tag>
-                <Tag size="sm" type={typeConfig.tagColor}>
+                <Tag 
+                    size="sm" 
+                    style="background-color: {typeConfig.color}; color: white;"
+                >
                     <span class="tag-with-icon">
                         <TypeIcon size={12} />
                         {typeConfig.label}

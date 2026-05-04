@@ -1,13 +1,25 @@
 <script lang="ts">
-    import { DataTable, Tag, OverflowMenu, OverflowMenuItem } from "carbon-components-svelte";
-    import { Calendar } from "carbon-icons-svelte";
-    import { getTableState, priorityIconMap, typeIconMap } from "./table-state.svelte";
+    import {
+        DataTable,
+        Tag,
+        OverflowMenu,
+        OverflowMenuItem,
+    } from "carbon-components-svelte";
+    import { Calendar, Bookmark } from "carbon-icons-svelte";
+    import {
+        getTableState,
+        priorityIconMap,
+        typeIconMap,
+    } from "./table-state.svelte";
+    import { getWorkspaceShellContext } from "$lib/hooks/workspace-shell-context";
     import {
         TICKET_PRIORITY_CONFIG,
-        TICKET_TYPE_CONFIG,
         type TicketPriority,
         type TicketType,
     } from "$lib/components/app/types";
+
+    const context = getWorkspaceShellContext();
+    const ticketTypesApi = context?.ticketTypesApi;
 
     const state = getTableState();
 
@@ -65,62 +77,97 @@
                     <svelte:fragment slot="cell" let:row let:cell>
                         {#if cell.key === "title"}
                             <div class="cell-title">
-                                <span class="cell-title-text">{cell.value}</span>
+                                <span class="cell-title-text">{cell.value}</span
+                                >
                                 <span class="cell-title-id">{row.id}</span>
                             </div>
                         {:else if cell.key === "priority"}
-                            {@const PriorityIcon = priorityIconMap[cell.value as TicketPriority]}
+                            {@const PriorityIcon =
+                                priorityIconMap[cell.value as TicketPriority]}
                             <div class="cell-priority">
                                 {#if PriorityIcon}
                                     <PriorityIcon size={14} />
                                 {/if}
                                 <Tag
-                                    type={TICKET_PRIORITY_CONFIG[cell.value as TicketPriority]?.tagColor || "blue"}
+                                    type={TICKET_PRIORITY_CONFIG[
+                                        cell.value as TicketPriority
+                                    ]?.tagColor || "blue"}
                                     size="sm"
                                 >
-                                    {TICKET_PRIORITY_CONFIG[cell.value as TicketPriority]?.label || cell.value}
+                                    {TICKET_PRIORITY_CONFIG[
+                                        cell.value as TicketPriority
+                                    ]?.label || cell.value}
                                 </Tag>
                             </div>
                         {:else if cell.key === "type"}
-                            {@const TypeIcon = typeIconMap[cell.value as TicketType]}
+                            {@const customType = ticketTypesApi?.types?.find(
+                                (t) => t.id === cell.value,
+                            )}
+                            {@const TypeIcon =
+                                (customType?.icon &&
+                                    typeIconMap[
+                                        customType.icon as TicketType
+                                    ]) ||
+                                typeIconMap[cell.value as TicketType] ||
+                                Bookmark}
                             <div class="cell-type">
                                 {#if TypeIcon}
                                     <TypeIcon size={14} />
                                 {/if}
                                 <Tag
-                                    type={TICKET_TYPE_CONFIG[cell.value as TicketType]?.tagColor || "blue"}
+                                    style="background-color: {customType?.color ||
+                                        '#525252'}; color: white;"
                                     size="sm"
                                 >
-                                    {TICKET_TYPE_CONFIG[cell.value as TicketType]?.label || cell.value}
+                                    {customType?.name || cell.value}
                                 </Tag>
                             </div>
                         {:else if cell.key === "labels"}
                             <div class="cell-labels">
                                 {#if Array.isArray(cell.value) && cell.value.length > 0}
                                     {#each cell.value.slice(0, 3) as label}
-                                        <Tag type="outline" size="sm">{label}</Tag>
+                                        <Tag type="outline" size="sm"
+                                            >{label}</Tag
+                                        >
                                     {/each}
                                     {#if cell.value.length > 3}
-                                        <span class="labels-more">+{cell.value.length - 3}</span>
+                                        <span class="labels-more"
+                                            >+{cell.value.length - 3}</span
+                                        >
                                     {/if}
                                 {:else}
                                     <span class="cell-muted">—</span>
                                 {/if}
                             </div>
                         {:else if cell.key === "dueDate"}
-                            {@const due = state.formatDueDate(cell.value, row.status === "done")}
+                            {@const due = state.formatDueDate(
+                                cell.value,
+                                row.status === "done",
+                            )}
                             <div class="cell-due" class:overdue={due.overdue}>
                                 <Calendar size={14} />
                                 <span>{due.text}</span>
                             </div>
                         {:else if cell.key === "created"}
-                            <span class="cell-date">{state.formatRelativeDate(cell.value)}</span>
+                            <span class="cell-date"
+                                >{state.formatRelativeDate(cell.value)}</span
+                            >
                         {:else if cell.key === "actions"}
                             <div class="cell-actions">
                                 <OverflowMenu flipped size="sm">
-                                    <OverflowMenuItem text="Copy ID" on:click={() => copyId(row.id)} />
-                                    <OverflowMenuItem text="Edit ticket" on:click={() => onEdit(row.id)} />
-                                    <OverflowMenuItem danger text="Delete" on:click={() => onDelete(row.id)} />
+                                    <OverflowMenuItem
+                                        text="Copy ID"
+                                        on:click={() => copyId(row.id)}
+                                    />
+                                    <OverflowMenuItem
+                                        text="Edit ticket"
+                                        on:click={() => onEdit(row.id)}
+                                    />
+                                    <OverflowMenuItem
+                                        danger
+                                        text="Delete"
+                                        on:click={() => onDelete(row.id)}
+                                    />
                                 </OverflowMenu>
                             </div>
                         {:else}
@@ -249,7 +296,8 @@
     }
 
     .group-table-wrapper :global(.bx--data-table td) {
-        border-bottom: 1px solid color-mix(in srgb, var(--cds-ui-03) 50%, transparent);
+        border-bottom: 1px solid
+            color-mix(in srgb, var(--cds-ui-03) 50%, transparent);
         padding-top: 0.5rem;
         padding-bottom: 0.5rem;
         vertical-align: middle;

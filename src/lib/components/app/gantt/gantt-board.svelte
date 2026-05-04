@@ -17,12 +17,13 @@
     import TicketDeleteConfirm from "../kanban/ticket-delete-confirm.svelte";
 
     const shell = getWorkspaceShellContext();
+    const { ticketTypesApi } = shell;
     const getWorkspacePath = () => shell.workspace.path;
     const getBoardId = () => shell.boardsApi.active?.id ?? null;
     const ticketsHook = useTickets(getWorkspacePath, getBoardId);
 
     // Initialize State Context
-    const gantt = new GanttState(ticketsHook);
+    const gantt = new GanttState(ticketsHook, ticketTypesApi);
     setGanttState(gantt);
 
     // Auto-scroll to today on mount

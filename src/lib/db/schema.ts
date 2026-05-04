@@ -1,4 +1,4 @@
-export const SCHEMA_VERSION = 11;
+export const SCHEMA_VERSION = 12;
 
 export const CREATE_TABLES = `
   CREATE TABLE IF NOT EXISTS workspace_meta (
@@ -17,6 +17,16 @@ export const CREATE_TABLES = `
     updated_at  TEXT NOT NULL
   );
 
+  CREATE TABLE IF NOT EXISTS ticket_types (
+    id          TEXT PRIMARY KEY,
+    name        TEXT NOT NULL,
+    color       TEXT NOT NULL,
+    icon        TEXT,
+    is_default  INTEGER NOT NULL DEFAULT 0,
+    created_at  TEXT NOT NULL,
+    updated_at  TEXT NOT NULL
+  );
+
   CREATE TABLE IF NOT EXISTS tickets (
     id          TEXT PRIMARY KEY,
     board_id    TEXT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
@@ -26,8 +36,7 @@ export const CREATE_TABLES = `
                 CHECK (status IN ('backlog', 'todo', 'in_progress', 'done')),
     priority    TEXT NOT NULL DEFAULT 'p2'
                 CHECK (priority IN ('p1', 'p2', 'p3')),
-    ticket_type TEXT NOT NULL DEFAULT 'feature'
-                CHECK (ticket_type IN ('feature', 'bug', 'chore', 'improvement', 'epic', 'spike', 'story', 'task', 'subtask', 'incident', 'design', 'documentation')),
+    ticket_type TEXT NOT NULL DEFAULT 'feature',
     position    REAL NOT NULL DEFAULT 0,
     due_date    TEXT,
     start_date  TEXT,
@@ -64,4 +73,5 @@ export const CREATE_TABLES = `
   CREATE INDEX IF NOT EXISTS idx_tickets_priority ON tickets(priority);
   CREATE INDEX IF NOT EXISTS idx_tickets_ticket_type ON tickets(ticket_type);
   CREATE INDEX IF NOT EXISTS idx_tickets_due_date ON tickets(due_date);
+  CREATE INDEX IF NOT EXISTS idx_ticket_types_is_default ON ticket_types(is_default);
 `;
