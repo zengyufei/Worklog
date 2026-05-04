@@ -4,10 +4,10 @@
         TextInput,
         TextArea,
         Dropdown,
-        MultiSelect,
         DatePicker,
         DatePickerInput,
     } from "carbon-components-svelte";
+    import TagManager from "../common/tag-manager.svelte";
     import { untrack } from "svelte";
     import {
         type Ticket,
@@ -186,7 +186,7 @@
         {#if error}
             <p class="modal-error">{error}</p>
         {/if}
-        
+
         <div class="form-main">
             <TextInput
                 labelText="Title *"
@@ -244,10 +244,10 @@
                 </DatePicker>
             </div>
             <div class="attribute-full">
-                <MultiSelect
-                    label="Select tags…"
-                    items={TAG_OPTIONS.map((t) => ({ id: t, text: t }))}
-                    bind:selectedIds={form.tags}
+                <TagManager
+                    label="Tags"
+                    availableTags={TAG_OPTIONS}
+                    bind:selectedTags={form.tags}
                 />
             </div>
         </div>
@@ -270,21 +270,21 @@
     .modal-form {
         display: flex;
         flex-direction: column;
-        gap: 2rem;
-        padding-block: 1rem;
+        gap: 1.25rem;
+        padding-block: 0.5rem;
     }
 
     .form-main {
         display: flex;
         flex-direction: column;
-        gap: 1.5rem;
+        gap: 1rem;
     }
 
     .form-attributes {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 1.5rem;
-        padding-top: 1.5rem;
+        gap: 1rem;
+        padding-top: 1rem;
         border-top: 1px solid var(--cds-ui-03);
     }
 
