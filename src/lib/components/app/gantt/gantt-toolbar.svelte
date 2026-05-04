@@ -1,8 +1,14 @@
 <script lang="ts">
-    import { Toolbar, ToolbarContent, ToolbarSearch, Button, Dropdown } from "carbon-components-svelte";
+    import {
+        Toolbar,
+        ToolbarContent,
+        ToolbarSearch,
+        Button,
+        Dropdown,
+    } from "carbon-components-svelte";
     import { getGanttState } from "./gantt-state.svelte";
     import { useTicketSort } from "$lib/hooks/ticket-sort.svelte";
-    import { ArrowUp, ArrowDown } from "carbon-icons-svelte";
+    import { SortAscending, SortDescending } from "carbon-icons-svelte";
 
     const state = getGanttState();
     const sortHook = useTicketSort();
@@ -41,9 +47,9 @@
                     onclick={() => sortHook.toggleOrder()}
                 >
                     {#if sortHook.sortOrder === "asc"}
-                        <ArrowUp />
+                        <SortAscending />
                     {:else}
-                        <ArrowDown />
+                        <SortDescending />
                     {/if}
                 </Button>
             </div>

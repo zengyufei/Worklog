@@ -17,7 +17,7 @@
         SelectItem,
         Button as CarbonButton,
     } from "carbon-components-svelte";
-    import { ArrowUp, ArrowDown } from "carbon-icons-svelte";
+    import { SortAscending, SortDescending } from "carbon-icons-svelte";
     import {
         type Ticket,
         type TicketStatus,
@@ -312,9 +312,9 @@
                     onclick={() => sortHook.toggleOrder()}
                 >
                     {#if sortHook.sortOrder === "asc"}
-                        <ArrowUp />
+                        <SortAscending />
                     {:else}
-                        <ArrowDown />
+                        <SortDescending />
                     {/if}
                 </CarbonButton>
             </div>

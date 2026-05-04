@@ -8,6 +8,7 @@
         DatePicker,
         DatePickerInput,
     } from "carbon-components-svelte";
+    import { untrack } from "svelte";
     import {
         type Ticket,
         type TicketStatus,
@@ -63,6 +64,17 @@
         tags: [],
     });
 
+    let initialForm = $state("");
+    let showExitConfirm = $state(false);
+
+    function getFormSnapshot() {
+        return JSON.stringify(form);
+    }
+
+    function checkDirty() {
+        return initialForm !== getFormSnapshot();
+    }
+
     const TAG_OPTIONS = [
         "frontend",
         "backend",
@@ -81,29 +93,33 @@
     // Reset form when modal opens
     $effect(() => {
         if (open) {
-            error = null;
-            if (ticket) {
-                form = {
-                    id: ticket.id,
-                    title: ticket.title,
-                    description: ticket.description,
-                    priority: ticket.priority,
-                    ticketType: ticket.ticket_type,
-                    startDate: ticket.start_date ?? "",
-                    dueDate: ticket.due_date ?? "",
-                    tags: ticket.labels ?? [],
-                };
-            } else {
-                form = {
-                    title: "",
-                    description: "",
-                    priority: "p2",
-                    ticketType: "feature",
-                    startDate: "",
-                    dueDate: "",
-                    tags: [],
-                };
-            }
+            untrack(() => {
+                error = null;
+                if (ticket) {
+                    form = {
+                        id: ticket.id,
+                        title: ticket.title,
+                        description: ticket.description,
+                        priority: ticket.priority,
+                        ticketType: ticket.ticket_type,
+                        startDate: ticket.start_date ?? "",
+                        dueDate: ticket.due_date ?? "",
+                        tags: ticket.labels ?? [],
+                    };
+                } else {
+                    form = {
+                        title: "",
+                        description: "",
+                        priority: "p2",
+                        ticketType: "feature",
+                        startDate: "",
+                        dueDate: "",
+                        tags: [],
+                    };
+                }
+                // Capture the state AFTER the form has been populated
+                initialForm = getFormSnapshot();
+            });
         }
     });
 
@@ -123,12 +139,26 @@
                 tags: form.tags,
                 status: defaultStatus,
             });
+            initialForm = getFormSnapshot(); // Update initial state after save
             open = false;
         } catch (e) {
             error = String(e);
         } finally {
             submitting = false;
         }
+    }
+
+    function handleRequestClose() {
+        if (checkDirty()) {
+            showExitConfirm = true;
+        } else {
+            open = false;
+        }
+    }
+
+    function confirmExit() {
+        showExitConfirm = false;
+        open = false;
     }
 </script>
 
@@ -138,89 +168,140 @@
     primaryButtonText={isEditing ? "Save Changes" : "Create Ticket"}
     secondaryButtonText="Cancel"
     on:click:button--primary={handleSubmit}
-    on:click:button--secondary={() => (open = false)}
+    on:click:button--secondary={handleRequestClose}
+    on:open
+    on:close={(e) => {
+        // Only show confirmation if we're actually closing and it's dirty
+        // We use checkDirty() here to avoid constant reactive updates
+        if (open && checkDirty()) {
+            e.preventDefault();
+            showExitConfirm = true;
+        }
+    }}
     primaryButtonDisabled={!form.title.trim() || submitting}
-    size="sm"
+    preventCloseOnClickOutside
+    size="lg"
 >
     <div class="modal-form">
         {#if error}
             <p class="modal-error">{error}</p>
         {/if}
-        <TextInput
-            labelText="Title *"
-            placeholder="e.g. Implement login screen"
-            bind:value={form.title}
-        />
-        <TextArea
-            labelText="Description"
-            placeholder="Describe the ticket…"
-            rows={3}
-            bind:value={form.description}
-        />
-        <div class="form-row">
-            <Dropdown
-                labelText="Priority"
-                bind:selectedId={form.priority}
-                items={[
-                    { id: "p3", text: "Low" },
-                    { id: "p2", text: "Medium" },
-                    { id: "p1", text: "High" },
-                ]}
+        
+        <div class="form-main">
+            <TextInput
+                labelText="Title *"
+                placeholder="e.g. Implement login screen"
+                bind:value={form.title}
             />
-            <Dropdown
-                labelText="Type"
-                bind:selectedId={form.ticketType}
-                items={TICKET_TYPE_OPTIONS.map((typeKey) => ({
-                    id: typeKey,
-                    text: TICKET_TYPE_CONFIG[typeKey].label,
-                }))}
+            <TextArea
+                labelText="Description"
+                placeholder="Describe the ticket…"
+                rows={6}
+                bind:value={form.description}
             />
         </div>
-        <div class="form-row">
-            <DatePicker
-                bind:value={form.startDate}
-                datePickerType="single"
-                dateFormat="Y-m-d"
-            >
-                <DatePickerInput
-                    labelText="Start Date"
-                    placeholder="yyyy-mm-dd"
+
+        <div class="form-attributes">
+            <div class="attribute-row">
+                <Dropdown
+                    labelText="Priority"
+                    bind:selectedId={form.priority}
+                    items={[
+                        { id: "p3", text: "Low" },
+                        { id: "p2", text: "Medium" },
+                        { id: "p1", text: "High" },
+                    ]}
                 />
-            </DatePicker>
-            <DatePicker
-                bind:value={form.dueDate}
-                datePickerType="single"
-                dateFormat="Y-m-d"
-            >
-                <DatePickerInput
-                    labelText="Due Date"
-                    placeholder="yyyy-mm-dd"
+                <Dropdown
+                    labelText="Type"
+                    bind:selectedId={form.ticketType}
+                    items={TICKET_TYPE_OPTIONS.map((typeKey) => ({
+                        id: typeKey,
+                        text: TICKET_TYPE_CONFIG[typeKey].label,
+                    }))}
                 />
-            </DatePicker>
+            </div>
+            <div class="attribute-row">
+                <DatePicker
+                    bind:value={form.startDate}
+                    datePickerType="single"
+                    dateFormat="Y-m-d"
+                >
+                    <DatePickerInput
+                        labelText="Start Date"
+                        placeholder="yyyy-mm-dd"
+                    />
+                </DatePicker>
+                <DatePicker
+                    bind:value={form.dueDate}
+                    datePickerType="single"
+                    dateFormat="Y-m-d"
+                >
+                    <DatePickerInput
+                        labelText="Due Date"
+                        placeholder="yyyy-mm-dd"
+                    />
+                </DatePicker>
+            </div>
+            <div class="attribute-full">
+                <MultiSelect
+                    label="Select tags…"
+                    items={TAG_OPTIONS.map((t) => ({ id: t, text: t }))}
+                    bind:selectedIds={form.tags}
+                />
+            </div>
         </div>
-        <MultiSelect
-            label="Select tags…"
-            items={TAG_OPTIONS.map((t) => ({ id: t, text: t }))}
-            bind:selectedIds={form.tags}
-        />
     </div>
+</Modal>
+
+<Modal
+    danger
+    bind:open={showExitConfirm}
+    modalHeading="Unsaved Changes"
+    primaryButtonText="Discard Changes"
+    secondaryButtonText="Continue Editing"
+    on:click:button--primary={confirmExit}
+    on:click:button--secondary={() => (showExitConfirm = false)}
+>
+    <p>You have unsaved changes. Are you sure you want to discard them?</p>
 </Modal>
 
 <style>
     .modal-form {
         display: flex;
         flex-direction: column;
-        gap: 1rem;
-        padding-block: 0.5rem;
+        gap: 2rem;
+        padding-block: 1rem;
     }
-    .form-row {
+
+    .form-main {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .form-attributes {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 1rem;
+        gap: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--cds-ui-03);
     }
+
+    .attribute-row {
+        display: contents;
+    }
+
+    .attribute-full {
+        grid-column: 1 / -1;
+    }
+
     .modal-error {
         color: var(--cds-support-01);
         font-size: 0.8125rem;
         margin: 0;
+        padding: 0.75rem;
+        background: color-mix(in srgb, var(--cds-support-01) 10%, transparent);
+        border-radius: 4px;
     }
 </style>
