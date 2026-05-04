@@ -18,6 +18,8 @@
         TICKET_TYPE_OPTIONS,
     } from "$lib/components/app/types";
 
+    import { getWorkspaceShellContext } from "$lib/hooks/workspace-shell-context";
+
     let {
         open = $bindable(false),
         ticket = null,
@@ -32,13 +34,15 @@
             title: string;
             description: string;
             priority: TicketPriority;
-            ticketType: TicketType;
+            ticketType: string;
             startDate: string;
             dueDate: string;
             tags: string[];
             status: TicketStatus;
         }) => Promise<void>;
     } = $props();
+
+    const { ticketTypesApi } = getWorkspaceShellContext();
 
     const isEditing = $derived(!!ticket);
 
@@ -50,7 +54,7 @@
         title: string;
         description: string;
         priority: TicketPriority;
-        ticketType: TicketType;
+        ticketType: string;
         startDate: string;
         dueDate: string;
         tags: string[];
@@ -107,11 +111,12 @@
                         tags: ticket.labels ?? [],
                     };
                 } else {
+                    const defaultType = ticketTypesApi.types.find(t => t.is_default) || ticketTypesApi.types[0];
                     form = {
                         title: "",
                         description: "",
                         priority: "p2",
-                        ticketType: "feature",
+                        ticketType: defaultType?.id || "feature",
                         startDate: "",
                         dueDate: "",
                         tags: [],
@@ -215,9 +220,9 @@
                 <Dropdown
                     labelText="Type"
                     bind:selectedId={form.ticketType}
-                    items={TICKET_TYPE_OPTIONS.map((typeKey) => ({
-                        id: typeKey,
-                        text: TICKET_TYPE_CONFIG[typeKey].label,
+                    items={ticketTypesApi.types.map((t) => ({
+                        id: t.id,
+                        text: t.name,
                     }))}
                 />
             </div>

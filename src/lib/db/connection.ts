@@ -25,6 +25,31 @@ export async function getDb(workspacePath: string): Promise<Database> {
     _db = await Database.load(`sqlite:${workspacePath}/.worklog/worklog.db`);
     _dbWorkspacePath = workspacePath;
     await _db.execute(CREATE_TABLES);
+
+    // ── Handle Migrations ──────────────────────────────
+    const { runMigrations } = await import('./migrate');
+    await runMigrations(_db);
+
+    // ── Seed Default Ticket Types if empty ──────────────
+    const typesCount = await _db.select<{ count: number }[]>("SELECT COUNT(*) as count FROM ticket_types");
+    if (typesCount && typesCount[0] && typesCount[0].count === 0) {
+        const now = new Date().toISOString();
+        const defaultTypes = [
+            { id: 'bug', name: 'Bug', color: '#fa4d56', icon: 'bug', is_default: 0 },
+            { id: 'feature', name: 'Feature', color: '#198038', icon: 'star', is_default: 1 },
+            { id: 'chore', name: 'Chore', color: '#525252', icon: 'tools', is_default: 0 },
+            { id: 'task', name: 'Task', color: '#00539a', icon: 'checkmark', is_default: 0 },
+            { id: 'improvement', name: 'Improvement', color: '#8a3ffc', icon: 'upgrade', is_default: 0 },
+        ];
+
+        for (const t of defaultTypes) {
+            await _db.execute(
+                "INSERT INTO ticket_types (id, name, color, icon, is_default, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                [t.id, t.name, t.color, t.icon, t.is_default, now, now]
+            );
+        }
+    }
+
     return _db;
 }
 
