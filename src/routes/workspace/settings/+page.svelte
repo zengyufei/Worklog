@@ -31,6 +31,25 @@
     import type { SyncStatus } from "$lib/sync/types";
     import { useAppZoom } from "$lib/hooks/app-zoom.svelte";
     import ZoomControls from "$lib/components/app/layout/workspace/zoom-controls.svelte";
+    import {
+        Settings,
+        View,
+        DataBase,
+        Cloud,
+        Code,
+        Search,
+        ArrowLeft,
+        Renew,
+    } from "carbon-icons-svelte";
+
+    type SettingsCategory =
+        | "general"
+        | "appearance"
+        | "data"
+        | "sync"
+        | "advanced";
+    let activeCategory = $state<SettingsCategory>("general");
+    let searchQuery = $state("");
 
     const workspace = useWorkspace();
     const syncConfig = useSyncConfig();
@@ -302,410 +321,673 @@
 
     // @ts-ignore
     const version = __APP_VERSION__;
+
+    const categories = [
+        { id: "general", label: "General", icon: Settings },
+        { id: "appearance", label: "Appearance", icon: View },
+        { id: "data", label: "Data Management", icon: DataBase },
+        { id: "sync", label: "Synchronization", icon: Cloud },
+        { id: "advanced", label: "Advanced", icon: Code },
+    ] as const;
+
+    function matchesSearch(text: string) {
+        if (!searchQuery) return true;
+        return text.toLowerCase().includes(searchQuery.toLowerCase());
+    }
 </script>
 
-<main class="workspace-settings">
-    <header class="workspace-settings-header">
-        <h1>Settings</h1>
-        <p>Workspace-level preferences and diagnostics.</p>
-    </header>
+<div class="settings-layout">
+    <!-- Sidebar -->
+    <aside class="settings-sidebar">
+        <header class="sidebar-header">
+            <Button
+                kind="ghost"
+                iconDescription="Back"
+                icon={ArrowLeft}
+                onclick={goToBoards}
+            />
+            <span>Settings</span>
+        </header>
 
-    <section class="workspace-settings-actions" aria-label="Settings actions">
-        <Button kind="secondary" onclick={goToBoards}>Back to workspace</Button>
-        <Button kind="ghost" onclick={refreshWorkspaceState}>
-            Refresh workspace state
-        </Button>
-    </section>
-
-    <Tabs>
-        <Tab label="General" />
-        <Tab label="Data" />
-        <Tab label="Git Sync" />
-        <Tab label="Zoom" />
-
-        <svelte:fragment slot="content">
-            <!-- ── General Tab ────────────────────────────────────────── -->
-            <TabContent>
-                <section
-                    class="tab-section"
-                    aria-labelledby="workspace-info-title"
+        <nav class="sidebar-nav">
+            {#each categories as category}
+                <button
+                    class="nav-item"
+                    class:active={activeCategory === category.id}
+                    onclick={() => (activeCategory = category.id)}
                 >
-                    <h2 id="workspace-info-title">Workspace</h2>
+                    <category.icon size={20} />
+                    <span>{category.label}</span>
+                </button>
+            {/each}
+        </nav>
 
-                    <TextInput
-                        id="workspace-name"
-                        labelText="Workspace name"
-                        value={workspaceName}
-                        readonly
-                    />
-                    <TextInput
-                        id="workspace-status"
-                        labelText="Workspace status"
-                        value={workspaceStatus}
-                        readonly
-                    />
-                    <TextInput
-                        id="workspace-schema"
-                        labelText="Database schema version"
-                        value={schemaVersion}
-                        readonly
-                    />
-                    <TextArea
-                        id="workspace-path"
-                        labelText="Workspace path"
-                        value={workspacePath}
-                        rows={3}
-                        readonly
-                    />
-                    <TextInput
-                        id="app-version"
-                        labelText="Worklog version"
-                        value={version}
-                        readonly
-                    />
-                </section>
-            </TabContent>
+        <footer class="sidebar-footer">
+            <div class="app-version">
+                v{version}
+            </div>
+            <Button
+                kind="ghost"
+                size="small"
+                icon={Renew}
+                onclick={refreshWorkspaceState}
+            >
+                Refresh
+            </Button>
+        </footer>
+    </aside>
 
-            <!-- ── Data Tab ───────────────────────────────────────────── -->
-            <TabContent>
-                <section
-                    class="tab-section"
-                    aria-labelledby="data-management-title"
-                >
-                    <h2 id="data-management-title">Export / Import</h2>
-                    <p class="section-desc">
-                        Export or import your workspace data as JSON or CSV.
-                    </p>
+    <!-- Main Content -->
+    <main class="settings-content">
+        <header class="content-header">
+            <div class="search-container">
+                <Search size={16} />
+                <input
+                    type="text"
+                    placeholder="Search settings..."
+                    bind:value={searchQuery}
+                />
+            </div>
+            <div class="breadcrumbs">
+                Settings &gt; {categories.find((c) => c.id === activeCategory)
+                    ?.label}
+            </div>
+        </header>
 
-                    <div class="data-controls">
-                        <div class="data-control-group">
-                            <RadioButtonGroup
-                                legendText="Format"
-                                bind:selected={exportFormat}
-                            >
-                                <RadioButton labelText="JSON" value="json" />
-                                <RadioButton labelText="CSV" value="csv" />
-                            </RadioButtonGroup>
-                        </div>
-
-                        <div class="data-control-group">
-                            <RadioButtonGroup
-                                legendText="Mode"
-                                bind:selected={exportMode}
-                            >
-                                <RadioButton
-                                    labelText="Single file"
-                                    value="single-file"
+        <div class="content-body">
+            <!-- ── General Category ────────────────────────────────────── -->
+            {#if activeCategory === "general"}
+                <div class="category-view">
+                    {#if matchesSearch("Workspace Information Database schema version Worklog version")}
+                        <section class="settings-section">
+                            <h2>Workspace Information</h2>
+                            <div class="settings-grid">
+                                <TextInput
+                                    id="workspace-name"
+                                    labelText="Workspace name"
+                                    value={workspaceName}
+                                    readonly
                                 />
-                                <RadioButton
-                                    labelText="Per-board folder"
-                                    value="folder"
+                                <TextInput
+                                    id="workspace-status"
+                                    labelText="Workspace status"
+                                    value={workspaceStatus}
+                                    readonly
                                 />
-                            </RadioButtonGroup>
-                        </div>
-                    </div>
-
-                    <ButtonSet>
-                        <Button kind="primary" onclick={handleExport}>
-                            Export
-                        </Button>
-                        <Button kind="tertiary" onclick={handleImport}>
-                            Import
-                        </Button>
-                    </ButtonSet>
-                </section>
-            </TabContent>
-
-            <!-- ── Git Sync Tab ───────────────────────────────────────── -->
-            <TabContent>
-                <section class="tab-section" aria-labelledby="git-sync-title">
-                    <div class="section-header-row">
-                        <div style="display: flex; align-items: center; gap: 0.5rem;">
-                            <h2 id="git-sync-title">Git Synchronization</h2>
-                            <Tag type="teal" size="sm">Experimental</Tag>
-                        </div>
-                        <Tag type={syncStatusColor} size="sm"
-                            >{syncStatusLabel}</Tag
-                        >
-                    </div>
-                    <p class="section-desc">
-                        Sync your workspace to a private GitHub repository using
-                        a Personal Access Token.
-                    </p>
-
-                    {#if gitAvailable === false}
-                        <aside class="git-warning" role="alert">
-                            <strong>Git not found.</strong>
-                            <span>
-                                The <code>git</code> command was not found on your
-                                system. Install Git to use this feature.
-                            </span>
-                        </aside>
+                                <TextInput
+                                    id="workspace-schema"
+                                    labelText="Database schema version"
+                                    value={schemaVersion}
+                                    readonly
+                                />
+                                <TextArea
+                                    id="workspace-path"
+                                    labelText="Workspace path"
+                                    value={workspacePath}
+                                    rows={3}
+                                    readonly
+                                />
+                                <TextInput
+                                    id="app-version"
+                                    labelText="Worklog version"
+                                    value={version}
+                                    readonly
+                                />
+                            </div>
+                        </section>
                     {/if}
+                </div>
+            {/if}
 
-                    <div class="sync-form">
-                        <TextInput
-                            id="sync-remote-url"
-                            labelText="Remote URL"
-                            placeholder="https://github.com/user/repo.git"
-                            bind:value={syncRemoteUrl}
-                            disabled={gitAvailable === false}
-                        />
+            <!-- ── Appearance Category ────────────────────────────────── -->
+            {#if activeCategory === "appearance"}
+                <div class="category-view">
+                    {#if matchesSearch("Application Zoom global scale")}
+                        <section class="settings-section">
+                            <div class="header-with-tag">
+                                <h2>Application Zoom</h2>
+                                <Tag type="teal" size="sm">Experimental</Tag>
+                            </div>
+                            <p class="section-desc">
+                                Adjust the global scale of the application
+                                interface. You can also use <kbd>Ctrl</kbd> +
+                                <kbd>+</kbd> and <kbd>Ctrl</kbd> + <kbd>-</kbd>
+                                anywhere.
+                            </p>
+                            <div class="control-box">
+                                <ZoomControls />
+                            </div>
+                        </section>
+                    {/if}
+                </div>
+            {/if}
 
-                        <PasswordInput
-                            id="sync-access-token"
-                            labelText="Access Token"
-                            placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
-                            bind:value={syncAccessToken}
-                            disabled={gitAvailable === false}
-                        />
+            <!-- ── Data Category ──────────────────────────────────────── -->
+            {#if activeCategory === "data"}
+                <div class="category-view">
+                    {#if matchesSearch("Export Import Data Management JSON CSV")}
+                        <section class="settings-section">
+                            <h2>Export / Import</h2>
+                            <p class="section-desc">
+                                Export or import your workspace data as JSON or
+                                CSV.
+                            </p>
 
-                        <TextInput
-                            id="sync-branch"
-                            labelText="Branch"
-                            placeholder="main"
-                            bind:value={syncBranch}
-                            disabled={gitAvailable === false}
-                        />
-
-                        <TextInput
-                            id="sync-git-name"
-                            labelText="Git Name"
-                            placeholder="Worklog User"
-                            bind:value={syncGitName}
-                            disabled={gitAvailable === false}
-                        />
-
-                        <TextInput
-                            id="sync-git-email"
-                            labelText="Git Email"
-                            placeholder="user@example.com"
-                            bind:value={syncGitEmail}
-                            disabled={gitAvailable === false}
-                        />
-
-                        <Toggle
-                            id="sync-auto-sync"
-                            labelText="Auto-sync"
-                            labelA="Off"
-                            labelB="On"
-                            bind:toggled={syncAutoSync}
-                            disabled={gitAvailable === false}
-                        />
-
-                        {#if syncAutoSync}
-                            <Select
-                                id="sync-auto-sync-interval"
-                                labelText="Sync Interval"
-                                bind:selected={syncAutoSyncInterval}
-                                disabled={gitAvailable === false}
-                            >
-                                <SelectItem value={1} text="Every 1 minutes" />
-                                <SelectItem value={5} text="Every 5 minutes" />
-                                <SelectItem
-                                    value={15}
-                                    text="Every 15 minutes"
-                                />
-                                <SelectItem
-                                    value={30}
-                                    text="Every 30 minutes"
-                                />
-                                <SelectItem value={60} text="Every 1 hour" />
-                                <SelectItem value={120} text="Every 2 hours" />
-                                <SelectItem value={360} text="Every 6 hours" />
-                            </Select>
-                        {/if}
-
-                        {#if syncConfig.config.last_synced_at}
-                            <TextInput
-                                id="sync-last-synced"
-                                labelText="Last synced"
-                                value={new Date(
-                                    syncConfig.config.last_synced_at,
-                                ).toLocaleString()}
-                                readonly
-                            />
-                        {/if}
-                    </div>
-
-                    <ButtonSet>
-                        <Button
-                            kind="primary"
-                            onclick={saveSyncConfig}
-                            disabled={gitAvailable === false}
-                        >
-                            Save Configuration
-                        </Button>
-                    </ButtonSet>
-
-                    {#if syncConfigured && gitAvailable !== false}
-                        <div class="sync-actions">
-                            <h3>Actions</h3>
-                            {#if syncLoading}
-                                <InlineLoading
-                                    description={syncLoadingMessage}
-                                />
-                            {:else}
-                                <ButtonSet>
-                                    <Button
-                                        kind="primary"
-                                        onclick={handleSyncPush}
+                            <div class="data-controls">
+                                <div class="data-control-group">
+                                    <RadioButtonGroup
+                                        legendText="Format"
+                                        bind:selected={exportFormat}
                                     >
-                                        Push
-                                    </Button>
-                                    <Button
-                                        kind="tertiary"
-                                        onclick={handleSyncPull}
+                                        <RadioButton
+                                            labelText="JSON"
+                                            value="json"
+                                        />
+                                        <RadioButton
+                                            labelText="CSV"
+                                            value="csv"
+                                        />
+                                    </RadioButtonGroup>
+                                </div>
+
+                                <div class="data-control-group">
+                                    <RadioButtonGroup
+                                        legendText="Mode"
+                                        bind:selected={exportMode}
                                     >
-                                        Pull
-                                    </Button>
-                                </ButtonSet>
+                                        <RadioButton
+                                            labelText="Single file"
+                                            value="single-file"
+                                        />
+                                        <RadioButton
+                                            labelText="Per-board folder"
+                                            value="folder"
+                                        />
+                                    </RadioButtonGroup>
+                                </div>
+                            </div>
+
+                            <ButtonSet>
+                                <Button kind="primary" onclick={handleExport}>
+                                    Export
+                                </Button>
+                                <Button kind="tertiary" onclick={handleImport}>
+                                    Import
+                                </Button>
+                            </ButtonSet>
+                        </section>
+                    {/if}
+                </div>
+            {/if}
+
+            <!-- ── Sync Category ──────────────────────────────────────── -->
+            {#if activeCategory === "sync"}
+                <div class="category-view">
+                    {#if matchesSearch("Git Synchronization Personal Access Token GitHub Auto-sync")}
+                        <section class="settings-section">
+                            <div class="header-with-status">
+                                <div class="header-with-tag">
+                                    <h2>Git Synchronization</h2>
+                                    <Tag type="teal" size="sm">Experimental</Tag
+                                    >
+                                </div>
+                                <Tag type={syncStatusColor} size="sm"
+                                    >{syncStatusLabel}</Tag
+                                >
+                            </div>
+                            <p class="section-desc">
+                                Sync your workspace to a private GitHub
+                                repository using a Personal Access Token.
+                            </p>
+
+                            {#if gitAvailable === false}
+                                <aside class="git-warning" role="alert">
+                                    <strong>Git not found.</strong>
+                                    <span>
+                                        The <code>git</code> command was not found
+                                        on your system. Install Git to use this feature.
+                                    </span>
+                                </aside>
                             {/if}
-                        </div>
-                    {/if}
-                </section>
-            </TabContent>
 
-            <!-- ── Zoom Tab ───────────────────────────────────────────── -->
-            <TabContent>
-                <section class="tab-section" aria-labelledby="zoom-title">
-                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                        <h2 id="zoom-title" style="margin: 0;">Application Zoom</h2>
-                        <Tag type="teal" size="sm">Experimental</Tag>
-                    </div>
-                    <p class="section-desc">
-                        Adjust the global scale of the application interface.
-                        You can also use <kbd>Ctrl</kbd> + <kbd>+</kbd> and <kbd>Ctrl</kbd> + <kbd>-</kbd> anywhere.
-                    </p>
-                    <div style="max-width: 16rem;">
-                        <ZoomControls />
-                    </div>
-                </section>
-            </TabContent>
-        </svelte:fragment>
-    </Tabs>
-</main>
+                            <div class="sync-form">
+                                <TextInput
+                                    id="sync-remote-url"
+                                    labelText="Remote URL"
+                                    placeholder="https://github.com/user/repo.git"
+                                    bind:value={syncRemoteUrl}
+                                    disabled={gitAvailable === false}
+                                />
+
+                                <PasswordInput
+                                    id="sync-access-token"
+                                    labelText="Access Token"
+                                    placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
+                                    bind:value={syncAccessToken}
+                                    disabled={gitAvailable === false}
+                                />
+
+                                <div class="settings-grid">
+                                    <TextInput
+                                        id="sync-branch"
+                                        labelText="Branch"
+                                        placeholder="main"
+                                        bind:value={syncBranch}
+                                        disabled={gitAvailable === false}
+                                    />
+
+                                    <TextInput
+                                        id="sync-git-name"
+                                        labelText="Git Name"
+                                        placeholder="Worklog User"
+                                        bind:value={syncGitName}
+                                        disabled={gitAvailable === false}
+                                    />
+
+                                    <TextInput
+                                        id="sync-git-email"
+                                        labelText="Git Email"
+                                        placeholder="user@example.com"
+                                        bind:value={syncGitEmail}
+                                        disabled={gitAvailable === false}
+                                    />
+                                </div>
+
+                                <div class="sync-options">
+                                    <Toggle
+                                        id="sync-auto-sync"
+                                        labelText="Auto-sync"
+                                        labelA="Off"
+                                        labelB="On"
+                                        bind:toggled={syncAutoSync}
+                                        disabled={gitAvailable === false}
+                                    />
+
+                                    {#if syncAutoSync}
+                                        <Select
+                                            id="sync-auto-sync-interval"
+                                            labelText="Sync Interval"
+                                            bind:selected={syncAutoSyncInterval}
+                                            disabled={gitAvailable === false}
+                                        >
+                                            <SelectItem
+                                                value={1}
+                                                text="Every 1 minutes"
+                                            />
+                                            <SelectItem
+                                                value={5}
+                                                text="Every 5 minutes"
+                                            />
+                                            <SelectItem
+                                                value={15}
+                                                text="Every 15 minutes"
+                                            />
+                                            <SelectItem
+                                                value={30}
+                                                text="Every 30 minutes"
+                                            />
+                                            <SelectItem
+                                                value={60}
+                                                text="Every 1 hour"
+                                            />
+                                            <SelectItem
+                                                value={120}
+                                                text="Every 2 hours"
+                                            />
+                                            <SelectItem
+                                                value={360}
+                                                text="Every 6 hours"
+                                            />
+                                        </Select>
+                                    {/if}
+                                </div>
+
+                                {#if syncConfig.config.last_synced_at}
+                                    <TextInput
+                                        id="sync-last-synced"
+                                        labelText="Last synced"
+                                        value={new Date(
+                                            syncConfig.config.last_synced_at,
+                                        ).toLocaleString()}
+                                        readonly
+                                    />
+                                {/if}
+                            </div>
+
+                            <div class="actions-group">
+                                <Button
+                                    kind="primary"
+                                    onclick={saveSyncConfig}
+                                    disabled={gitAvailable === false}
+                                >
+                                    Save Configuration
+                                </Button>
+
+                                {#if syncConfigured && gitAvailable !== false}
+                                    <div class="manual-actions">
+                                        <h3>Manual Actions</h3>
+                                        {#if syncLoading}
+                                            <InlineLoading
+                                                description={syncLoadingMessage}
+                                            />
+                                        {:else}
+                                            <ButtonSet>
+                                                <Button
+                                                    kind="tertiary"
+                                                    onclick={handleSyncPush}
+                                                >
+                                                    Push
+                                                </Button>
+                                                <Button
+                                                    kind="tertiary"
+                                                    onclick={handleSyncPull}
+                                                >
+                                                    Pull
+                                                </Button>
+                                            </ButtonSet>
+                                        {/if}
+                                    </div>
+                                {/if}
+                            </div>
+                        </section>
+                    {/if}
+                </div>
+            {/if}
+
+            <!-- ── Advanced Category ──────────────────────────────────── -->
+            {#if activeCategory === "advanced"}
+                <div class="category-view">
+                    {#if matchesSearch("Developer Tools Experimental Advanced Diagnostics")}
+                        <section class="settings-section">
+                            <h2>Developer Tools</h2>
+                            <p class="section-desc">
+                                Advanced tools for troubleshooting and database
+                                diagnostics.
+                            </p>
+                            <div class="advanced-grid">
+                                <Button
+                                    kind="ghost"
+                                    onclick={refreshWorkspaceState}
+                                >
+                                    Force State Re-init
+                                </Button>
+                                <p class="help-text">
+                                    Re-scans the workspace directory and reloads
+                                    all board metadata.
+                                </p>
+                            </div>
+                        </section>
+                    {/if}
+                </div>
+            {/if}
+        </div>
+    </main>
+</div>
 
 <style>
-    .workspace-settings {
-        min-height: 100%;
-        padding: var(--cds-spacing-05, 1rem);
-        display: grid;
-        gap: var(--cds-spacing-05, 1rem);
-        align-content: start;
-        max-width: 52rem;
-    }
-
-    .workspace-settings-header {
-        display: grid;
-        gap: var(--cds-spacing-02, 0.25rem);
-    }
-
-    .workspace-settings-header h1,
-    .workspace-settings-header p {
-        margin: 0;
-    }
-
-    .workspace-settings-header p {
-        font-size: 0.875rem;
-        opacity: 0.8;
-    }
-
-    .workspace-settings-actions {
+    .settings-layout {
+        height: 100vh;
         display: flex;
-        flex-wrap: wrap;
-        gap: var(--cds-spacing-03, 0.5rem);
+        overflow: hidden;
+        background: var(--cds-ui-01);
     }
 
-    .workspace-settings-actions :global(.bx--btn) {
+    /* ── Sidebar ───────────────────────────────────────────────────────── */
+    .settings-sidebar {
+        width: 260px;
+        flex-shrink: 0;
+        /* background: var(--cds-ui-02); */
+        border-right: 1px solid var(--cds-ui-03);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .sidebar-header {
+        height: 48px;
+        display: flex;
+        align-items: center;
+        padding-left: 0.5rem;
+        gap: 0.5rem;
+        font-weight: 600;
+        font-size: 0.875rem;
+        border-bottom: 1px solid var(--cds-ui-03);
+    }
+
+    .sidebar-nav {
+        flex: 1;
+        padding: 0.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.625rem 0.75rem;
+        background: transparent;
+        border: none;
+        border-radius: 4px;
+        color: var(--cds-text-secondary);
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: all 0.1s ease;
+        text-align: left;
+    }
+
+    .nav-item:hover {
+        background: var(--cds-ui-03);
+        color: var(--cds-text-primary);
+    }
+
+    .nav-item.active {
+        background: var(--cds-interactive-01);
+        color: white;
+        font-weight: 500;
+    }
+
+    .sidebar-footer {
+        padding: 1rem;
+        border-top: 1px solid var(--cds-ui-03);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .app-version {
+        font-size: 0.75rem;
+        color: var(--cds-text-helper);
+        font-family: var(--cds-code-01-font-family);
+    }
+
+    /* ── Main Content ──────────────────────────────────────────────────── */
+    .settings-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+    }
+
+    .content-header {
+        padding: 1.5rem 2rem;
+        background: var(--cds-ui-01);
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        border-bottom: 1px solid var(--cds-ui-03);
+    }
+
+    .search-container {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        background: var(--cds-field-01);
+        border: 1px solid var(--cds-ui-03);
+        padding: 0.5rem 0.75rem;
+        border-radius: 4px;
+        max-width: 600px;
+    }
+
+    .search-container input {
+        border: none;
+        background: transparent;
+        color: var(--cds-text-primary);
+        font-size: 0.875rem;
+        flex: 1;
+        outline: none;
+    }
+
+    .breadcrumbs {
+        font-size: 0.75rem;
+        color: var(--cds-text-helper);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .content-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 2rem;
+    }
+
+    .category-view {
+        max-width: 800px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 3rem;
+    }
+
+    .settings-section {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .settings-section h2 {
+        font-size: 1.25rem;
+        font-weight: 400;
         margin: 0;
     }
 
-    /* Tab content sections */
-    .tab-section {
-        display: grid;
-        gap: var(--cds-spacing-04, 0.75rem);
-        padding: var(--cds-spacing-05, 1rem) 0;
-    }
-
-    .tab-section h2 {
-        margin: 0;
-        font-size: 1rem;
-    }
-
-    .tab-section h3 {
-        margin: 0;
+    .settings-section h3 {
         font-size: 0.875rem;
         font-weight: 600;
+        margin: 0;
     }
 
     .section-desc {
-        margin: 0;
-        font-size: 0.8125rem;
-        opacity: 0.7;
+        font-size: 0.875rem;
+        color: var(--cds-text-secondary);
+        margin: -0.75rem 0 0.5rem 0;
+        max-width: 600px;
     }
 
-    .section-header-row {
+    .settings-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .control-box {
+        background: var(--cds-ui-02);
+        padding: 1.5rem;
+        border-radius: 4px;
+        border: 1px solid var(--cds-ui-03);
+    }
+
+    .header-with-tag,
+    .header-with-status {
         display: flex;
         align-items: center;
-        gap: var(--cds-spacing-03, 0.5rem);
+        gap: 0.75rem;
     }
 
-    /* Data export controls */
+    .header-with-status {
+        justify-content: space-between;
+    }
+
     .data-controls {
         display: flex;
-        flex-wrap: wrap;
-        gap: var(--cds-spacing-05, 1rem);
+        gap: 3rem;
+        padding: 1rem;
+        background: var(--cds-ui-02);
+        border-radius: 4px;
     }
 
-    .data-control-group {
-        flex: 1;
-        min-width: 10rem;
-    }
-
-    /* Sync form */
     .sync-form {
-        display: grid;
-        gap: var(--cds-spacing-04, 0.75rem);
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
     }
 
-    .sync-actions {
-        display: grid;
-        gap: var(--cds-spacing-04, 0.75rem);
-        margin-top: var(--cds-spacing-04, 0.75rem);
-        padding-top: var(--cds-spacing-04, 0.75rem);
-        border-top: 1px solid
-            color-mix(
-                in srgb,
-                var(--color-border-primary, #525252) 30%,
-                transparent
-            );
+    .sync-options {
+        display: flex;
+        align-items: flex-end;
+        gap: 2rem;
+        padding: 1rem;
+        background: var(--cds-ui-02);
+        border-radius: 4px;
+    }
+
+    .actions-group {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+        margin-top: 1rem;
+    }
+
+    .manual-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1.5rem;
+        border-top: 1px solid var(--cds-ui-03);
+        background: var(--cds-ui-02);
+        border-radius: 0 0 4px 4px;
     }
 
     .git-warning {
-        padding: var(--cds-spacing-04, 0.75rem);
-        display: grid;
-        gap: var(--cds-spacing-02, 0.25rem);
-        border: 1px solid
-            color-mix(in srgb, var(--cds-support-03, #f1c21b) 40%, transparent);
-        border-radius: 0.5rem;
-        background: color-mix(
-            in srgb,
-            var(--cds-support-03, #f1c21b) 10%,
-            transparent
-        );
-        font-size: 0.8125rem;
+        padding: 1rem;
+        background: #fff8e1;
+        border-left: 4px solid #ffc107;
+        color: #856404;
+        font-size: 0.875rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
     }
 
-    .git-warning code {
-        font-family: var(--cds-code-01-font-family, "IBM Plex Mono", monospace);
+    .advanced-grid {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        padding: 1.5rem;
+        background: var(--cds-ui-02);
+        border-radius: 4px;
+    }
+
+    .help-text {
         font-size: 0.8125rem;
-        background: color-mix(
-            in srgb,
-            var(--cds-ui-03, #e0e0e0) 40%,
-            transparent
-        );
-        padding: 0.1em 0.3em;
-        border-radius: 2px;
+        color: var(--cds-text-helper);
+        margin: 0;
+    }
+
+    /* Custom scrollbar */
+    .content-body::-webkit-scrollbar {
+        width: 10px;
+    }
+    .content-body::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .content-body::-webkit-scrollbar-thumb {
+        background: var(--cds-ui-03);
+        border: 2px solid transparent;
+        background-clip: padding-box;
+        border-radius: 10px;
+    }
+    .content-body::-webkit-scrollbar-thumb:hover {
+        background: var(--cds-ui-04);
     }
 </style>
