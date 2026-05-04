@@ -67,6 +67,7 @@
                 description: data.description,
                 priority: data.priority,
                 ticket_type: data.ticketType,
+                start_date: data.startDate || null,
                 due_date: data.dueDate || null,
                 labels: data.tags,
             });
@@ -78,6 +79,7 @@
                 status: data.status,
                 priority: data.priority,
                 ticket_type: data.ticketType,
+                start_date: data.startDate || null,
                 due_date: data.dueDate || null,
                 labels: data.tags,
             });
