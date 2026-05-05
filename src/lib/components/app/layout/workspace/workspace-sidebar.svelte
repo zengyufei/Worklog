@@ -26,6 +26,7 @@
     } from "carbon-components-svelte";
 
     import { getWorkspaceShellContext } from "$lib/hooks/workspace-shell-context";
+    import SyncBottomBar from "./sync-bottom-bar.svelte";
 
     interface WorkspaceSidebarProps {
         onOpenSettings?: () => void;
@@ -340,6 +341,8 @@
             </TileGroup>
         {/if}
     </SideNavItems>
+
+    <SyncBottomBar />
 
     <footer class="workspace-sidebar-footer">
         <Button kind="ghost" size="small" onclick={openSettings}>
