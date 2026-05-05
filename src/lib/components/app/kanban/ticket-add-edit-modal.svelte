@@ -197,12 +197,18 @@
                 labelText="Title *"
                 placeholder="e.g. Implement login screen"
                 bind:value={form.title}
+                on:keydown={(e) => {
+                    if (e.key === "Enter") e.stopPropagation();
+                }}
             />
             <TextArea
                 labelText="Description"
                 placeholder="Describe the ticket…"
                 rows={6}
                 bind:value={form.description}
+                on:keydown={(e) => {
+                    if (e.key === "Enter") e.stopPropagation();
+                }}
             />
         </div>
 
