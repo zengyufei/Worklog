@@ -48,6 +48,9 @@
     let draftDescription = $state("");
     let creatingBoard = $state(false);
     let createError = $state<string | null>(null);
+    let showCreateDiscard = $state(false);
+
+    const isCreateDirty = $derived(draftName.trim() !== "" || draftDescription.trim() !== "");
 
     const selectedBoardId = $derived(boardsApi.active?.id ?? undefined);
     const hasBoards = $derived(boardsApi.boards.length > 0);
@@ -87,7 +90,11 @@
     }
 
     function closeCreateBoardModal() {
-        createModalOpen = false;
+        if (isCreateDirty) {
+            showCreateDiscard = true;
+        } else {
+            createModalOpen = false;
+        }
     }
 
     function openSettings() {
@@ -171,6 +178,14 @@
     let editDraftDescription = $state("");
     let editError = $state<string | null>(null);
     let editingBoard = $state(false);
+    let showEditDiscard = $state(false);
+    let initialEditName = $state("");
+    let initialEditDescription = $state("");
+
+    const isEditDirty = $derived(
+        editDraftName.trim() !== initialEditName ||
+        editDraftDescription.trim() !== initialEditDescription
+    );
 
     function promptEditBoard(board: {
         id: string;
@@ -178,10 +193,20 @@
         description?: string;
     }) {
         editBoardId = board.id;
-        editDraftName = board.name;
-        editDraftDescription = board.description || "";
+        initialEditName = board.name;
+        initialEditDescription = board.description || "";
+        editDraftName = initialEditName;
+        editDraftDescription = initialEditDescription;
         editError = null;
         editModalOpen = true;
+    }
+
+    function closeEditBoardModal() {
+        if (isEditDirty) {
+            showEditDiscard = true;
+        } else {
+            editModalOpen = false;
+        }
     }
 
     async function confirmEditBoard() {
@@ -202,6 +227,18 @@
         } finally {
             editingBoard = false;
         }
+    }
+
+    function forceCloseCreate() {
+        draftName = "";
+        draftDescription = "";
+        showCreateDiscard = false;
+        createModalOpen = false;
+    }
+
+    function forceCloseEdit() {
+        showEditDiscard = false;
+        editModalOpen = false;
     }
 
     function promptDeleteBoard(id: string) {
@@ -315,7 +352,13 @@
 <ComposedModal
     bind:open={createModalOpen}
     size="sm"
-    preventCloseOnClickOutside={creatingBoard}
+    preventCloseOnClickOutside
+    on:close={(e) => {
+        if (createModalOpen && isCreateDirty) {
+            e.preventDefault();
+            showCreateDiscard = true;
+        }
+    }}
 >
     <ModalHeader title="Create board" />
 
@@ -336,6 +379,9 @@
             placeholder="Short board description"
             bind:value={draftDescription}
             on:input={handleDescriptionInput}
+            on:keydown={(e) => {
+                if (e.key === "Enter") e.stopPropagation();
+            }}
             rows={4}
             maxlength={180}
         />
@@ -362,7 +408,13 @@
 <ComposedModal
     bind:open={editModalOpen}
     size="sm"
-    preventCloseOnClickOutside={editingBoard}
+    preventCloseOnClickOutside
+    on:close={(e) => {
+        if (editModalOpen && isEditDirty) {
+            e.preventDefault();
+            showEditDiscard = true;
+        }
+    }}
 >
     <ModalHeader title="Edit board" />
 
@@ -375,12 +427,18 @@
             invalid={Boolean(editError && !editDraftName.trim())}
             invalidText="Board name is required."
             data-modal-primary-focus
+            on:keydown={(e) => {
+                if (e.key === "Enter") e.stopPropagation();
+            }}
         />
 
         <TextArea
             labelText="Description"
             placeholder="Short board description"
             bind:value={editDraftDescription}
+            on:keydown={(e) => {
+                if (e.key === "Enter") e.stopPropagation();
+            }}
             rows={4}
             maxlength={180}
         />
@@ -393,7 +451,7 @@
     <ModalFooter>
         <Button
             kind="secondary"
-            on:click={() => (editModalOpen = false)}
+            onclick={closeEditBoardModal}
             disabled={editingBoard}
         >
             Cancel
@@ -422,6 +480,36 @@
         undone.
     </p>
 </Modal>
+
+<ComposedModal
+    danger
+    bind:open={showCreateDiscard}
+    size="sm"
+>
+    <ModalHeader title="Discard unsaved changes?" />
+    <ModalBody>
+        <p>You have unsaved changes in your new board draft. Are you sure you want to discard them?</p>
+    </ModalBody>
+    <ModalFooter>
+        <Button kind="secondary" onclick={() => (showCreateDiscard = false)}>Continue editing</Button>
+        <Button kind="danger" onclick={forceCloseCreate}>Discard changes</Button>
+    </ModalFooter>
+</ComposedModal>
+
+<ComposedModal
+    danger
+    bind:open={showEditDiscard}
+    size="sm"
+>
+    <ModalHeader title="Discard unsaved changes?" />
+    <ModalBody>
+        <p>You have unsaved changes in your board info. Are you sure you want to discard them?</p>
+    </ModalBody>
+    <ModalFooter>
+        <Button kind="secondary" onclick={() => (showEditDiscard = false)}>Continue editing</Button>
+        <Button kind="danger" onclick={forceCloseEdit}>Discard changes</Button>
+    </ModalFooter>
+</ComposedModal>
 
 <style>
     :global(.workspace-sidebar.bx--side-nav) {
