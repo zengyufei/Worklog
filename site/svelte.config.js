@@ -7,6 +7,11 @@ const config = {
 	},
 	kit: {
 		adapter: adapter(),
+		// Configure base path from environment variable
+		paths: {
+			base: process.env.VITE_BASE_URL || '',
+			assets: '' // This ensures assets use absolute paths like /_app/...
+		},
 		prerender: {
 			handleMissingId: "ignore", // or 'warn' to see it without failing
 			handleHttpError: ({ path, referrer, message }) => {

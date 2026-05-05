@@ -1,9 +1,10 @@
 <script>
+	import { base } from '$app/paths';
 	let {
 		title = "AURA — Independent Creative Agency",
 		description = "A globally awarded creative agency specializing in immersive web experiences, fluid motion design, and digital reality using SvelteKit & GSAP.",
 		url = "https://aura-agency.vercel.app",
-		image = "/og-image.png",
+		image = base + "/og-image.png",
 	} = $props();
 </script>
 

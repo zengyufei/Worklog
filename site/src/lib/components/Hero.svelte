@@ -1,4 +1,5 @@
 <script>
+    import { base } from '$app/paths';
     import { onMount } from "svelte";
     import gsap from "gsap";
 
@@ -89,7 +90,7 @@
         class="absolute inset-0 z-0 pointer-events-none will-change-transform"
     >
         <img
-            src="/ascii-art.gif"
+            src="{base}/ascii-art.gif"
             alt="Ascii art background"
             class="w-full h-screen object-cover mix-blend-screen opacity-[0.65] block"
         />

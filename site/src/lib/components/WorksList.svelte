@@ -1,4 +1,5 @@
 <script>
+	import { base } from '$app/paths';
 	const works = [
 		{
 			id: "01",
@@ -59,7 +60,7 @@
 		<!-- Table Rows -->
 		{#each works as work}
 			<a
-				href="/"
+				href="{base}/"
 				class="group flex items-center border-b border-white/10 py-8 md:py-12 px-4 hover:bg-white/5 transition-colors duration-500 cursor-pointer relative overflow-hidden"
 			>
 				<div

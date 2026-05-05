@@ -32,6 +32,8 @@ jobs:
 
       - name: Build project
         working-directory: site
+        env:
+          VITE_BASE_URL: "/${{ github.event.repository.name }}"
         run: bun run build
 
       - name: Add .nojekyll file
