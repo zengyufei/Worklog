@@ -145,8 +145,7 @@
 >
     <a
         id="logo"
-        href="{base}/#agency"
-        onclick={(e) => scrollTo(e, "#agency")}
+        href="{base}/"
         bind:this={logoRef}
         class="flex-shrink-0 flex items-center justify-center w-auto cursor-pointer mix-blend-difference"
     >
@@ -172,9 +171,15 @@
             </li>
             <li bind:this={navItemsRef[2]}>
                 <a
-                    href="#agency"
-                    onclick={(e) => scrollTo(e, "#agency")}
-                    class="hover:text-white transition-colors">About</a
+                    href="{base}/docs"
+                    class="hover:text-white transition-colors">Docs</a
+                >
+            </li>
+            <li bind:this={navItemsRef[3]}>
+                <a
+                    href="{base}/#faq"
+                    onclick={(e) => scrollTo(e, "#faq")}
+                    class="hover:text-white transition-colors">FAQ</a
                 >
             </li>
         </ul>
@@ -186,10 +191,10 @@
         class="flex space-x-1 sm:space-x-3 items-center z-50"
     >
         <a
-            href="{base}/#contact"
-            onclick={(e) => scrollTo(e, "#contact")}
+            href="{base}/#footer"
+            onclick={(e) => scrollTo(e, "#footer")}
             class="hidden md:flex items-center justify-center text-sm font-medium bg-white text-black hover:bg-white/80 transition-colors px-6 py-2 rounded-full"
-            >Let's Talk</a
+            >Download</a
         >
         <button
             onclick={toggleMenu}
@@ -236,19 +241,27 @@
         <li class="overflow-hidden">
             <a
                 bind:this={mobileLinksRef[2]}
-                href="{base}/#agency"
-                onclick={(e) => scrollTo(e, "#agency")}
+                href="{base}/docs"
                 class="block text-4xl font-sans font-light text-white/80 hover:text-white transition-colors will-change-transform"
-                >About</a
+                >Docs</a
+            >
+        </li>
+        <li class="overflow-hidden">
+            <a
+                bind:this={mobileLinksRef[3]}
+                href="{base}/#faq"
+                onclick={(e) => scrollTo(e, "#faq")}
+                class="block text-4xl font-sans font-light text-white/80 hover:text-white transition-colors will-change-transform"
+                >FAQ</a
             >
         </li>
         <li class="overflow-hidden mt-6 pt-8 border-t border-white/10">
             <a
-                bind:this={mobileLinksRef[3]}
-                href="{base}/#contact"
-                onclick={(e) => scrollTo(e, "#contact")}
+                bind:this={mobileLinksRef[4]}
+                href="{base}/#footer"
+                onclick={(e) => scrollTo(e, "#footer")}
                 class="inline-block text-xl font-sans text-white hover:text-white/80 transition-colors will-change-transform"
-                >Let's talk &rarr;</a
+                >Download Now &rarr;</a
             >
         </li>
     </ul>
@@ -257,7 +270,7 @@
         class="absolute bottom-10 left-10 flex gap-6 text-xs font-mono text-white/40 uppercase tracking-widest relative z-10"
     >
         <a href="https://twitter.com">Twitter</a>
-        <a href="https://linkedin.com">LinkedIn</a>
+        <a href="https://github.com/regisx001/Worklog" target="_blank">GitHub</a>
     </div>
 </div>
 

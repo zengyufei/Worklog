@@ -1,0 +1,60 @@
+<svelte:head>
+    <title>Features | Worklog Docs</title>
+</svelte:head>
+
+# Core Features
+
+Worklog is built to be fast, keyboard-driven, and focused on the essentials of project management.
+
+## Kanban Board
+
+The Kanban board is the heart of Worklog. It provides a visual overview of your workspace, allowing you to track progress across four standard columns:
+
+- **Backlog:** Ideas and future tasks that aren't ready for immediate action.
+- **To Do:** Tasks planned for the current cycle.
+- **In Progress:** Active work currently being handled.
+- **Done:** Completed tasks ready for review or archival.
+
+<div class="my-8 p-6 rounded-xl bg-white/5 border border-white/10">
+    <h4 class="text-white mb-2 italic">Pro Tip: Drag & Drop</h4>
+    <p class="mb-0 text-sm">
+        You can drag tickets between columns to update their status instantly. The local database updates in real-time, ensuring zero lag.
+    </p>
+</div>
+
+## Ticket Management
+
+Tickets in Worklog are designed to hold all the necessary context without the clutter of traditional tools.
+
+- **Inline Editing:** Click any title or description to edit it directly. Changes are saved automatically as you type.
+- **Metadata:** Track priority, ticket type (Task, Bug, Feature), and due dates.
+- **Comments:** Collaborate with your team or leave notes for yourself. Comments support basic markdown.
+- **Labels:** Organize tickets with custom tags for better filtering and search.
+
+## Command Palette
+
+For power users, Worklog offers a deep command palette that lets you perform almost any action without touching your mouse.
+
+Press `Ctrl/Cmd + K` to open the palette. From there, you can:
+
+- Create new tickets or boards.
+- Switch between workspaces.
+- Trigger manual Git syncs.
+- Search across all tickets in the current board.
+
+## Keyboard Shortcuts
+
+| Shortcut | Action |
+| :--- | :--- |
+| `Ctrl/Cmd + K` | Open Command Palette |
+| `Ctrl/Cmd + N` | Create New Ticket |
+| `Ctrl/Cmd + B` | Create New Board |
+| `M` | Move focused ticket to next status |
+| `Esc` | Close detail panel |
+
+<a 
+    href="/docs/git-sync" 
+    class="inline-flex items-center gap-2 px-6 py-3 bg-[#3B82F6] text-white rounded-full font-medium hover:bg-[#3B82F6]/80 transition-colors mt-8"
+>
+    Next: Git Sync &rarr;
+</a>

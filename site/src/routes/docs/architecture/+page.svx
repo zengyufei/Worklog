@@ -1,0 +1,62 @@
+<svelte:head>
+    <title>Architecture | Worklog Docs</title>
+</svelte:head>
+
+# Architecture
+
+Worklog is built with a layered local architecture designed for performance, predictability, and data integrity.
+
+## The Technical Stack
+
+The application leverages modern web and systems technologies to provide a native-feeling desktop experience:
+
+- **Shell:** [Tauri v2](https://v2.tauri.app/) (Rust) handles the window management, system tray, and secure filesystem access.
+- **Frontend:** [SvelteKit](https://kit.svelte.dev/) provides a reactive, component-based UI with fast transitions.
+- **Runtime:** [Bun](https://bun.sh/) manages dependencies and powers the development server.
+- **Database:** [SQLite](https://www.sqlite.org/) serves as the local source of truth, managed via the Tauri SQL plugin.
+
+## Data Flow
+
+Worklog follows a strict unidirectional data flow to ensure the UI stays in sync with the underlying database.
+
+<div class="my-12 p-8 rounded-2xl bg-white/5 border border-white/10 text-center">
+    <div class="flex flex-col md:flex-row items-center justify-center gap-4 text-sm font-mono uppercase tracking-wider">
+        <div class="px-4 py-2 bg-white/5 rounded-lg border border-white/10">UI Components</div>
+        <div class="text-[#3B82F6]">&rarr;</div>
+        <div class="px-4 py-2 bg-white/5 rounded-lg border border-white/10">Svelte Runes (Hooks)</div>
+        <div class="text-[#3B82F6]">&rarr;</div>
+        <div class="px-4 py-2 bg-white/5 rounded-lg border border-white/10">Repositories</div>
+        <div class="text-[#3B82F6]">&rarr;</div>
+        <div class="px-4 py-2 bg-[#3B82F6]/20 rounded-lg border border-[#3B82F6]/50 text-[#3B82F6]">SQLite (.db)</div>
+    </div>
+</div>
+
+### 1. UI Layer
+Svelte components react to user interactions (clicks, keyboard shortcuts, drag-and-drop). They do not communicate with the database directly.
+
+### 2. Hooks (The API)
+Custom hooks (e.g., `useWorkspace`, `useBoards`, `useTickets`) act as the application's internal API. They manage in-memory state and orchestrate calls to the repository layer.
+
+### 3. Repository Layer
+Located in `src/lib/db`, repositories handle the translation between application types and SQL queries. They ensure data is properly serialized (e.g., labels stored as JSON strings) before being written to disk.
+
+### 4. Persistence
+Data is stored in a standard SQLite file inside your workspace directory: `.worklog/worklog.db`. This makes your project data portable and easy to back up.
+
+## Schema Migrations
+
+To ensure your data is always compatible with the latest version of Worklog, the app includes a robust migration system. Every time the app starts, it checks the current schema version and applies any necessary SQL updates in order, ensuring no data loss during upgrades.
+
+<div class="my-8 p-6 rounded-xl bg-[#3B82F6]/5 border border-[#3B82F6]/20">
+    <h4 class="text-white mb-2 italic">Data Transparency</h4>
+    <p class="mb-0 text-sm">
+        Because we use standard SQLite, you can open your <code>worklog.db</code> file with any standard SQL viewer to inspect or export your data manually at any time.
+    </p>
+</div>
+
+<a 
+    href="/docs/development" 
+    class="inline-flex items-center gap-2 px-6 py-3 bg-[#3B82F6] text-white rounded-full font-medium hover:bg-[#3B82F6]/80 transition-colors mt-8"
+>
+    Next: Development &rarr;
+</a>
