@@ -1,3 +1,5 @@
+<!-- bunx conventional-changelog -p angular -i CHANGELOG.md -s                                 -->
+
 ## 1.2.6 (2026-05-06)
 
 
