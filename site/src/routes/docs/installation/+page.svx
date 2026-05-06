@@ -2,44 +2,49 @@
     <title>Installation | Worklog Docs</title>
 </svelte:head>
 
-<h1>Installation</h1>
+# Installation
 
-<p>
-    Worklog is currently available for Linux and Windows. macOS support is in the roadmap.
-</p>
+Worklog is available for Linux, Windows, and macOS.
 
-<h2>Download</h2>
+## Get Started
 
-<p>
-    Get the latest binaries from our <a href="https://github.com/regisx001/Worklog/releases" class="text-[#3B82F6] hover:underline">GitHub Releases</a> page.
-</p>
+The easiest way to get Worklog is to download the pre-built binary for your operating system from our dedicated download page.
 
-<h3>Linux (AppImage / Deb)</h3>
+<a 
+    href="/docs/download" 
+    class="inline-flex items-center gap-2 px-6 py-3 bg-[#3B82F6] text-white rounded-full font-medium hover:bg-[#3B82F6]/80 transition-colors my-6"
+>
+    Go to Download Page &rarr;
+</a>
 
-<p>
-    Download the <code>.AppImage</code> or <code>.deb</code> file. For AppImage, make it executable:
-</p>
+## Platform Specifics
 
-<pre><code>chmod +x Worklog-x86_64.AppImage
-./Worklog-x86_64.AppImage</code></pre>
+### Linux (AppImage / Deb)
 
-<h3>Windows (MSI / Exe)</h3>
+Download the `.AppImage` or `.deb` file. For AppImage, make it executable:
 
-<p>
-    Run the <code>Worklog-Setup.exe</code> and follow the installation wizard.
-</p>
+```bash
+chmod +x worklog_1.2.6_amd64.AppImage
+./worklog_1.2.6_amd64.AppImage
+```
 
-<h2>Initializing Workspace</h2>
+### Windows (Exe)
 
-<p>
-    Once installed, open Worklog and select a directory to act as your workspace. Worklog will create a hidden <code>.worklog</code> folder to store your local database and configuration.
-</p>
+Run the `Worklog_1.2.6_x64-setup.exe` and follow the installation wizard.
 
-<div class="my-8 p-6 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-200">
-    <strong>Note:</strong> We recommend choosing a directory that is NOT already managed by another cloud sync service (like Dropbox) to avoid database lock conflicts.
+### macOS (DMG)
+
+Open the `.dmg` file and drag Worklog to your Applications folder.
+
+## Initializing Workspace
+
+Once installed, open Worklog and select a directory to act as your workspace. Worklog will create a hidden `.worklog` folder to store your local database and configuration.
+
+<div class="my-8 p-6 rounded-xl bg-[#3B82F6]/5 border border-[#3B82F6]/20">
+    <strong>Note:</strong> We recommend choosing a directory that is NOT already managed by another cloud sync service (like Dropbox or Google Drive) to avoid database lock conflicts. Use our <strong>Git Sync</strong> feature for cross-device collaboration instead.
 </div>
 
 <div class="flex justify-between mt-12 pt-8 border-t border-white/10">
-    <a href="./" class="text-white/40 hover:text-white transition-colors">&larr; Introduction</a>
-    <a href="git-sync" class="text-white/80 hover:text-white transition-colors">Git Sync &rarr;</a>
+    <a href="/docs/download" class="text-white/40 hover:text-white transition-colors">&larr; Download</a>
+    <a href="/docs/features" class="text-white/80 hover:text-white transition-colors">Features &rarr;</a>
 </div>

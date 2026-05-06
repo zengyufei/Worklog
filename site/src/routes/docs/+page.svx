@@ -1,3 +1,9 @@
+<script>
+    import Folder from "@lucide/svelte/icons/folder";
+    import LayoutGrid from "@lucide/svelte/icons/layout-grid";
+    import Ticket from "@lucide/svelte/icons/ticket";
+</script>
+
 <svelte:head>
     <title>Introduction | Worklog Docs</title>
 </svelte:head>
@@ -28,26 +34,35 @@ Traditional project management tools often force you into slow, browser-based in
 
 Worklog follows a simple, intuitive hierarchy to keep you focused:
 
-<div class="grid grid-cols-1 md:grid-cols-3 gap-4 my-8">
-    <div class="p-4 rounded-xl bg-white/5 border border-white/10 text-center">
-        <span class="text-xs font-mono text-[#3B82F6] uppercase">Level 1</span>
-        <h4 class="text-white mt-1">Workspace</h4>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 my-8">
+    <div class="p-8 rounded-3xl bg-white/5 border border-white/10 text-center flex flex-col items-center group hover:bg-white/[0.07] transition-all duration-500">
+        <div class="w-12 h-12 mb-4 text-[#3B82F6] opacity-80 group-hover:scale-110 transition-transform">
+            <Folder size={48} strokeWidth={1.5} />
+        </div>
+        <span class="text-xs font-mono text-[#3B82F6]/60 uppercase tracking-widest">Level 1</span>
+        <h4 class="text-xl text-white mt-2 font-serif">Workspace</h4>
     </div>
-    <div class="p-4 rounded-xl bg-white/5 border border-white/10 text-center">
-        <span class="text-xs font-mono text-[#3B82F6] uppercase">Level 2</span>
-        <h4 class="text-white mt-1">Board</h4>
+    <div class="p-8 rounded-3xl bg-white/5 border border-white/10 text-center flex flex-col items-center group hover:bg-white/[0.07] transition-all duration-500">
+        <div class="w-12 h-12 mb-4 text-[#3B82F6] opacity-80 group-hover:scale-110 transition-transform">
+            <LayoutGrid size={48} strokeWidth={1.5} />
+        </div>
+        <span class="text-xs font-mono text-[#3B82F6]/60 uppercase tracking-widest">Level 2</span>
+        <h4 class="text-xl text-white mt-2 font-serif">Board</h4>
     </div>
-    <div class="p-4 rounded-xl bg-white/5 border border-white/10 text-center">
-        <span class="text-xs font-mono text-[#3B82F6] uppercase">Level 3</span>
-        <h4 class="text-white mt-1">Ticket</h4>
+    <div class="p-8 rounded-3xl bg-white/5 border border-white/10 text-center flex flex-col items-center group hover:bg-white/[0.07] transition-all duration-500">
+        <div class="w-12 h-12 mb-4 text-[#3B82F6] opacity-80 group-hover:scale-110 transition-transform">
+            <Ticket size={48} strokeWidth={1.5} />
+        </div>
+        <span class="text-xs font-mono text-[#3B82F6]/60 uppercase tracking-widest">Level 3</span>
+        <h4 class="text-xl text-white mt-2 font-serif">Ticket</h4>
     </div>
 </div>
 
 Ready to get started? Let's get Worklog installed on your machine.
 
 <a 
-    href="/docs/installation" 
-    class="inline-flex items-center gap-2 px-6 py-3 bg-[#3B82F6] text-white rounded-full font-medium hover:bg-[#3B82F6]/80 transition-colors mt-4"
+    href="/docs/download" 
+    class="inline-flex items-center gap-2 px-8 py-4 bg-[#3B82F6] text-white rounded-full font-medium hover:bg-[#3B82F6]/80 shadow-[0_0_20px_rgba(59,130,246,0.3)] transition-all mt-4"
 >
-    Next: Installation &rarr;
+    Next: Download &rarr;
 </a>

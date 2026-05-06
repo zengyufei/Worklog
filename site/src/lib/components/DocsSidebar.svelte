@@ -18,6 +18,7 @@
     const menu = [
         { title: "Getting Started", items: [
             { name: "Introduction", href: "/docs", icon: BookOpen },
+            { name: "Download", href: "/docs/download", icon: Download },
             { name: "Installation", href: "/docs/installation", icon: Download }
         ]},
         { title: "Product Guide", items: [
