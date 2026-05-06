@@ -1,0 +1,65 @@
+<script>
+    import ShieldCheck from "@lucide/svelte/icons/shield-check";
+    import Lock from "@lucide/svelte/icons/lock";
+    import Database from "@lucide/svelte/icons/database";
+    import Activity from "@lucide/svelte/icons/activity";
+</script>
+
+<svelte:head>
+    <title>Privacy | Worklog Docs</title>
+</svelte:head>
+
+# Privacy & Security
+
+Privacy is not an after-thought at Worklog; it's our foundational principle. Because Worklog is local-first, we have no servers to store your data, which means there's nothing for us to leak or sell.
+
+## Data Ownership
+
+All your project data—tickets, kanban boards, workspace settings—are stored in a local SQLite database on your machine. You are the sole owner of this data.
+
+<div class="my-8 p-6 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-4 group hover:bg-white/[0.07] transition-all">
+    <div class="text-[#3B82F6] opacity-60 group-hover:opacity-100 transition-opacity">
+        <Database size={24} />
+    </div>
+    <p class="mb-0 text-sm">Your data lives in <code>.worklog/worklog.db</code> inside your workspace folder.</p>
+</div>
+
+## Telemetry
+
+By default, Worklog sends minimal, anonymous telemetry to help us improve the app (e.g., crash reports, feature usage frequency). You can disable this entirely in the app settings.
+
+- **What we collect:** App version, OS version, anonymous crash logs.
+- **What we NEVER collect:** Your ticket titles, descriptions, Git repository URLs, or Personal Access Tokens.
+
+<div class="my-8 p-6 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-4 group hover:bg-white/[0.07] transition-all">
+    <div class="text-[#3B82F6] opacity-60 group-hover:opacity-100 transition-opacity">
+        <Activity size={24} />
+    </div>
+    <p class="mb-0 text-sm">Telemetry can be toggled off in <strong>Settings &rarr; Advanced</strong>.</p>
+</div>
+
+## Third-Party Services
+
+When you enable **Git Sync**, Worklog communicates directly with your Git provider (GitHub, GitLab, etc.). These interactions happen entirely within your local client using the credentials you provide. We never act as a proxy for your Git traffic.
+
+<div class="my-12 p-10 rounded-3xl bg-[#3B82F6]/5 border border-[#3B82F6]/10 backdrop-blur-sm relative overflow-hidden group">
+    <div class="absolute -top-10 -right-10 text-[#3B82F6] opacity-[0.03] group-hover:opacity-[0.08] transition-opacity duration-700">
+        <ShieldCheck size={200} />
+    </div>
+    
+    <h3 class="text-2xl font-serif text-white mb-4 flex items-center gap-3">
+        <Lock size={24} class="text-[#3B82F6]" />
+        Zero-Knowledge
+    </h3>
+    <p class="mb-0 text-white/50 leading-relaxed max-w-2xl relative z-10">
+        Our business model is built on providing a great tool, not on monetizing your information. 
+        As an open-source project, you can verify every line of code to ensure your data stays private.
+    </p>
+</div>
+
+---
+
+<div class="flex justify-between mt-12 pt-8 border-t border-white/10">
+    <a href="/docs/development" class="text-white/40 hover:text-white transition-colors">&larr; Development</a>
+    <a href="/docs" class="text-white/80 hover:text-white transition-colors">Back to Introduction</a>
+</div>

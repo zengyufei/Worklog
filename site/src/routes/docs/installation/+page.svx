@@ -1,0 +1,50 @@
+<svelte:head>
+    <title>Installation | Worklog Docs</title>
+</svelte:head>
+
+# Installation
+
+Worklog is available for Linux, Windows, and macOS.
+
+## Get Started
+
+The easiest way to get Worklog is to download the pre-built binary for your operating system from our dedicated download page.
+
+<a 
+    href="/docs/download" 
+    class="inline-flex items-center gap-2 px-6 py-3 bg-[#3B82F6] text-white rounded-full font-medium hover:bg-[#3B82F6]/80 transition-colors my-6"
+>
+    Go to Download Page &rarr;
+</a>
+
+## Platform Specifics
+
+### Linux (AppImage / Deb)
+
+Download the `.AppImage` or `.deb` file. For AppImage, make it executable:
+
+```bash
+chmod +x worklog_1.2.6_amd64.AppImage
+./worklog_1.2.6_amd64.AppImage
+```
+
+### Windows (Exe)
+
+Run the `Worklog_1.2.6_x64-setup.exe` and follow the installation wizard.
+
+### macOS (DMG)
+
+Open the `.dmg` file and drag Worklog to your Applications folder.
+
+## Initializing Workspace
+
+Once installed, open Worklog and select a directory to act as your workspace. Worklog will create a hidden `.worklog` folder to store your local database and configuration.
+
+<div class="my-8 p-6 rounded-xl bg-[#3B82F6]/5 border border-[#3B82F6]/20">
+    <strong>Note:</strong> We recommend choosing a directory that is NOT already managed by another cloud sync service (like Dropbox or Google Drive) to avoid database lock conflicts. Use our <strong>Git Sync</strong> feature for cross-device collaboration instead.
+</div>
+
+<div class="flex justify-between mt-12 pt-8 border-t border-white/10">
+    <a href="/docs/download" class="text-white/40 hover:text-white transition-colors">&larr; Download</a>
+    <a href="/docs/features" class="text-white/80 hover:text-white transition-colors">Features &rarr;</a>
+</div>

@@ -1,0 +1,120 @@
+<script>
+    import Database from "@lucide/svelte/icons/database";
+    import FileJson from "@lucide/svelte/icons/file-json";
+    import Cloud from "@lucide/svelte/icons/cloud";
+    import RefreshCw from "@lucide/svelte/icons/refresh-cw";
+</script>
+
+<svelte:head>
+    <title>Git Sync | Worklog Docs</title>
+</svelte:head>
+
+# Git-Native Sync Worklog leverages Git to provide seamless, private
+synchronization across devices without the need for a proprietary cloud backend.
+## Overview Unlike tools that sync a binary database file (which leads to
+frequent merge conflicts), Worklog uses a sophisticated **Mapper Layer**. This
+layer converts your local SQLite database into portable, human-readable JSON
+files before pushing them to your Git remote.
+
+<div class="my-12 p-8 rounded-2xl bg-white/5 border border-white/10">
+    <div class="flex flex-col md:flex-row items-center justify-center gap-8">
+        <div class="flex flex-col items-center gap-3">
+            <div
+                class="p-4 bg-white/5 rounded-2xl border border-white/10 text-[#3B82F6]"
+            >
+                <Database size={32} />
+            </div>
+            <span class="text-xs font-mono uppercase text-white/40">SQLite</span
+            >
+        </div>
+
+        <div class="text-white/20">
+            <RefreshCw size={20} class="animate-spin-slow" />
+        </div>
+
+        <div class="flex flex-col items-center gap-3">
+            <div
+                class="p-4 bg-[#3B82F6]/20 rounded-2xl border border-[#3B82F6]/50 text-[#3B82F6]"
+            >
+                <FileJson size={32} />
+            </div>
+            <span class="text-xs font-mono uppercase text-[#3B82F6]"
+                >JSON Files</span
+            >
+        </div>
+
+        <div class="text-white/20">
+            <RefreshCw size={20} class="animate-spin-slow" />
+        </div>
+
+        <div class="flex flex-col items-center gap-3">
+            <div
+                class="p-4 bg-white/5 rounded-2xl border border-white/10 text-[#3B82F6]"
+            >
+                <Cloud size={32} />
+            </div>
+            <span class="text-xs font-mono uppercase text-white/40">Remote</span
+            >
+        </div>
+    </div>
+</div>
+
+## Configuration To enable synchronization, navigate to **Settings → Sync** and
+provide the following details: - **Remote URL:** The HTTPS URL of your private
+Git repository. - **Access Token:** A Personal Access Token (PAT) with `repo`
+scope. - **Branch:** The branch you want to use for syncing (defaults to
+`main`). - **Auto-Sync:** When enabled, Worklog will automatically push changes
+to the remote whenever you save a ticket or board. ## The Sync Process ###
+Pushing (Local → Remote) When you trigger a push, Worklog extracts a snapshot of
+your database, serializes it into structured JSON files (one for each board,
+plus global metadata), and commits them to a hidden `.worklog/sync/` directory
+before pushing to your remote. ### Pulling (Remote → Local) When pulling,
+Worklog fetches the latest JSON files from your remote, merges them with your
+local state using an intelligent **Upsert strategy**, and updates your local
+SQLite database. ## Security & Privacy
+
+<div class="my-8 p-6 rounded-xl bg-[#3B82F6]/5 border border-[#3B82F6]/20">
+    <ul>
+        <li>
+            <strong>Local Token Storage:</strong> Your Personal Access Token is stored
+            locally in the Tauri app's encrypted store. It never leaves your machine
+            except to authenticate with your Git provider.
+        </li>
+        <li>
+            <strong>Direct Communication:</strong> Worklog communicates directly
+            with GitHub/GitLab. There is no middleman or proxy server involved.
+        </li>
+        <li>
+            <strong>No Vendor Lock-in:</strong> Since your data is stored as plain
+            JSON in Git, you can access it, backup it, or even build your own tools
+            on top of it without Worklog.
+        </li>
+    </ul>
+</div>
+
+## Conflict Resolution If local and remote changes diverge, Worklog will attempt
+a fast-forward merge. If a conflict occurs within the JSON files, the sync
+engine will report a conflict status. You can then choose to: - **Force Push:**
+Overwrite the remote state with your current local data. - **Force Pull:**
+Overwrite your local data with the remote state.
+
+<a
+    href="/docs/architecture"
+    class="inline-flex items-center gap-2 px-6 py-3 bg-[#3B82F6] text-white rounded-full font-medium hover:bg-[#3B82F6]/80 transition-colors mt-8"
+>
+    Next: Architecture &rarr;
+</a>
+
+<style>
+    :global(.animate-spin-slow) {
+        animation: spin 8s linear infinite;
+    }
+    @keyframes spin {
+        from {
+            transform: rotate(0deg);
+        }
+        to {
+            transform: rotate(360deg);
+        }
+    }
+</style>

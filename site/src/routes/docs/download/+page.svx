@@ -1,0 +1,129 @@
+<script>
+    import pkg from "../../../../../package.json";
+    import ChevronRight from "@lucide/svelte/icons/chevron-right";
+    import { base } from '$app/paths';
+
+    const version = pkg.version;
+    const tag = `app-v${version}`;
+    const baseUrl = `https://github.com/regisx001/Worklog/releases/download/${tag}`;
+
+    const platforms = [
+        {
+            name: "Linux",
+            icon: `${base}/Linux.svg`,
+            formats: [
+                {
+                    label: ".deb (Debian/Ubuntu)",
+                    file: `worklog_${version}_amd64.deb`,
+                },
+                {
+                    label: ".AppImage (Universal)",
+                    file: `worklog_${version}_amd64.AppImage`,
+                },
+            ],
+        },
+        {
+            name: "Windows",
+            icon: `${base}/Windows 11.svg`,
+            formats: [
+                {
+                    label: ".exe (64-bit Setup)",
+                    file: `Worklog_${version}_x64-setup.exe`,
+                },
+            ],
+        },
+        {
+            name: "macOS",
+            icon: `${base}/apple-icon.svg`,
+            formats: [
+                { label: ".dmg (Intel)", file: `Worklog_${version}_x64.dmg` },
+                {
+                    label: ".dmg (Apple Silicon)",
+                    file: `Worklog_${version}_aarch64.dmg`,
+                },
+            ],
+        },
+    ];
+</script>
+
+<svelte:head>
+    <title>Download | Worklog Docs</title>
+</svelte:head>
+
+# Download Worklog
+
+Get the latest version of Worklog for your platform. All downloads are hosted directly on GitHub for security and transparency.
+
+<div class="my-8 p-8 rounded-2xl bg-[#3B82F6]/10 border border-[#3B82F6]/20 flex items-center gap-6">
+    <div class="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden shadow-[0_0_30px_rgba(59,130,246,0.2)]">
+        <img src="{base}/icon.png" alt="Worklog Icon" class="w-10 h-10 object-contain" />
+    </div>
+    <div>
+        <h4 class="text-xl text-white font-serif mb-1">
+            Current Version: {version}
+        </h4>
+        <p class="text-sm text-white/50 mb-0">
+            Released on GitHub as <code>{tag}</code>
+        </p>
+    </div>
+    <a
+        href="https://github.com/regisx001/Worklog/releases"
+        target="_blank"
+        class="ml-auto flex items-center gap-2 text-xs font-mono text-[#3B82F6] hover:text-[#3B82F6]/80 transition-colors"
+    >
+        View Changelog <ChevronRight size={14} />
+    </a>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 my-12">
+    {#each platforms as platform}
+        <div class="p-8 rounded-3xl bg-white/5 border border-white/10 flex flex-col items-center text-center group hover:bg-white/[0.07] hover:border-[#3B82F6]/30 transition-all duration-500">
+            <div class="w-20 h-20 mb-8 flex items-center justify-center group-hover:scale-110 transition-transform duration-700">
+                <img src={platform.icon} alt={platform.name} class="w-full h-full object-contain transition-all duration-700 opacity-80 group-hover:opacity-100" />
+            </div>
+            <h3 class="text-2xl font-serif text-white mb-8">{platform.name}</h3>
+
+            <div class="flex flex-col gap-3 w-full">
+                {#each platform.formats as format}
+                    <a
+                        href="{baseUrl}/{format.file}"
+                        class="w-full py-4 px-4 rounded-xl bg-white/5 border border-white/10 text-sm font-medium text-white/70 hover:bg-[#3B82F6] hover:text-white hover:border-[#3B82F6] hover:shadow-[0_0_20px_rgba(59,130,246,0.2)] transition-all duration-300"
+                    >
+                        {format.label}
+                    </a>
+                {/each}
+            </div>
+        </div>
+    {/each}
+</div>
+
+## Installation via Package Managers (Linux)
+
+For a more integrated experience on Linux, we recommend using our official repositories.
+
+### Debian / Ubuntu (APT)
+
+```bash
+curl -fsSL https://regisx001.github.io/worklog-apt/pubkey.asc \
+  | sudo gpg --dearmor -o /usr/share/keyrings/worklog-archive-keyring.gpg
+
+echo "deb [signed-by=/usr/share/keyrings/worklog-archive-keyring.gpg] https://regisx001.github.io/worklog-apt any main" \
+  | sudo tee /etc/apt/sources.list.d/worklog.list
+
+sudo apt update && sudo apt install worklog
+```
+
+### Arch Linux (AUR)
+
+```bash
+yay -S worklog-bin
+```
+
+---
+
+<div class="p-8 rounded-2xl bg-white/5 border border-white/10 text-sm text-white/40 flex items-center gap-4">
+    <div class="w-2 h-2 rounded-full bg-[#3B82F6] animate-pulse"></div>
+    <p class="mb-0">
+        <strong>Security Note:</strong> We recommend always downloading Worklog from this official site or directly from our <a href="https://github.com/regisx001/Worklog/releases" class="text-[#3B82F6] hover:underline">GitHub Releases</a> page.
+    </p>
+</div>

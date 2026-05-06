@@ -8,6 +8,9 @@
     import GitBranch from "@lucide/svelte/icons/git-branch";
     import Settings from "@lucide/svelte/icons/settings";
     import Shield from "@lucide/svelte/icons/shield";
+    import LayoutGrid from "@lucide/svelte/icons/layout-grid";
+    import Cpu from "@lucide/svelte/icons/cpu";
+    import Terminal from "@lucide/svelte/icons/terminal";
 
     let sidebarRef = $state();
     let navItems = $state([]);
@@ -15,11 +18,17 @@
     const menu = [
         { title: "Getting Started", items: [
             { name: "Introduction", href: "/docs", icon: BookOpen },
+            { name: "Download", href: "/docs/download", icon: Download },
             { name: "Installation", href: "/docs/installation", icon: Download }
         ]},
-        { title: "Core Concepts", items: [
+        { title: "Product Guide", items: [
+            { name: "Features", href: "/docs/features", icon: LayoutGrid },
             { name: "Git Sync", href: "/docs/git-sync", icon: GitBranch },
             { name: "Privacy", href: "/docs/privacy", icon: Shield }
+        ]},
+        { title: "Technical", items: [
+            { name: "Architecture", href: "/docs/architecture", icon: Cpu },
+            { name: "Development", href: "/docs/development", icon: Terminal }
         ]},
         { title: "Configuration", items: [
             { name: "Settings", href: "/docs/settings", icon: Settings }

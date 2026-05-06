@@ -1,0 +1,118 @@
+<script>
+    import Package from "@lucide/svelte/icons/package";
+    import Terminal from "@lucide/svelte/icons/terminal";
+    import GitBranch from "@lucide/svelte/icons/git-branch";
+    import Code2 from "@lucide/svelte/icons/code-2";
+    import ExternalLink from "@lucide/svelte/icons/external-link";
+</script>
+
+<svelte:head>
+    <title>Development | Worklog Docs</title>
+</svelte:head>
+
+# Development Guide
+
+Welcome to the Worklog contributor community! This guide will help you set up your local environment and build the application from source.
+
+## Prerequisites
+
+Before you begin, ensure you have the following tools installed on your machine:
+
+- **Bun:** The primary runtime and package manager. [Install Bun](https://bun.sh/)
+- **Rust:** The stable toolchain is required for the Tauri backend. [Install Rust](https://rustup.rs/)
+- **System Dependencies:** Linux users will need several GTK and WebKit libraries.
+
+<div class="my-8 p-8 rounded-2xl bg-white/5 border border-white/10 group hover:border-[#3B82F6]/30 transition-colors">
+    <div class="flex items-center gap-3 mb-4 text-[#3B82F6]">
+        <Terminal size={20} />
+        <h4 class="text-white font-mono text-xs uppercase tracking-widest mb-0 opacity-40 group-hover:opacity-100 transition-opacity">Linux Dependencies (Ubuntu/Debian)</h4>
+    </div>
+    <pre class="mb-0 text-xs"><code>sudo apt-get update
+sudo apt-get install -y \
+    build-essential \
+    pkg-config \
+    libgtk-3-dev \
+    libwebkit2gtk-4.1-dev \
+    libappindicator3-dev \
+    librsvg2-dev \
+    patchelf</code></pre>
+</div>
+
+## Environment Setup
+
+<div class="space-y-8 my-10">
+    <div class="flex gap-6">
+        <div class="flex-shrink-0 w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-[#3B82F6]">
+            <GitBranch size={24} />
+        </div>
+        <div class="flex-1">
+            <h4 class="text-white font-serif text-xl mb-2">1. Clone the repository</h4>
+            <p class="text-white/50 text-sm mb-4">Pull the latest source code to your machine.</p>
+            <pre><code>git clone https://github.com/regisx001/Worklog.git
+cd Worklog</code></pre>
+        </div>
+    </div>
+
+    <div class="flex gap-6">
+        <div class="flex-shrink-0 w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-[#3B82F6]">
+            <Package size={24} />
+        </div>
+        <div class="flex-1">
+            <h4 class="text-white font-serif text-xl mb-2">2. Install dependencies</h4>
+            <p class="text-white/50 text-sm mb-4">Use Bun to install all frontend and backend requirements.</p>
+            <pre><code>bun install --frozen-lockfile</code></pre>
+        </div>
+    </div>
+</div>
+
+## Development Commands
+
+Worklog provides several commands to help you develop and test the application:
+
+| Command | Description |
+| :--- | :--- |
+| `bun run dev` | Run the frontend (SvelteKit) with hot-reloading in the browser. |
+| `bun run tauri dev` | Run the full desktop application in development mode. |
+| `bun run check` | Run TypeScript and Svelte diagnostics. |
+| `bun run tauri:build` | Generate production binaries for your current platform. |
+
+## Project Structure
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 my-8">
+    <div class="p-6 rounded-2xl bg-white/5 border border-white/10 flex items-start gap-4 group hover:bg-white/[0.07] transition-all">
+        <div class="text-[#3B82F6] opacity-40 group-hover:opacity-100 transition-opacity pt-1">
+            <Code2 size={20} />
+        </div>
+        <div>
+            <code class="text-[#3B82F6] text-xs">/src</code>
+            <p class="text-sm text-white/50 mt-1 mb-0">SvelteKit frontend application</p>
+        </div>
+    </div>
+    <div class="p-6 rounded-2xl bg-white/5 border border-white/10 flex items-start gap-4 group hover:bg-white/[0.07] transition-all">
+        <div class="text-[#3B82F6] opacity-40 group-hover:opacity-100 transition-opacity pt-1">
+            <Terminal size={20} />
+        </div>
+        <div>
+            <code class="text-[#3B82F6] text-xs">/src-tauri</code>
+            <p class="text-sm text-white/50 mt-1 mb-0">Rust backend & Tauri config</p>
+        </div>
+    </div>
+</div>
+
+## Contributing
+
+We welcome contributions of all kinds! Whether it's fixing a bug, suggesting a feature, or improving documentation.
+
+1. Fork the repository.
+2. Create a new branch for your feature or fix.
+3. Submit a Pull Request with a clear description of your changes.
+4. Ensure all checks (`bun run check`) pass before submission.
+
+---
+
+<a 
+    href="/docs/privacy" 
+    class="inline-flex items-center gap-2 px-8 py-4 bg-[#3B82F6] text-white rounded-full font-medium hover:bg-[#3B82F6]/80 transition-all mt-8"
+>
+    Next: Privacy &rarr;
+</a>

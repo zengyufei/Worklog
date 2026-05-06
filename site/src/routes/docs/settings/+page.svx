@@ -1,0 +1,70 @@
+<script>
+    import Palette from "@lucide/svelte/icons/palette";
+    import Keyboard from "@lucide/svelte/icons/keyboard";
+    import Settings2 from "@lucide/svelte/icons/settings-2";
+    import Command from "@lucide/svelte/icons/command";
+</script>
+
+<svelte:head>
+    <title>Settings | Worklog Docs</title>
+</svelte:head>
+
+# Settings & Customization
+
+Worklog is designed to be highly configurable to match your personal workflow and aesthetic preferences.
+
+## Appearance
+
+You can toggle between **Light**, **Dark**, and **System** themes. On Windows and macOS, Worklog supports mica/acrylic background effects for a more native feel.
+
+<div class="my-8 p-6 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-4 group hover:bg-white/[0.07] transition-all">
+    <div class="text-[#3B82F6] opacity-60 group-hover:opacity-100 transition-opacity">
+        <Palette size={24} />
+    </div>
+    <p class="mb-0 text-sm">Theme settings can be found in <strong>Settings &rarr; Appearance</strong>.</p>
+</div>
+
+## Keyboard Shortcuts
+
+The core of the Worklog experience is the Command Palette (`Ctrl+K` or `Cmd+K`). From here, you can access all settings and perform actions rapidly.
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 my-8 font-mono text-xs">
+    <div class="p-4 rounded-xl bg-white/5 border border-white/10 flex justify-between items-center">
+        <span class="text-white/40 uppercase tracking-widest">New Ticket</span>
+        <span class="text-[#3B82F6]">Ctrl+N</span>
+    </div>
+    <div class="p-4 rounded-xl bg-white/5 border border-white/10 flex justify-between items-center">
+        <span class="text-white/40 uppercase tracking-widest">Search Workspace</span>
+        <span class="text-[#3B82F6]">Ctrl+F</span>
+    </div>
+    <div class="p-4 rounded-xl bg-white/5 border border-white/10 flex justify-between items-center">
+        <span class="text-white/40 uppercase tracking-widest">Open Settings</span>
+        <span class="text-[#3B82F6]">Ctrl+,</span>
+    </div>
+    <div class="p-4 rounded-xl bg-white/5 border border-white/10 flex justify-between items-center">
+        <span class="text-white/40 uppercase tracking-widest">Command Palette</span>
+        <span class="text-[#3B82F6]">Ctrl+K</span>
+    </div>
+</div>
+
+## Advanced Configuration
+
+For power users, you can edit the `config.json` file directly in your `.worklog` directory. This allows for custom CSS injection and advanced Git hook configurations.
+
+```json
+{
+  "theme": "dark",
+  "gitSync": {
+    "interval": 300,
+    "autoCommit": true
+  },
+  "customCss": "./styles/user.css"
+}
+```
+
+---
+
+<div class="flex justify-between mt-12 pt-8 border-t border-white/10">
+    <a href="/docs/git-sync" class="text-white/40 hover:text-white transition-colors">&larr; Git Sync</a>
+    <a href="/docs" class="text-white/80 hover:text-white transition-colors">Back to Introduction</a>
+</div>
