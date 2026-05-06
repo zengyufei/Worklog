@@ -1,0 +1,75 @@
+<svelte:head>
+    <title>Development | Worklog Docs</title>
+</svelte:head>
+
+# Development Guide
+
+Welcome to the Worklog contributor community! This guide will help you set up your local environment and build the application from source.
+
+## Prerequisites
+
+Before you begin, ensure you have the following tools installed on your machine:
+
+- **Bun:** The primary runtime and package manager. [Install Bun](https://bun.sh/)
+- **Rust:** The stable toolchain is required for the Tauri backend. [Install Rust](https://rustup.rs/)
+- **System Dependencies:** Linux users will need several GTK and WebKit libraries.
+
+<div class="my-8 p-6 rounded-xl bg-white/5 border border-white/10">
+    <h4 class="text-white mb-2 font-mono text-xs uppercase tracking-widest text-white/30">Linux Dependencies (Ubuntu/Debian)</h4>
+    <pre class="mb-0 text-xs"><code>sudo apt-get update
+sudo apt-get install -y \
+    build-essential \
+    pkg-config \
+    libgtk-3-dev \
+    libwebkit2gtk-4.1-dev \
+    libappindicator3-dev \
+    librsvg2-dev \
+    patchelf</code></pre>
+</div>
+
+## Environment Setup
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/regisx001/Worklog.git
+   cd Worklog
+   ```
+
+2. **Install dependencies:**
+   ```bash
+   bun install --frozen-lockfile
+   ```
+
+## Development Commands
+
+Worklog provides several commands to help you develop and test the application:
+
+| Command | Description |
+| :--- | :--- |
+| `bun run dev` | Run the frontend (SvelteKit) with hot-reloading in the browser. |
+| `bun run tauri dev` | Run the full desktop application in development mode. |
+| `bun run check` | Run TypeScript and Svelte diagnostics. |
+| `bun run tauri:build` | Generate production binaries for your current platform. |
+
+## Project Structure
+
+- `/src`: The SvelteKit frontend application.
+- `/src-tauri`: The Rust backend and Tauri configuration.
+- `/site`: The documentation and landing page (where you are right now).
+- `/docs`: Internal architecture and dataflow design documents.
+
+## Contributing
+
+We welcome contributions of all kinds! Whether it's fixing a bug, suggesting a feature, or improving documentation.
+
+1. Fork the repository.
+2. Create a new branch for your feature or fix.
+3. Submit a Pull Request with a clear description of your changes.
+4. Ensure all checks (`bun run check`) pass before submission.
+
+<a 
+    href="/docs/privacy" 
+    class="inline-flex items-center gap-2 px-6 py-3 bg-[#3B82F6] text-white rounded-full font-medium hover:bg-[#3B82F6]/80 transition-colors mt-8"
+>
+    Next: Privacy &rarr;
+</a>

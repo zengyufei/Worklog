@@ -1,5 +1,6 @@
 <script>
     import DocsSidebar from "$lib/components/DocsSidebar.svelte";
+    import TableOfContents from "$lib/components/TableOfContents.svelte";
     import { onMount } from "svelte";
     import gsap from "gsap";
 
@@ -22,13 +23,14 @@
     <DocsSidebar />
     
     <main 
-        bind:this={contentRef}
-        class="flex-1 px-6 md:px-16 pt-32 pb-24 relative z-10 max-w-5xl mx-auto md:ml-64"
+        class="flex-1 px-6 md:px-16 pt-32 pb-24 relative z-10 max-w-5xl mx-auto md:ml-64 xl:mr-80"
     >
-        <div class="prose prose-invert max-w-none">
+        <div bind:this={contentRef} class="prose prose-invert max-w-none">
             {@render children()}
         </div>
     </main>
+
+    <TableOfContents container={contentRef} />
 </div>
 
 <style>
@@ -46,6 +48,16 @@
         margin-top: 3rem;
         margin-bottom: 1.5rem;
         color: rgba(255, 255, 255, 0.9);
+        scroll-margin-top: 100px;
+    }
+    :global(.prose h3) {
+        font-family: 'Instrument Serif', serif;
+        font-size: 1.5rem;
+        font-weight: 400;
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+        color: rgba(255, 255, 255, 0.8);
+        scroll-margin-top: 100px;
     }
     :global(.prose p) {
         font-family: 'Inter', sans-serif;
