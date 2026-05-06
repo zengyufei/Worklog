@@ -5,7 +5,7 @@
     import Lenis from "lenis";
     import "lenis/dist/lenis.css";
     import "./layout.css";
-    import favicon from "$lib/assets/favicon.svg";
+    import favicon from "$lib/assets/icon.png";
     import Header from "$lib/components/header.svelte";
     import Cursor from "$lib/components/Cursor.svelte";
 
