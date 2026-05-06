@@ -1,3 +1,10 @@
+<script>
+    import Layout from "@lucide/svelte/icons/layout";
+    import Hook from "@lucide/svelte/icons/webhook";
+    import Database from "@lucide/svelte/icons/database";
+    import ArrowRight from "@lucide/svelte/icons/arrow-right";
+</script>
+
 <svelte:head>
     <title>Architecture | Worklog Docs</title>
 </svelte:head>
@@ -19,15 +26,47 @@ The application leverages modern web and systems technologies to provide a nativ
 
 Worklog follows a strict unidirectional data flow to ensure the UI stays in sync with the underlying database.
 
-<div class="my-12 p-8 rounded-2xl bg-white/5 border border-white/10 text-center">
-    <div class="flex flex-col md:flex-row items-center justify-center gap-4 text-sm font-mono uppercase tracking-wider">
-        <div class="px-4 py-2 bg-white/5 rounded-lg border border-white/10">UI Components</div>
-        <div class="text-[#3B82F6]">&rarr;</div>
-        <div class="px-4 py-2 bg-white/5 rounded-lg border border-white/10">Svelte Runes (Hooks)</div>
-        <div class="text-[#3B82F6]">&rarr;</div>
-        <div class="px-4 py-2 bg-white/5 rounded-lg border border-white/10">Repositories</div>
-        <div class="text-[#3B82F6]">&rarr;</div>
-        <div class="px-4 py-2 bg-[#3B82F6]/20 rounded-lg border border-[#3B82F6]/50 text-[#3B82F6]">SQLite (.db)</div>
+<div class="my-12 p-8 rounded-2xl bg-white/5 border border-white/10">
+    <div class="flex flex-col md:flex-row items-center justify-center gap-6">
+        <div class="flex flex-col items-center gap-3">
+            <div class="p-4 bg-white/5 rounded-2xl border border-white/10 text-[#3B82F6]">
+                <Layout size={32} />
+            </div>
+            <span class="text-xs font-mono uppercase text-white/40">UI Layer</span>
+        </div>
+        
+        <div class="text-[#3B82F6] rotate-90 md:rotate-0">
+            <ArrowRight size={20} />
+        </div>
+
+        <div class="flex flex-col items-center gap-3">
+            <div class="p-4 bg-white/5 rounded-2xl border border-white/10 text-[#3B82F6]">
+                <Hook size={32} />
+            </div>
+            <span class="text-xs font-mono uppercase text-white/40">Svelte Runes</span>
+        </div>
+
+        <div class="text-[#3B82F6] rotate-90 md:rotate-0">
+            <ArrowRight size={20} />
+        </div>
+
+        <div class="flex flex-col items-center gap-3">
+            <div class="p-4 bg-white/5 rounded-2xl border border-white/10 text-[#3B82F6]">
+                <Database size={32} />
+            </div>
+            <span class="text-xs font-mono uppercase text-white/40">Repositories</span>
+        </div>
+
+        <div class="text-[#3B82F6] rotate-90 md:rotate-0">
+            <ArrowRight size={20} />
+        </div>
+
+        <div class="flex flex-col items-center gap-3">
+            <div class="p-4 bg-[#3B82F6]/20 rounded-2xl border border-[#3B82F6]/50 text-[#3B82F6]">
+                <Database size={32} />
+            </div>
+            <span class="text-xs font-mono uppercase text-[#3B82F6]">SQLite</span>
+        </div>
     </div>
 </div>
 

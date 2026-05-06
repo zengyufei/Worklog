@@ -2,6 +2,7 @@
     import { onMount } from "svelte";
     import { gsap } from "gsap";
     import { ScrollTrigger } from "gsap/ScrollTrigger";
+    import { afterNavigate } from "$app/navigation";
     import Lenis from "lenis";
     import "lenis/dist/lenis.css";
     import "./layout.css";
@@ -10,12 +11,13 @@
     import Cursor from "$lib/components/Cursor.svelte";
 
     let { children } = $props();
+    let lenis;
 
     onMount(() => {
         gsap.registerPlugin(ScrollTrigger);
 
         // Lenis'i başlat (Smooth Scrolling)
-        const lenis = new Lenis({
+        lenis = new Lenis({
             autoRaf: true,
             duration: 1.2,
             easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
@@ -39,6 +41,14 @@
             lenis.destroy();
             gsap.ticker.remove(lenis.raf);
         };
+    });
+
+    afterNavigate(() => {
+        if (lenis) {
+            lenis.scrollTo(0, { immediate: true });
+        } else {
+            window.scrollTo(0, 0);
+        }
     });
 </script>
 

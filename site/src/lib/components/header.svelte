@@ -191,8 +191,7 @@
         class="flex space-x-1 sm:space-x-3 items-center z-50"
     >
         <a
-            href="{base}/#footer"
-            onclick={(e) => scrollTo(e, "#footer")}
+            href="{base}/docs/download"
             class="hidden md:flex items-center justify-center text-sm font-medium bg-white text-black hover:bg-white/80 transition-colors px-6 py-2 rounded-full"
             >Download</a
         >
@@ -258,8 +257,7 @@
         <li class="overflow-hidden mt-6 pt-8 border-t border-white/10">
             <a
                 bind:this={mobileLinksRef[4]}
-                href="{base}/#footer"
-                onclick={(e) => scrollTo(e, "#footer")}
+                href="{base}/docs/download"
                 class="inline-block text-xl font-sans text-white hover:text-white/80 transition-colors will-change-transform"
                 >Download Now &rarr;</a
             >
