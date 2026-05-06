@@ -2,11 +2,60 @@
     import { base } from "$app/paths";
     import { onMount } from "svelte";
     import gsap from "gsap";
+    import pkg from "../../../../package.json";
+    import ChevronDown from "@lucide/svelte/icons/chevron-down";
+    import Monitor from "@lucide/svelte/icons/monitor";
+    import Box from "@lucide/svelte/icons/box";
+    import Laptop from "@lucide/svelte/icons/laptop";
+
+    const version = pkg.version;
+    const tag = `app-v${version}`;
+    const baseUrl = `https://github.com/regisx001/Worklog/releases/download/${tag}`;
 
     let words = $state([]);
     let descRef = $state();
     let ctaContainer = $state();
     let bgRef = $state();
+    let isDropdownOpen = $state(false);
+    let dropdownRef = $state();
+
+    const platforms = [
+        { 
+            name: "Linux (.deb)", 
+            file: `worklog_${version}_amd64.deb`,
+            icon: Box 
+        },
+        { 
+            name: "Linux (.AppImage)", 
+            file: `worklog_${version}_amd64.AppImage`,
+            icon: Box 
+        },
+        { 
+            name: "Windows (.exe)", 
+            file: `Worklog_${version}_x64-setup.exe`,
+            icon: Monitor 
+        },
+        { 
+            name: "macOS (Intel)", 
+            file: `Worklog_${version}_x64.dmg`,
+            icon: Laptop 
+        },
+        { 
+            name: "macOS (Apple Silicon)", 
+            file: `Worklog_${version}_aarch64.dmg`,
+            icon: Laptop 
+        }
+    ];
+
+    function toggleDropdown() {
+        isDropdownOpen = !isDropdownOpen;
+        if (isDropdownOpen) {
+            gsap.fromTo(dropdownRef, 
+                { autoAlpha: 0, y: 10, scale: 0.95 },
+                { autoAlpha: 1, y: 0, scale: 1, duration: 0.4, ease: "power2.out" }
+            );
+        }
+    }
 
     onMount(() => {
         const tl = gsap.timeline({ delay: 0.2 });
@@ -71,12 +120,22 @@
             });
         };
 
+        const handleClickOutside = (e) => {
+            if (isDropdownOpen && !e.target.closest('.download-dropdown')) {
+                isDropdownOpen = false;
+            }
+        };
+
         // Disable parallax tracking on small touch devices
         if (window.innerWidth > 768) {
             window.addEventListener("mousemove", handleMouseMove);
         }
+        window.addEventListener("click", handleClickOutside);
 
-        return () => window.removeEventListener("mousemove", handleMouseMove);
+        return () => {
+            window.removeEventListener("mousemove", handleMouseMove);
+            window.removeEventListener("click", handleClickOutside);
+        };
     });
 </script>
 
@@ -144,12 +203,42 @@
             >
                 Explore Features
             </a>
-            <a
-                href="#services"
-                class="hidden md:inline-block px-8 py-4 bg-transparent text-white border border-white/20 rounded-full font-sans font-medium hover:bg-[#3B82F6] hover:border-[#3B82F6] transition-all duration-500 cursor-pointer"
-            >
-                Download v1.2
-            </a>
+            
+            <div class="relative download-dropdown hidden md:block">
+                <button
+                    onclick={toggleDropdown}
+                    class="px-8 py-4 bg-transparent text-white border border-white/20 rounded-full font-sans font-medium hover:bg-white/5 transition-all duration-300 cursor-pointer flex items-center gap-2"
+                >
+                    Download v{version}
+                    <ChevronDown size={16} class="transition-transform duration-300 {isDropdownOpen ? 'rotate-180' : ''}" />
+                </button>
+
+                {#if isDropdownOpen}
+                    <div 
+                        bind:this={dropdownRef}
+                        class="absolute top-full left-0 mt-4 w-64 bg-[#0A0A0A]/95 backdrop-blur-2xl border border-white/10 rounded-2xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-50 origin-top-left"
+                    >
+                        <div class="p-2 flex flex-col gap-1">
+                            {#each platforms as platform}
+                                <a 
+                                    href="{baseUrl}/{platform.file}"
+                                    class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-[#3B82F6] text-white/70 hover:text-white transition-all duration-200 group/item"
+                                >
+                                    <div class="text-white/20 group-hover/item:text-white transition-colors">
+                                        <svelte:component this={platform.icon} size={18} />
+                                    </div>
+                                    <span class="text-sm font-medium">{platform.name}</span>
+                                </a>
+                            {/each}
+                        </div>
+                        <div class="bg-white/5 p-4 border-t border-white/5">
+                            <a href="{base}/docs/download" class="text-xs text-white/40 hover:text-[#3B82F6] transition-colors flex items-center justify-center gap-2">
+                                All download options &rarr;
+                            </a>
+                        </div>
+                    </div>
+                {/if}
+            </div>
         </div>
     </div>
 </section>
