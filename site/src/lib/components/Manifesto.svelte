@@ -4,7 +4,7 @@
 	import ScrollTrigger from "gsap/ScrollTrigger";
 
 	const paragraph =
-		"We believe the digital realm should not be a static canvas, but an immersive reality. We architect uncompromised spatial experiences that redefine the boundaries of human interaction, blending cutting-edge engineering precision with unapologetic visual poetry.";
+		"We believe your project data belongs to you, not the cloud. Worklog is built on the principle of local-first reliability: zero latency, offline-ready, and transparent persistence. We architect tools that respect your privacy while empowering your team with high-performance, keyboard-driven planning.";
 	const words = paragraph.split(" ");
 
 	let manifestoRef = $state();

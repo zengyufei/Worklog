@@ -6,10 +6,10 @@
 	let statsRef = $state();
 
 	const stats = [
-		{ label: "Value Created", limit: 200, suffix: "M+", prefix: "$" },
-		{ label: "Global Awards", limit: 45, suffix: "+", prefix: "" },
-		{ label: "Sprint Cycles", limit: 60, suffix: " Days", prefix: "<" },
-		{ label: "Partner Brands", limit: 120, suffix: "+", prefix: "" },
+		{ label: "Local-First", limit: 100, suffix: "%", prefix: "" },
+		{ label: "Latency", limit: 0, suffix: "ms", prefix: "" },
+		{ label: "Offline-Ready", limit: 24, suffix: "/7", prefix: "" },
+		{ label: "Open Source", limit: 1, suffix: "", prefix: "#" },
 	];
 
 	onMount(() => {

@@ -5,19 +5,19 @@
 
 	const services = [
 		{
-			title: "Digital Strategy",
-			desc: "Aligning creative vision with business objectives to architect immersive digital platforms that disrupt the market.",
-			icon: "M13 10V3L4 14h7v8l9-11h-7z",
+			title: "Local-First Persistence",
+			desc: "Your data stays on your machine. Worklog uses SQLite for transparent, portable, and offline-ready project storage with zero cloud dependency.",
+			icon: "M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z",
 		},
 		{
-			title: "Space & Web3",
-			desc: "Bridging the gap between hyper-complex blockchain data and stunningly simple user adoption through spatial design.",
-			icon: "M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5",
+			title: "Keyboard-First Speed",
+			desc: "Designed for power users. Navigate, create tickets, and switch boards instantly with a robust command palette and intuitive shortcuts.",
+			icon: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z",
 		},
 		{
-			title: "Motion Identity",
-			desc: "Breathing life into static brands using hardware-accelerated fluid motion, WebGL, and advanced typography.",
-			icon: "M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z",
+			title: "Git-Native Sync",
+			desc: "Seamless background synchronization using standard Git protocols. Keep your team in parity without sacrificing local control.",
+			icon: "M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15",
 		},
 	];
 
@@ -60,7 +60,7 @@
 	>
 		<span
 			class="text-xs font-mono text-white/30 uppercase tracking-widest mb-16 text-center tracking-[0.3em]"
-			>Our Core Disciplines</span
+			>Core Capabilities</span
 		>
 
 		<div

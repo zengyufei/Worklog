@@ -16,22 +16,21 @@
 	});
 
 	const brands = [
-		"Lumina",
-		"Ozone",
-		"Nexal",
-		"Aura",
-		"Vercel",
-		"Stripe",
-		"Linear",
-		"Figma",
-		"Lumina",
-		"Ozone",
-		"Nexal",
-		"Aura",
-		"Vercel",
-		"Stripe",
-		"Linear",
-		"Figma", // Duplicated to allow infinite loop
+		"SvelteKit",
+		"Tauri v2",
+		"GSAP",
+		"SQLite",
+		"Bun",
+		"Rust",
+		"TailwindCSS",
+		"Lucide",
+		"SvelteKit",
+		"Tauri v2",
+		"GSAP",
+		"SQLite",
+		"Bun",
+		"Rust",
+		"TailwindCSS", // Duplicated to allow infinite loop
 	];
 </script>
 
@@ -49,7 +48,7 @@
 	<p
 		class="text-xs font-mono text-white/30 uppercase tracking-widest mb-10 text-center relative z-20"
 	>
-		We collaborate with forward-thinking teams
+		Built with a modern, high-performance stack
 	</p>
 
 	<!-- Endless Marquee Wrapper -->

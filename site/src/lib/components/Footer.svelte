@@ -14,12 +14,12 @@
 		<h2
 			class="text-[12vw] md:text-[7vw] font-serif leading-[0.85] tracking-tighter mix-blend-difference z-10 w-full md:w-2/3"
 		>
-			Have a project<br />
-			<span class="italic text-white/40">in mind?</span>
+			Take control of<br />
+			<span class="italic text-white/40">your data.</span>
 		</h2>
 		<div class="w-full md:w-1/3 flex md:justify-end z-10">
 			<a
-				href="mailto:hello@aurastudio.com"
+				href="https://github.com/regisx001/Worklog"
 				class="group relative flex items-center justify-center w-40 h-40 md:w-48 md:h-48 rounded-full bg-white text-black hover:scale-105 transition-transform duration-500 cursor-pointer"
 			>
 				<span
@@ -27,7 +27,7 @@
 				></span>
 				<span
 					class="font-sans font-medium text-lg relative z-10 group-hover:text-white transition-colors duration-500"
-					>Let's Talk</span
+					>View GitHub</span
 				>
 			</a>
 		</div>
@@ -40,8 +40,8 @@
 		<div class="col-span-1 md:col-span-1 flex flex-col gap-6">
 			<div class="opacity-80"><Logo /></div>
 			<p class="text-white/40 font-sans text-sm leading-relaxed max-w-xs">
-				A globally awarded creative agency specializing in bringing
-				revolutionary digital products to life.
+				A local-first desktop project manager designed for speed,
+				privacy, and seamless Git collaboration.
 			</p>
 		</div>
 
@@ -59,12 +59,12 @@
 			<a
 				href="#services"
 				class="text-white/60 hover:text-white font-sans text-sm transition-colors"
-				>Services</a
+				>Features</a
 			>
 			<a
 				href="#work"
 				class="text-white/60 hover:text-white font-sans text-sm transition-colors"
-				>Selected Works</a
+				>Views</a
 			>
 			<a
 				href="#faq"
@@ -110,8 +110,8 @@
 				Newsletter
 			</h4>
 			<p class="text-white/40 font-sans text-sm">
-				Join our newsletter for insights on WebGL, Svelte, and design
-				engineering.
+				Join our newsletter for insights on local-first development,
+				SvelteKit, and desktop engineering.
 			</p>
 			<div class="mt-2 flex w-full relative">
 				<input
@@ -132,7 +132,7 @@
 	<div
 		class="px-6 md:px-24 max-w-7xl mx-auto pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-6 md:gap-4 text-xs font-mono text-base tracking-wider relative z-10"
 	>
-		<p class="text-white/30">&copy; 2026 AURA Creative Studio.</p>
+		<p class="text-white/30">&copy; 2026 Worklog Project. Open Source MIT.</p>
 
 		<div class="flex flex-col md:flex-row items-center gap-4 md:gap-8">
 			<span class="text-white/50 text-sm font-sans font-light">

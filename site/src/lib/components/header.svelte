@@ -5,6 +5,8 @@
     import Logo from "./logo.svelte";
     import Menu from "@lucide/svelte/icons/menu";
     import X from "@lucide/svelte/icons/x";
+    import { base } from '$app/paths';
+    import { page } from '$app/state';
 
     let headerRef = $state();
     let navItemsRef = $state([]);
@@ -47,13 +49,15 @@
 
     // Advanced Smooth Scroll Injection
     function scrollTo(evt, id) {
-        evt.preventDefault();
-        if (isMenuOpen) toggleMenu();
-        gsap.to(window, {
-            duration: 1.5,
-            scrollTo: { y: id, offsetY: 40 },
-            ease: "expo.inOut",
-        });
+        if (page.url.pathname === `${base}/` || page.url.pathname === base) {
+            evt.preventDefault();
+            if (isMenuOpen) toggleMenu();
+            gsap.to(window, {
+                duration: 1.5,
+                scrollTo: { y: id, offsetY: 40 },
+                ease: "expo.inOut",
+            });
+        }
     }
 
     onMount(() => {
@@ -141,7 +145,7 @@
 >
     <a
         id="logo"
-        href="#agency"
+        href="{base}/#agency"
         onclick={(e) => scrollTo(e, "#agency")}
         bind:this={logoRef}
         class="flex-shrink-0 flex items-center justify-center w-auto cursor-pointer mix-blend-difference"
@@ -154,23 +158,23 @@
         <ul class="flex space-x-8 text-sm font-medium text-white/70">
             <li bind:this={navItemsRef[0]}>
                 <a
-                    href="#work"
+                    href="{base}/#work"
                     onclick={(e) => scrollTo(e, "#work")}
-                    class="hover:text-white transition-colors">Work</a
+                    class="hover:text-white transition-colors">Features</a
                 >
             </li>
             <li bind:this={navItemsRef[1]}>
                 <a
-                    href="#services"
+                    href="{base}/#services"
                     onclick={(e) => scrollTo(e, "#services")}
-                    class="hover:text-white transition-colors">Services</a
+                    class="hover:text-white transition-colors">Workflow</a
                 >
             </li>
             <li bind:this={navItemsRef[2]}>
                 <a
                     href="#agency"
                     onclick={(e) => scrollTo(e, "#agency")}
-                    class="hover:text-white transition-colors">Agency</a
+                    class="hover:text-white transition-colors">About</a
                 >
             </li>
         </ul>
@@ -182,7 +186,7 @@
         class="flex space-x-1 sm:space-x-3 items-center z-50"
     >
         <a
-            href="#contact"
+            href="{base}/#contact"
             onclick={(e) => scrollTo(e, "#contact")}
             class="hidden md:flex items-center justify-center text-sm font-medium bg-white text-black hover:bg-white/80 transition-colors px-6 py-2 rounded-full"
             >Let's Talk</a
@@ -214,34 +218,34 @@
         <li class="overflow-hidden">
             <a
                 bind:this={mobileLinksRef[0]}
-                href="#work"
+                href="{base}/#work"
                 onclick={(e) => scrollTo(e, "#work")}
                 class="block text-4xl font-sans font-light text-white/80 hover:text-white transition-colors will-change-transform"
-                >Work</a
+                >Features</a
             >
         </li>
         <li class="overflow-hidden">
             <a
                 bind:this={mobileLinksRef[1]}
-                href="#services"
+                href="{base}/#services"
                 onclick={(e) => scrollTo(e, "#services")}
                 class="block text-4xl font-sans font-light text-white/80 hover:text-white transition-colors will-change-transform"
-                >Services</a
+                >Workflow</a
             >
         </li>
         <li class="overflow-hidden">
             <a
                 bind:this={mobileLinksRef[2]}
-                href="#agency"
+                href="{base}/#agency"
                 onclick={(e) => scrollTo(e, "#agency")}
                 class="block text-4xl font-sans font-light text-white/80 hover:text-white transition-colors will-change-transform"
-                >Agency</a
+                >About</a
             >
         </li>
         <li class="overflow-hidden mt-6 pt-8 border-t border-white/10">
             <a
                 bind:this={mobileLinksRef[3]}
-                href="#contact"
+                href="{base}/#contact"
                 onclick={(e) => scrollTo(e, "#contact")}
                 class="inline-block text-xl font-sans text-white hover:text-white/80 transition-colors will-change-transform"
                 >Let's talk &rarr;</a

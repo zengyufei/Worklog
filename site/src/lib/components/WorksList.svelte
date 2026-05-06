@@ -3,27 +3,27 @@
 	const works = [
 		{
 			id: "01",
-			name: "Nike Forward",
-			category: "E-Commerce Experience",
-			year: "2025",
+			name: "Kanban Board",
+			category: "Full Workspace Overview",
+			year: "Included",
 		},
 		{
 			id: "02",
-			name: "Ozone WebGL",
-			category: "Interactive Architecture",
-			year: "2024",
+			name: "Table View",
+			category: "Bulk Editing & Sorting",
+			year: "Included",
 		},
 		{
 			id: "03",
-			name: "Lumina App",
-			category: "Spatial UI Design",
-			year: "2024",
+			name: "Timeline View",
+			category: "Project Scheduling",
+			year: "Roadmap",
 		},
 		{
 			id: "04",
-			name: "Aura Engine",
-			category: "Open Source Platform",
-			year: "2023",
+			name: "Command Palette",
+			category: "Rapid Execution",
+			year: "Included",
 		},
 	];
 </script>
@@ -36,13 +36,13 @@
 		class="px-6 md:px-24 mb-24 max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-end gap-6"
 	>
 		<h2 class="text-5xl md:text-8xl font-serif tracking-tight">
-			Selected<br /><span class="italic text-white/40">Works.</span>
+			Powerful<br /><span class="italic text-white/40">Views.</span>
 		</h2>
 		<p
 			class="text-white/50 font-sans max-w-sm text-lg leading-relaxed pb-2"
 		>
-			A curation of highly immersive projects pushing digital boundaries.
-			Hover to reveal more.
+			A curation of high-performance interfaces designed for maximum
+			efficiency.
 		</p>
 	</div>
 
@@ -52,9 +52,9 @@
 			class="flex border-b border-white/20 pb-4 mb-4 text-xs font-mono text-white/40 uppercase tracking-widest px-4"
 		>
 			<div class="w-16">ID</div>
-			<div class="flex-1">Project</div>
-			<div class="hidden md:block w-1/3">Role</div>
-			<div class="w-16 text-right">Year</div>
+			<div class="flex-1">Interface</div>
+			<div class="hidden md:block w-1/3">Focus</div>
+			<div class="w-16 text-right">Status</div>
 		</div>
 
 		<!-- Table Rows -->
@@ -93,11 +93,12 @@
 		{/each}
 
 		<div class="mt-16 flex justify-center w-full">
-			<button
+			<a
+				href="{base}/docs"
 				class="px-8 py-3 rounded-full border border-white/20 text-white/80 hover:bg-white hover:text-black transition-colors duration-500 font-sans cursor-pointer text-sm font-medium"
 			>
-				View All Archives
-			</button>
+				View Documentation
+			</a>
 		</div>
 	</div>
 </section>

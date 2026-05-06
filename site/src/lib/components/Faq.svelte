@@ -5,20 +5,20 @@
 
 	const faqs = [
 		{
-			q: "What is your typical project timeline?",
-			a: "Most of our immersive web experiences take between 6 to 8 weeks from concept to deployment. Enterprise platforms and highly complex WebGL applications may require up to 4 months.",
+			q: "Where is my data actually stored?",
+			a: "Your data is stored locally on your machine in a SQLite database located at `.worklog/worklog.db` within your workspace directory. We never upload your project data to our servers.",
 		},
 		{
-			q: "Do you only build with Svelte and GSAP?",
-			a: "While Svelte and GSAP are our preferred tools for extreme performance and fluid motion, our engineering team is framework-agnostic. We work extensively with Next.js, Vue, and vanilla WebGL depending on architecture requirements.",
+			q: "How does the Git sync work?",
+			a: "Worklog uses a background scheduler to keep your local workspace in parity with a private GitHub repository. It uses a pull-before-push strategy to ensure your history remains clean and conflict-free.",
 		},
 		{
-			q: "How does the pricing structure work?",
-			a: "We operate on milestone-based pricing for fixed-scope projects. For ongoing product development, we offer dedicated team retainers. Every project requires a custom quotation based on scope complexity.",
+			q: "Can I use it completely offline?",
+			a: "Yes. Worklog is designed to be offline-first. All core features—board management, ticket editing, and command execution—work perfectly without an internet connection.",
 		},
 		{
-			q: "Can you integrate with Web3 and custom backends?",
-			a: "Absolutely. We specialize in building headless interfaces that seamlessly connect via modern SDKs to blockchain networks, AI models, and any custom API infrastructure.",
+			q: "Is Worklog open source?",
+			a: "Yes. Worklog is built with transparency in mind. You can inspect the source code, contribute to the project, or even host your own version of the Git sync backend.",
 		},
 	];
 
@@ -55,8 +55,8 @@
 				<span class="italic text-white/40">Asked</span>
 			</h2>
 			<p class="text-white/50 mt-6 font-sans font-light">
-				Answers to the most common questions regarding our process,
-				technology stack, and partnership models.
+				Everything you need to know about Worklog's local-first architecture,
+				data privacy, and workflow integration.
 			</p>
 
 			<a

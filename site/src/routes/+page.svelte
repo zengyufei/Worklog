@@ -4,7 +4,6 @@
 	import Brands from "$lib/components/Brands.svelte";
 	import Showcase from "$lib/components/Showcase.svelte";
 	import WorksList from "$lib/components/WorksList.svelte";
-	import Testimonials from "$lib/components/Testimonials.svelte";
 	import Stats from "$lib/components/Stats.svelte";
 	import Faq from "$lib/components/Faq.svelte";
 	import Footer from "$lib/components/Footer.svelte";
@@ -19,7 +18,6 @@
 	<Brands />
 	<Showcase />
 	<WorksList />
-	<Testimonials />
 	<Stats />
 	<Faq />
 	<Footer />
