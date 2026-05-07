@@ -499,8 +499,8 @@
                         <section class="settings-section">
                             <h2>Application Updates</h2>
                             <p class="section-desc">
-                                Check for updates and relaunch after the
-                                install completes.
+                                Check for updates and relaunch after the install
+                                completes.
                             </p>
                             <div class="control-box">
                                 <Button
