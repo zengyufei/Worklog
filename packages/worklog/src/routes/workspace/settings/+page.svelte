@@ -25,6 +25,7 @@
     } from "$lib/db/export";
     import { importFromFile } from "$lib/db/mappers";
     import { notifications } from "$lib/hooks/notifications.svelte";
+    import { runUpdate } from "$lib/updater";
     import type { ExportFormat, ExportMode } from "$lib/db/mappers";
     import { useSyncConfig } from "$lib/sync/sync-config.svelte";
     import { SyncEngine } from "$lib/sync/sync-engine";
@@ -346,6 +347,20 @@
         }
     }
 
+    async function handleCheckForUpdates() {
+        try {
+            await runUpdate();
+        } catch (error) {
+            console.error("Update failed", error);
+            notifications.add({
+                kind: "error",
+                title: "Update failed",
+                subtitle: String(error),
+                timeout: 5000,
+            });
+        }
+    }
+
     // ── Derived ────────────────────────────────────────────────────────────
     const syncConfigured = $derived(
         syncRemoteUrl.length > 0 && syncAccessToken.length > 0,
@@ -476,6 +491,24 @@
                                     value={version}
                                     readonly
                                 />
+                            </div>
+                        </section>
+                    {/if}
+
+                    {#if matchesSearch("Updates Check for updates Application")}
+                        <section class="settings-section">
+                            <h2>Application Updates</h2>
+                            <p class="section-desc">
+                                Check for updates and relaunch after the
+                                install completes.
+                            </p>
+                            <div class="control-box">
+                                <Button
+                                    kind="primary"
+                                    onclick={handleCheckForUpdates}
+                                >
+                                    Check for updates
+                                </Button>
                             </div>
                         </section>
                     {/if}

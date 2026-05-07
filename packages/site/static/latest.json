@@ -1,0 +1,11 @@
+{
+	"version": "1.2.8",
+	"notes": "Test update from GitHub Pages.",
+	"pub_date": "2026-05-07T00:00:00Z",
+	"platforms": {
+		"linux-x86_64": {
+			"url": "https://github.com/regisx001/Worklog/releases/download/app-v1.2.8/Worklog_1.2.8_amd64.AppImage",
+			"signature": "REPLACE_WITH_TAURI_SIGNATURE"
+		}
+	}
+}
