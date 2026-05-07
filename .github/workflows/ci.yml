@@ -5,27 +5,25 @@ on:
     branches:
       - master
     paths:
-      - src/**
-      - src-tauri/**
-      - static/**
-      - package.json
-      - bun.lock
-      - svelte.config.js
-      - tsconfig.json
-      - vite.config.js
-      - components.json
+      - packages/worklog/src/**
+      - packages/worklog/src-tauri/**
+      - packages/worklog/static/**
+      - packages/worklog/package.json
+      - packages/worklog/bun.lock
+      - packages/worklog/svelte.config.js
+      - packages/worklog/tsconfig.json
+      - packages/worklog/vite.config.js
       - .github/workflows/ci.yml
   pull_request:
     paths:
-      - src/**
-      - src-tauri/**
-      - static/**
-      - package.json
-      - bun.lock
-      - svelte.config.js
-      - tsconfig.json
-      - vite.config.js
-      - components.json
+      - packages/worklog/src/**
+      - packages/worklog/src-tauri/**
+      - packages/worklog/static/**
+      - packages/worklog/package.json
+      - packages/worklog/bun.lock
+      - packages/worklog/svelte.config.js
+      - packages/worklog/tsconfig.json
+      - packages/worklog/vite.config.js
       - .github/workflows/ci.yml
   workflow_dispatch:
 
@@ -45,12 +43,15 @@ jobs:
         uses: oven-sh/setup-bun@v2
 
       - name: Install dependencies
+        working-directory: packages/worklog
         run: bun install --frozen-lockfile
 
       - name: Type and Svelte checks
+        working-directory: packages/worklog
         run: bun run check
 
       - name: Build frontend
+        working-directory: packages/worklog
         run: bun run build
 
 
@@ -79,6 +80,7 @@ jobs:
   #       uses: oven-sh/setup-bun@v2
 
   #     - name: Install frontend dependencies
+  #       working-directory: packages/worklog
   #       run: bun install --frozen-lockfile
 
   #     - name: Setup Rust toolchain
@@ -87,7 +89,8 @@ jobs:
   #     - name: Cache Rust dependencies
   #       uses: Swatinem/rust-cache@v2
   #       with:
-  #         workspaces: src-tauri
+  #         workspaces: packages/worklog/src-tauri
 
   #     - name: Build Tauri binary (no bundle)
+  #       working-directory: packages/worklog
   #       run: bun tauri build --no-bundle

@@ -4,7 +4,7 @@ on:
   push:
     branches: ["master"]
     paths:
-      - "site/**"
+      - "packages/site/**"
   workflow_dispatch:
 
 permissions:
@@ -27,22 +27,22 @@ jobs:
         uses: oven-sh/setup-bun@v2
 
       - name: Install dependencies
-        working-directory: site
+        working-directory: packages/site
         run: bun install
 
       - name: Build project
-        working-directory: site
+        working-directory: packages/site
         env:
           VITE_BASE_URL: "/${{ github.event.repository.name }}"
         run: bun run build
 
       - name: Add .nojekyll file
-        run: touch site/build/.nojekyll
+        run: touch packages/site/build/.nojekyll
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: site/build
+          path: packages/site/build
 
   deploy:
     needs: build_site
