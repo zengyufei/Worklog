@@ -5,14 +5,39 @@ export async function runUpdate(): Promise<void> {
 
         const update = await check();
 
-        if (!update?.available) {
+        if (!update) {
             console.info("No update available");
             return;
         }
 
-        console.info("Update available", update.version, update.body);
+        console.info(
+            `Update available ${update.version} from ${update.date} with notes ${update.body}`
+        );
 
-        await update.downloadAndInstall();
+        let downloaded = 0;
+        let contentLength = 0;
+
+        await update.downloadAndInstall((event) => {
+            switch (event.event) {
+                case "Started":
+                    contentLength = event.data.contentLength ?? 0;
+                    console.info(
+                        `Started downloading ${contentLength} bytes`
+                    );
+                    break;
+                case "Progress":
+                    downloaded += event.data.chunkLength ?? 0;
+                    console.info(
+                        `Downloaded ${downloaded} from ${contentLength}`
+                    );
+                    break;
+                case "Finished":
+                    console.info("Download finished");
+                    break;
+            }
+        });
+
+        console.info("Update installed");
         await relaunch();
     } catch (error) {
         console.error("Update failed", error);
