@@ -1,51 +1,51 @@
 {
-  "version": "1.2.10",
+  "version": "1.2.11",
   "notes": "See the assets to download this version and install.",
-  "pub_date": "2026-05-07T20:38:49.452Z",
+  "pub_date": "2026-05-07T21:32:25.252Z",
   "platforms": {
     "darwin-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSWlA0V2pVQ1BvTEVSUVFvYlEvYkZDZWptbVI0SlNoOXIvWTRSOS9XQWF0RTQyanQ3dUduZG5uZXZxdVc0VERYUG1MU2Q0U2M4WklUQWYxN0dvTk9QMHVJVXl6bUVGRHdrPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzc4MTg1OTUzCWZpbGU6d29ya2xvZy5hcHAudGFyLmd6CmtNZDgzejhyb2tMc0pMNDBUR0YvbUlPN2lvR2pQK1QwcThOM0QwSUs5aDZSMUo2U2RUcDlGMGNtWThTUFRBcGU2WWsrMzdadlFuTXkzUU9EK1llY0NBPT0K",
-      "url": "https://github.com/regisx001/Worklog/releases/download/app-v1.2.10/worklog_x64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSWlA0V2pVQ1BvTEVqbjNyb2ZIQU5yTjYrVTJpdDYrdVBqeGwyME5GeExTZGtOTDNZTThNTmNrOVg2QzRMQnd4NmU2UitPUXZxWGF3Q3M4Y3pJeTdXZE9HeCtScG1vL0FBPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzc4MTg5MjEwCWZpbGU6d29ya2xvZy5hcHAudGFyLmd6CnBpbFY1aDZPZDZIUWkzMFMxOXpoZDFLZFFrMnBuQmtTeTlGMHRPa1pleUlCSC9FZENGdjkycG94RGc5WlJUMkRJOGh0Rm0wRnlDVVlkbmVjcDIxV0JBPT0K",
+      "url": "https://github.com/regisx001/Worklog/releases/download/app-v1.2.11/worklog_x64.app.tar.gz"
     },
     "darwin-x86_64-app": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSWlA0V2pVQ1BvTEVSUVFvYlEvYkZDZWptbVI0SlNoOXIvWTRSOS9XQWF0RTQyanQ3dUduZG5uZXZxdVc0VERYUG1MU2Q0U2M4WklUQWYxN0dvTk9QMHVJVXl6bUVGRHdrPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzc4MTg1OTUzCWZpbGU6d29ya2xvZy5hcHAudGFyLmd6CmtNZDgzejhyb2tMc0pMNDBUR0YvbUlPN2lvR2pQK1QwcThOM0QwSUs5aDZSMUo2U2RUcDlGMGNtWThTUFRBcGU2WWsrMzdadlFuTXkzUU9EK1llY0NBPT0K",
-      "url": "https://github.com/regisx001/Worklog/releases/download/app-v1.2.10/worklog_x64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSWlA0V2pVQ1BvTEVqbjNyb2ZIQU5yTjYrVTJpdDYrdVBqeGwyME5GeExTZGtOTDNZTThNTmNrOVg2QzRMQnd4NmU2UitPUXZxWGF3Q3M4Y3pJeTdXZE9HeCtScG1vL0FBPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzc4MTg5MjEwCWZpbGU6d29ya2xvZy5hcHAudGFyLmd6CnBpbFY1aDZPZDZIUWkzMFMxOXpoZDFLZFFrMnBuQmtTeTlGMHRPa1pleUlCSC9FZENGdjkycG94RGc5WlJUMkRJOGh0Rm0wRnlDVVlkbmVjcDIxV0JBPT0K",
+      "url": "https://github.com/regisx001/Worklog/releases/download/app-v1.2.11/worklog_x64.app.tar.gz"
     },
     "darwin-aarch64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSWlA0V2pVQ1BvTExSL1MweGNIQk5ySkZXY0M1aW91QWVyc3F2c1dZenY0WUwrNmIyajhUZEJRdTRZQ21ScFQ5Z1g0aW50WDI2cWlSZ09LdGhIYzhpSmtLTGpnc05MNkEwPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzc4MTg2MDEzCWZpbGU6d29ya2xvZy5hcHAudGFyLmd6ClAvSzRhZ09YZ3drdTR6MVZldW9STUJsdHN0bUZQR0ZMWHczbmZQVzRoRGZldXBsZXY5S0JEMjdJaVN3VEhFOXlVVlpubzAyZlVJZmU3aTlKZ01tTENRPT0K",
-      "url": "https://github.com/regisx001/Worklog/releases/download/app-v1.2.10/worklog_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSWlA0V2pVQ1BvTEQwNnk2WTVoNmE3UVY2Z09Tb0tHWjBxUzFtQ0NTNUFQQWgwZ052aVhwSUJjOEF3NmJscDZqcGVYQ3ZUUFhuVHBuTjgzUU8yRXdnOE54VzhiWmp6UlFRPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzc4MTg5MzI1CWZpbGU6d29ya2xvZy5hcHAudGFyLmd6CjRTZXFtUlo5aWh1cUpxbXY0dWpLdVJlT2lYeURXcXBBbWd2VzlBWitaNUhKei9DT2RERmV3VWtZdUNEeTIrRU1hZkhraTRzVXhXaWsyV1pobTFoTkR3PT0K",
+      "url": "https://github.com/regisx001/Worklog/releases/download/app-v1.2.11/worklog_aarch64.app.tar.gz"
     },
     "darwin-aarch64-app": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSWlA0V2pVQ1BvTExSL1MweGNIQk5ySkZXY0M1aW91QWVyc3F2c1dZenY0WUwrNmIyajhUZEJRdTRZQ21ScFQ5Z1g0aW50WDI2cWlSZ09LdGhIYzhpSmtLTGpnc05MNkEwPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzc4MTg2MDEzCWZpbGU6d29ya2xvZy5hcHAudGFyLmd6ClAvSzRhZ09YZ3drdTR6MVZldW9STUJsdHN0bUZQR0ZMWHczbmZQVzRoRGZldXBsZXY5S0JEMjdJaVN3VEhFOXlVVlpubzAyZlVJZmU3aTlKZ01tTENRPT0K",
-      "url": "https://github.com/regisx001/Worklog/releases/download/app-v1.2.10/worklog_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSWlA0V2pVQ1BvTEQwNnk2WTVoNmE3UVY2Z09Tb0tHWjBxUzFtQ0NTNUFQQWgwZ052aVhwSUJjOEF3NmJscDZqcGVYQ3ZUUFhuVHBuTjgzUU8yRXdnOE54VzhiWmp6UlFRPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzc4MTg5MzI1CWZpbGU6d29ya2xvZy5hcHAudGFyLmd6CjRTZXFtUlo5aWh1cUpxbXY0dWpLdVJlT2lYeURXcXBBbWd2VzlBWitaNUhKei9DT2RERmV3VWtZdUNEeTIrRU1hZkhraTRzVXhXaWsyV1pobTFoTkR3PT0K",
+      "url": "https://github.com/regisx001/Worklog/releases/download/app-v1.2.11/worklog_aarch64.app.tar.gz"
     },
     "linux-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSWlA0V2pVQ1BvTE1idEtBZXhxUGhFUHdtMU1TQVRBS1NYcEdDaXlTZnZuUCt3VGpLUWJJSFZLRXYrTTFiT2s4SW13ZVFLdDkwQnp1WWZEUlRVOXBJVVA0d3ZMUjVxVlFJPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzc4MTg2MTM1CWZpbGU6d29ya2xvZ18xLjIuMTBfYW1kNjQuQXBwSW1hZ2UKcmZhQWI4TVcwSHY1S1BWSDJLUmVGOUdiUjMyMjJHL2RueDVhcU52UStpQlpUQmk2TE9GWEN3cWV0TGRLcWJyR0p4bTY1aUc2UFJDTUlWZHowRGt2RGc9PQo=",
-      "url": "https://github.com/regisx001/Worklog/releases/download/app-v1.2.10/worklog_1.2.10_amd64.AppImage"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSWlA0V2pVQ1BvTEVnNllBT3ZRTDBaSCtPT0JNRE03MjZLbG0xMlowOVdCU2k1MlFEM25zWjBEYUdlbVh5MEgrNUgzNlNWUnNBMzJydlNJUHJuSzNyQkIxTjRCVWFuZ2dvPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzc4MTg5NDQzCWZpbGU6d29ya2xvZ18xLjIuMTFfYW1kNjQuQXBwSW1hZ2UKOWRiWGUrWFpScUdiNDJJUXlLRnJ5cktXUGc1S3c2TkV0RVdtbEE1enBwakZ3N1l3QllKMmlvUjd0c1FGY1FwZXpFcXVYa0NpbWc1UC9heFF2SkRxQWc9PQo=",
+      "url": "https://github.com/regisx001/Worklog/releases/download/app-v1.2.11/worklog_1.2.11_amd64.AppImage"
     },
     "linux-x86_64-appimage": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSWlA0V2pVQ1BvTE1idEtBZXhxUGhFUHdtMU1TQVRBS1NYcEdDaXlTZnZuUCt3VGpLUWJJSFZLRXYrTTFiT2s4SW13ZVFLdDkwQnp1WWZEUlRVOXBJVVA0d3ZMUjVxVlFJPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzc4MTg2MTM1CWZpbGU6d29ya2xvZ18xLjIuMTBfYW1kNjQuQXBwSW1hZ2UKcmZhQWI4TVcwSHY1S1BWSDJLUmVGOUdiUjMyMjJHL2RueDVhcU52UStpQlpUQmk2TE9GWEN3cWV0TGRLcWJyR0p4bTY1aUc2UFJDTUlWZHowRGt2RGc9PQo=",
-      "url": "https://github.com/regisx001/Worklog/releases/download/app-v1.2.10/worklog_1.2.10_amd64.AppImage"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSWlA0V2pVQ1BvTEVnNllBT3ZRTDBaSCtPT0JNRE03MjZLbG0xMlowOVdCU2k1MlFEM25zWjBEYUdlbVh5MEgrNUgzNlNWUnNBMzJydlNJUHJuSzNyQkIxTjRCVWFuZ2dvPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzc4MTg5NDQzCWZpbGU6d29ya2xvZ18xLjIuMTFfYW1kNjQuQXBwSW1hZ2UKOWRiWGUrWFpScUdiNDJJUXlLRnJ5cktXUGc1S3c2TkV0RVdtbEE1enBwakZ3N1l3QllKMmlvUjd0c1FGY1FwZXpFcXVYa0NpbWc1UC9heFF2SkRxQWc9PQo=",
+      "url": "https://github.com/regisx001/Worklog/releases/download/app-v1.2.11/worklog_1.2.11_amd64.AppImage"
     },
     "linux-x86_64-deb": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSWlA0V2pVQ1BvTExVaUZtVUdUbDcwNG9SY3NWeUhYTnNNN0ZZMU9iaExKbnVuNENkMWlBeiszSHM4OWt5Znh5czdMVHdmSFA3M21rVlVjMFdXUEJ2SEM5S0w2Wmw2bXdrPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzc4MTg2MTM1CWZpbGU6d29ya2xvZ18xLjIuMTBfYW1kNjQuZGViClJWOU5RZ2dYMHBKRmE5NGhSZjJ2TURMTkNBY0xmVGVGRVFTOXJtUFRZOHRXZ2h1cDY1Q3pCMnpPVVNiSnFnSlU3M0dERnpUK04yUWozYUpDQ0FlYURnPT0K",
-      "url": "https://github.com/regisx001/Worklog/releases/download/app-v1.2.10/worklog_1.2.10_amd64.deb"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSWlA0V2pVQ1BvTElwQlczSnRNcDF0aDNOKzlCWGllODA4ZTB6Sm92OWtqbnE3bCtxZDU0bHB6TWI1dHU1VkJJazZSWUFxeHZ3RTNtTlJhYWlENHQrU0F3VWNYZG53cGc4PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzc4MTg5NDQzCWZpbGU6d29ya2xvZ18xLjIuMTFfYW1kNjQuZGViCmUrdU95dXc4WGhOM0pIOGkyZndTU3p4RXdRV2Y0bm1ldTlsc2drUlZHZTlnSXdrNzdKbXJORnhkemNmN01ZZlhGNHVwMzY3TUdRVUNWTmNBZjYraEFnPT0K",
+      "url": "https://github.com/regisx001/Worklog/releases/download/app-v1.2.11/worklog_1.2.11_amd64.deb"
     },
     "linux-x86_64-rpm": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSWlA0V2pVQ1BvTExTQlVnUTBUMG45ZFZBWWE1b04xbXJRWjZUTDQvNFhpaU8yYXdubTFIYk9weFF0Z2JwU1FvN2FtZ3dNTWZkR2NwemY5cWV4OUdUaXBWYXNyMHd5WXdNPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzc4MTg2MTM1CWZpbGU6d29ya2xvZy0xLjIuMTAtMS54ODZfNjQucnBtCjVtZkhBeFgyeFRMTHNOREZDb3RLc2hpd0hRaURXY1JObmhzTEYxRFZOOGN3eHl2c2lsR1d0YVk3QWhsU2MrRVMvbm5YRmpPUjVmRGxRQ2g0d29aTkNRPT0K",
-      "url": "https://github.com/regisx001/Worklog/releases/download/app-v1.2.10/worklog-1.2.10-1.x86_64.rpm"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSWlA0V2pVQ1BvTERyc0dKMDU4T21RTFlncTVMSm1JRDVkdVJiV2NiZVE4VXN2b1NnMnU4T0k4V3Bzdm90MkFlVThOa0xiSS9vTmVkMkNyMkJ0NThweStqVEM0aTJUYmdjPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzc4MTg5NDQzCWZpbGU6d29ya2xvZy0xLjIuMTEtMS54ODZfNjQucnBtCklFTWJQZUZWMHI4TnR0b0cxVm9JQnBIZktvdUFJREFBT2hyYndjbCtpRDF3eFFjS2JMMkVFZHNkd2N3SWRVOGFOV1JYQkRMR1JVZjJoNzdXejVteUJBPT0K",
+      "url": "https://github.com/regisx001/Worklog/releases/download/app-v1.2.11/worklog-1.2.11-1.x86_64.rpm"
     },
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSWlA0V2pVQ1BvTEFYK0x1TGR4SjB0N05hTmpTYkNwWjE5MThydnRibzlEREgyTmpEY2xkb2cvYnZjTUpTTld1TC9SVHozZ2NYaG1hd2hEVFZhOHJwbVl0SGg3VjVZSnd3PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzc4MTg2MzI2CWZpbGU6d29ya2xvZ18xLjIuMTBfeDY0X2VuLVVTLm1zaQpMRm9OUE5RL1V3VU8zY01iZDBHMEhmRHdVbXRDMDdFNXcvdjd3MEMwS3o0RFkwNkNLYW1VdjRGZUN4Yno2MHQrWll3NFVmenNoQ09xcjlTWmhkTjNCQT09Cg==",
-      "url": "https://github.com/regisx001/Worklog/releases/download/app-v1.2.10/worklog_1.2.10_x64_en-US.msi"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSWlA0V2pVQ1BvTEwvTThkTHFJYWRmWEc3Nm5LbnFVTDIvZ2o1OEhRWmhBeUplc3F2bE50Ukhqcm1yLy9EWm1MVTg2S3Q4eDJsOUYyWHFnTWpBZ0h6V0NJd21zOW9oaUFnPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzc4MTg5NTQxCWZpbGU6d29ya2xvZ18xLjIuMTFfeDY0X2VuLVVTLm1zaQpWTUFiOG9OWUMzNElVSjFST1BsaEROSG9jb2pqSnVxdDd5NXZ1S2NKSVhjNTQ5QWttRnNVRXhIUGsvdndEeFFZMFlvUlhuVURPVjAvdmdXSEVsd3pCQT09Cg==",
+      "url": "https://github.com/regisx001/Worklog/releases/download/app-v1.2.11/worklog_1.2.11_x64_en-US.msi"
     },
     "windows-x86_64-msi": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSWlA0V2pVQ1BvTEFYK0x1TGR4SjB0N05hTmpTYkNwWjE5MThydnRibzlEREgyTmpEY2xkb2cvYnZjTUpTTld1TC9SVHozZ2NYaG1hd2hEVFZhOHJwbVl0SGg3VjVZSnd3PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzc4MTg2MzI2CWZpbGU6d29ya2xvZ18xLjIuMTBfeDY0X2VuLVVTLm1zaQpMRm9OUE5RL1V3VU8zY01iZDBHMEhmRHdVbXRDMDdFNXcvdjd3MEMwS3o0RFkwNkNLYW1VdjRGZUN4Yno2MHQrWll3NFVmenNoQ09xcjlTWmhkTjNCQT09Cg==",
-      "url": "https://github.com/regisx001/Worklog/releases/download/app-v1.2.10/worklog_1.2.10_x64_en-US.msi"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSWlA0V2pVQ1BvTEwvTThkTHFJYWRmWEc3Nm5LbnFVTDIvZ2o1OEhRWmhBeUplc3F2bE50Ukhqcm1yLy9EWm1MVTg2S3Q4eDJsOUYyWHFnTWpBZ0h6V0NJd21zOW9oaUFnPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzc4MTg5NTQxCWZpbGU6d29ya2xvZ18xLjIuMTFfeDY0X2VuLVVTLm1zaQpWTUFiOG9OWUMzNElVSjFST1BsaEROSG9jb2pqSnVxdDd5NXZ1S2NKSVhjNTQ5QWttRnNVRXhIUGsvdndEeFFZMFlvUlhuVURPVjAvdmdXSEVsd3pCQT09Cg==",
+      "url": "https://github.com/regisx001/Worklog/releases/download/app-v1.2.11/worklog_1.2.11_x64_en-US.msi"
     },
     "windows-x86_64-nsis": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSWlA0V2pVQ1BvTEFuZ05kL0RwNVcyTVV3dnJMeHJrYXpHWU9nS2tQUjI0VVBRVWhJMWVWdVRlUzJ4a3piSFJTUEYvZmwwQm5DNFFKc0JMUTE1Z0k1WFdIMTNEV1NIcGdRPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzc4MTg2MzI2CWZpbGU6d29ya2xvZ18xLjIuMTBfeDY0LXNldHVwLmV4ZQpVQjgvUUdvb2V3enNGVEZGM1hEOXpFRExrUzg5cU5aQlhDTVg5ZG1neEVyMzcxZEt4dHdUb1hLWUpzZm5JYUJmM1BHRTZlZDZPb3BkVkNSdExhc0ZDQT09Cg==",
-      "url": "https://github.com/regisx001/Worklog/releases/download/app-v1.2.10/worklog_1.2.10_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSWlA0V2pVQ1BvTEg5UWsxVGxqN1RhdkdMNk8vbmliRFJSei84MHo4dmJEaFJvblhQOXFtTVNxSlFSWUF3UkV4Tjd5aGRTQk11QkVIM1dqRlBvTUdodGM4K2NkODBHeXdvPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzc4MTg5NTQxCWZpbGU6d29ya2xvZ18xLjIuMTFfeDY0LXNldHVwLmV4ZQpEZ0kyMEF3OHE3VkJZZ2JwSEJ2NjkzVzdMK3ZDeFVIckdOaEZneGYydTZOOVhRdXFBT0MxNVJZdXpjSWlTVTRKZXYvbmtvTnVVV1NpVmRxcnhLYTBCUT09Cg==",
+      "url": "https://github.com/regisx001/Worklog/releases/download/app-v1.2.11/worklog_1.2.11_x64-setup.exe"
     }
   }
 }
