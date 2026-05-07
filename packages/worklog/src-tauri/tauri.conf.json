@@ -1,10 +1,17 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "worklog",
-  "version": "1.2.7",
+  "version": "1.2.8",
   "plugins": {
     "fs": {
       "requireLiteralLeadingDot": false
+    },
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDJDRTgyMzUwQTM4NTNGNTkKUldSWlA0V2pVQ1BvTE9lSlFzaGRWQ250M1I3MitvT1IzOW5GK0pxajg0TGtXRW9kTVdsWlZBSlkK",
+      "endpoints": [
+        "https://regisx001.github.io/Worklog/latest.json"
+      ],
+      "dangerousInsecureTransportProtocol": true
     }
   },
   "identifier": "com.regisx001.worklog",
@@ -33,6 +40,7 @@
   "bundle": {
     "active": true,
     "targets": "all",
+    "createUpdaterArtifacts": true,
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
