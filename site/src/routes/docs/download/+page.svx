@@ -101,18 +101,6 @@ Get the latest version of Worklog for your platform. All downloads are hosted di
 
 For a more integrated experience on Linux, we recommend using our official repositories.
 
-### Debian / Ubuntu (APT)
-
-```bash
-curl -fsSL https://regisx001.github.io/worklog-apt/pubkey.asc \
-  | sudo gpg --dearmor -o /usr/share/keyrings/worklog-archive-keyring.gpg
-
-echo "deb [signed-by=/usr/share/keyrings/worklog-archive-keyring.gpg] https://regisx001.github.io/worklog-apt any main" \
-  | sudo tee /etc/apt/sources.list.d/worklog.list
-
-sudo apt update && sudo apt install worklog
-```
-
 ### Arch Linux (AUR)
 
 ```bash

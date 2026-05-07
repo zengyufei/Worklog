@@ -2,23 +2,50 @@
 	import { onMount } from "svelte";
 	import gsap from "gsap";
 	import ScrollTrigger from "gsap/ScrollTrigger";
+	import Database from "@lucide/svelte/icons/database";
+	import GitBranch from "@lucide/svelte/icons/git-branch";
+	import Command from "@lucide/svelte/icons/command";
+	import ShieldCheck from "@lucide/svelte/icons/shield-check";
+	import Zap from "@lucide/svelte/icons/zap";
+	import LayoutPanelLeft from "@lucide/svelte/icons/layout-panel-left";
 
-	const services = [
+	const features = [
 		{
 			title: "Local-First Persistence",
 			desc: "Your data stays on your machine. Worklog uses SQLite for transparent, portable, and offline-ready project storage with zero cloud dependency.",
-			icon: "M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z",
-		},
-		{
-			title: "Keyboard-First Speed",
-			desc: "Designed for power users. Navigate, create tickets, and switch boards instantly with a robust command palette and intuitive shortcuts.",
-			icon: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z",
+			icon: Database,
+			class: "lg:col-span-8"
 		},
 		{
 			title: "Git-Native Sync",
-			desc: "Seamless background synchronization using standard Git protocols. Keep your team in parity without sacrificing local control.",
-			icon: "M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15",
+			desc: "Seamless background synchronization using standard Git protocols. Keep your team in parity without sacrificing control.",
+			icon: GitBranch,
+			class: "lg:col-span-4"
 		},
+		{
+			title: "Keyboard Mastery",
+			desc: "Designed for power users. Navigate, create tickets, and switch boards instantly with a robust command palette.",
+			icon: Command,
+			class: "lg:col-span-4"
+		},
+		{
+			title: "Privacy by Design",
+			desc: "No tracking, no cloud accounts, and no telemetry. Your workflow is your business, and we keep it that way.",
+			icon: ShieldCheck,
+			class: "lg:col-span-8"
+		},
+		{
+			title: "Offline Ready",
+			desc: "Work from the mountains or the subway. Sync whenever you're back online without missing a beat.",
+			icon: Zap,
+			class: "lg:col-span-6"
+		},
+		{
+			title: "Extensible Views",
+			desc: "Switch between Kanban, Table, and Gantt views instantly to visualize your project from every angle.",
+			icon: LayoutPanelLeft,
+			class: "lg:col-span-6"
+		}
 	];
 
 	let gridRef = $state();
@@ -26,17 +53,17 @@
 	onMount(() => {
 		gsap.registerPlugin(ScrollTrigger);
 
-		const cards = gridRef.querySelectorAll(".service-grid-card");
+		const cards = gridRef.querySelectorAll(".feature-card");
 
 		gsap.fromTo(
 			cards,
-			{ y: 60, autoAlpha: 0 },
+			{ y: 40, autoAlpha: 0 },
 			{
 				y: 0,
 				autoAlpha: 1,
-				duration: 1.2,
-				stagger: 0.15,
-				ease: "expo.out",
+				duration: 1,
+				stagger: 0.1,
+				ease: "power2.out",
 				scrollTrigger: {
 					trigger: gridRef,
 					start: "top 80%",
@@ -50,87 +77,50 @@
 	id="services"
 	class="w-full bg-[#050505] text-white py-32 md:py-48 border-t border-white/5 relative z-10 overflow-hidden"
 >
-	<!-- Huge background glow for volume -->
+	<!-- Huge background glow -->
 	<div
 		class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#3B82F6] opacity-[0.02] blur-[200px] rounded-full pointer-events-none"
 	></div>
 
-	<div
-		class="max-w-[1400px] mx-auto px-6 md:px-12 flex flex-col items-center"
-	>
-		<span
-			class="text-xs font-mono text-white/30 uppercase tracking-widest mb-16 text-center tracking-[0.3em]"
-			>Core Capabilities</span
-		>
+	<div class="max-w-7xl mx-auto px-6 md:px-12 flex flex-col items-center">
+		<div class="text-center mb-24 max-w-2xl">
+			<span class="text-xs font-mono text-[#3B82F6] uppercase tracking-[0.3em] mb-4 block">Core Capabilities</span>
+			<h2 class="text-4xl md:text-6xl font-serif tracking-tight leading-tight">
+				Engineered for the <br />
+				<span class="italic text-white/40">Modern Developer.</span>
+			</h2>
+		</div>
 
 		<div
 			bind:this={gridRef}
-			class="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 w-full"
+			class="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6 w-full"
 		>
-			{#each services as service, i}
+			{#each features as feature, i}
 				<div
-					class="service-grid-card group relative w-full h-[50vh] md:h-[65vh] lg:h-[75vh] rounded-3xl overflow-hidden border border-white/10 bg-[#0A0A0A] hover:bg-[#0A0A0A] transition-colors duration-700 cursor-default"
+					class="feature-card group relative p-8 md:p-12 rounded-[2.5rem] border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/10 transition-all duration-500 flex flex-col justify-between overflow-hidden {feature.class}"
 				>
-					<!-- Sleek gradient base -->
-					<div
-						class="absolute inset-0 bg-linear-to-t from-black via-black/40 to-transparent z-10"
-					></div>
+					<!-- Inner Glow -->
+					<div class="absolute -top-24 -right-24 w-64 h-64 bg-[#3B82F6] opacity-0 group-hover:opacity-[0.08] blur-[80px] rounded-full transition-opacity duration-700 pointer-events-none"></div>
+					
+					<div class="relative z-10">
+						<div class="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-white/40 group-hover:text-[#3B82F6] group-hover:scale-110 transition-all duration-500 mb-8 border border-white/10">
+							<svelte:component this={feature.icon} size={24} />
+						</div>
 
-					<!-- Hover Glow internal to card -->
-					<div
-						class="absolute -top-32 -left-32 w-96 h-96 bg-[#3B82F6] opacity-[0.03] group-hover:opacity-[0.12] blur-[100px] rounded-full transition-opacity duration-700 pointer-events-none z-0"
-					></div>
-
-					<!-- Huge background number mark -->
-					<div
-						class="absolute top-8 left-8 z-20 font-serif text-6xl text-white/5 group-hover:text-white/10 transition-colors duration-700"
-					>
-						0{i + 1}
-					</div>
-
-					<!-- Icon -->
-					<div
-						class="absolute top-8 right-8 z-20 text-white/20 group-hover:text-[#3B82F6] transition-colors duration-700 transform group-hover:scale-110"
-					>
-						<svg
-							class="w-8 h-8"
-							fill="none"
-							viewBox="0 0 24 24"
-							stroke="currentColor"
-						>
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="1.5"
-								d={service.icon}
-							/>
-						</svg>
-					</div>
-
-					<!-- Bottom Content Area -->
-					<div
-						class="absolute bottom-10 left-8 right-8 z-20 flex flex-col gap-6 transform-gpu transition-all duration-700 group-hover:-translate-y-4"
-					>
-						<h3
-							class="text-3xl lg:text-4xl xl:text-5xl font-serif text-white leading-tight tracking-tight"
-						>
-							{service.title}
+						<h3 class="text-2xl md:text-3xl font-serif text-white/90 group-hover:text-white transition-colors duration-300 mb-4">
+							{feature.title}
 						</h3>
-
-						<!-- Expanding visual separator -->
-						<div
-							class="w-full h-px bg-white/20 scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-700 ease-out"
-						></div>
-
-						<!-- Details revealed on hover (always visible on mobile but animated on desktop) -->
-						<p
-							class="text-sm md:text-base text-white/50 font-sans leading-relaxed md:opacity-0 group-hover:opacity-100 transition-opacity duration-700 ease-out"
-						>
-							{service.desc}
+						
+						<p class="text-white/40 group-hover:text-white/60 font-sans font-light leading-relaxed max-w-sm transition-colors duration-300">
+							{feature.desc}
 						</p>
 					</div>
+
+					<!-- Bottom indicator -->
+					<div class="mt-12 w-12 h-1 bg-white/5 group-hover:bg-[#3B82F6] rounded-full transition-colors duration-500"></div>
 				</div>
 			{/each}
 		</div>
 	</div>
 </section>
+

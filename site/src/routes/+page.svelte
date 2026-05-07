@@ -6,6 +6,7 @@
 	import WorksList from "$lib/components/WorksList.svelte";
 	import Stats from "$lib/components/Stats.svelte";
 	import Faq from "$lib/components/Faq.svelte";
+	import ShowcaseGallery from "$lib/components/ShowcaseGallery.svelte";
 	import Footer from "$lib/components/Footer.svelte";
 	import Seo from "$lib/components/Seo.svelte";
 </script>
@@ -18,6 +19,7 @@
 	<Brands />
 	<Showcase />
 	<WorksList />
+	<ShowcaseGallery />
 	<Stats />
 	<Faq />
 	<Footer />

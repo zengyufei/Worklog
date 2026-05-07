@@ -1,6 +1,7 @@
 <script>
 	import { onMount } from "svelte";
 	import Logo from "./logo.svelte";
+	import { base } from "$app/paths";
 </script>
 
 <footer
@@ -52,24 +53,24 @@
 				Navigation
 			</h4>
 			<a
-				href="#agency"
+				href="{base}/"
 				class="text-white/60 hover:text-white font-sans text-sm transition-colors"
 				>Home</a
 			>
 			<a
-				href="#services"
+				href="{base}/docs"
 				class="text-white/60 hover:text-white font-sans text-sm transition-colors"
-				>Features</a
+				>Documentation</a
 			>
 			<a
-				href="#work"
-				class="text-white/60 hover:text-white font-sans text-sm transition-colors"
-				>Views</a
-			>
-			<a
-				href="#faq"
+				href="{base}/faq"
 				class="text-white/60 hover:text-white font-sans text-sm transition-colors"
 				>FAQ</a
+			>
+			<a
+				href="{base}/docs/download"
+				class="text-white/60 hover:text-white font-sans text-sm transition-colors"
+				>Download</a
 			>
 		</div>
 
@@ -80,22 +81,12 @@
 				Socials
 			</h4>
 			<a
-				href="https://twitter.com"
+				href="https://twitter.com/regisx001"
 				class="text-white/60 hover:text-white font-sans text-sm transition-colors"
 				>Twitter (X)</a
 			>
 			<a
-				href="https://instagram.com"
-				class="text-white/60 hover:text-white font-sans text-sm transition-colors"
-				>Instagram</a
-			>
-			<a
-				href="https://linkedin.com"
-				class="text-white/60 hover:text-white font-sans text-sm transition-colors"
-				>LinkedIn</a
-			>
-			<a
-				href="https://github.com/YusufCeng1z"
+				href="https://github.com/regisx001/Worklog"
 				target="_blank"
 				rel="noopener noreferrer"
 				class="text-[#3B82F6] hover:text-white font-sans text-sm transition-colors"
@@ -107,11 +98,11 @@
 			<h4
 				class="font-mono text-xs uppercase tracking-widest text-[#3B82F6] mb-2"
 			>
-				Newsletter
+				Project
 			</h4>
 			<p class="text-white/40 font-sans text-sm">
-				Join our newsletter for insights on local-first development,
-				SvelteKit, and desktop engineering.
+				Worklog is a community-driven project focusing on developer
+				productivity and data ownership.
 			</p>
 			<div class="mt-2 flex w-full relative">
 				<input
@@ -132,24 +123,29 @@
 	<div
 		class="px-6 md:px-24 max-w-7xl mx-auto pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-6 md:gap-4 text-xs font-mono text-base tracking-wider relative z-10"
 	>
-		<p class="text-white/30">&copy; 2026 Worklog Project. Open Source MIT.</p>
+		<p class="text-white/30">
+			&copy; 2026 Worklog Project. Open Source MIT.
+		</p>
 
 		<div class="flex flex-col md:flex-row items-center gap-4 md:gap-8">
 			<span class="text-white/50 text-sm font-sans font-light">
 				Engineered by <a
-					href="https://github.com/YusufCeng1z"
+					href="https://github.com/regisx001"
 					target="_blank"
 					rel="noopener noreferrer"
 					class="text-[#3B82F6] font-medium hover:text-white transition-colors duration-500 hover:underline underline-offset-4"
-					>YusufCeng1z</a
+					>regisx001</a
 				>
 			</span>
 			<div class="flex gap-6 text-white/30 hidden md:flex">
-				<a href="#privacy" class="hover:text-white/60 transition-colors"
-					>Privacy Policy</a
+				<a
+					href="{base}/faq"
+					class="hover:text-white/60 transition-colors">Support</a
 				>
-				<a href="#terms" class="hover:text-white/60 transition-colors"
-					>Terms of Service</a
+				<a
+					href="https://github.com/regisx001/Worklog/blob/main/LICENSE"
+					target="_blank"
+					class="hover:text-white/60 transition-colors">License</a
 				>
 			</div>
 		</div>

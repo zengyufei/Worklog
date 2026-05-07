@@ -5,8 +5,8 @@
     import Logo from "./logo.svelte";
     import Menu from "@lucide/svelte/icons/menu";
     import X from "@lucide/svelte/icons/x";
-    import { base } from '$app/paths';
-    import { page } from '$app/state';
+    import { base } from "$app/paths";
+    import { page } from "$app/state";
 
     let headerRef = $state();
     let navItemsRef = $state([]);
@@ -155,7 +155,7 @@
     <!-- Desktop Nav -->
     <div id="nav" class="absolute left-1/2 -translate-x-1/2 hidden md:block">
         <ul class="flex space-x-8 text-sm font-medium text-white/70">
-            <li bind:this={navItemsRef[0]}>
+            <!-- <li bind:this={navItemsRef[0]}>
                 <a
                     href="{base}/#work"
                     onclick={(e) => scrollTo(e, "#work")}
@@ -168,17 +168,15 @@
                     onclick={(e) => scrollTo(e, "#services")}
                     class="hover:text-white transition-colors">Workflow</a
                 >
-            </li>
+            </li> -->
             <li bind:this={navItemsRef[2]}>
-                <a
-                    href="{base}/docs"
-                    class="hover:text-white transition-colors">Docs</a
+                <a href="{base}/docs" class="hover:text-white transition-colors"
+                    >Docs</a
                 >
             </li>
             <li bind:this={navItemsRef[3]}>
                 <a
-                    href="{base}/#faq"
-                    onclick={(e) => scrollTo(e, "#faq")}
+                    href="{base}/faq"
                     class="hover:text-white transition-colors">FAQ</a
                 >
             </li>
@@ -248,8 +246,7 @@
         <li class="overflow-hidden">
             <a
                 bind:this={mobileLinksRef[3]}
-                href="{base}/#faq"
-                onclick={(e) => scrollTo(e, "#faq")}
+                href="{base}/faq"
                 class="block text-4xl font-sans font-light text-white/80 hover:text-white transition-colors will-change-transform"
                 >FAQ</a
             >
@@ -268,7 +265,8 @@
         class="absolute bottom-10 left-10 flex gap-6 text-xs font-mono text-white/40 uppercase tracking-widest relative z-10"
     >
         <a href="https://twitter.com">Twitter</a>
-        <a href="https://github.com/regisx001/Worklog" target="_blank">GitHub</a>
+        <a href="https://github.com/regisx001/Worklog" target="_blank">GitHub</a
+        >
     </div>
 </div>
 
