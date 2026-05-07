@@ -45,7 +45,7 @@ jobs:
           path: |
             ~/.bun/install/cache
             node_modules
-          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+          key: ${{ runner.os }}-bun-${{ hashFiles('packages/worklog/bun.lock') }}
 
       # Rust toolchain
       - name: install Rust stable
@@ -63,13 +63,13 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/sccache
-          key: ${{ runner.os }}-sccache-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-sccache-${{ hashFiles('packages/worklog/src-tauri/Cargo.lock') }}
 
       # Rust cache (you already had this, keep it)
       - name: Rust cache
         uses: swatinem/rust-cache@v2
         with:
-          workspaces: ./src-tauri -> target
+          workspaces: ./packages/worklog/src-tauri -> target
 
       # Linux deps
       - name: install dependencies (ubuntu only)
@@ -80,10 +80,12 @@ jobs:
 
       # Frontend install (now cached)
       - name: install frontend dependencies
+        working-directory: packages/worklog
         run: bun install --frozen-lockfile
 
       # Optional: build frontend once explicitly (avoids rebuild inside tauri)
       - name: build frontend
+        working-directory: packages/worklog
         run: bun run build
 
       # Tauri build
@@ -92,6 +94,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SCCACHE_GHA_ENABLED: "true"
         with:
+          projectPath: packages/worklog
           tagName: app-v__VERSION__
           releaseName: Worklog v__VERSION__
           releaseBody: See the assets to download this version and install.

@@ -12,3 +12,6 @@ aur/
 aur
 .venv/
 venv/
+
+.svelte-kit
+build
