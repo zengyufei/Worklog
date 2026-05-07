@@ -1,5 +1,5 @@
 <script>
-    import pkg from "../../../../../package.json";
+    import pkg from "../../../../../worklog/package.json";
     import ChevronRight from "@lucide/svelte/icons/chevron-right";
     import { base } from '$app/paths';
 
