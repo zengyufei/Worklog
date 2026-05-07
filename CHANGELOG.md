@@ -1,9 +1,22 @@
-## [unreleased]
+## [app-v1.2.7] - 2026-05-07
+
+### 🚀 Features
+
+- Add cross-platform download dropdown menu to Hero component
+- Update documentation design, add download route, and implement auto-scroll navigation reset.
+- Implement prioritized category-based sorting for command palette actions
+
+### 🚜 Refactor
+
+- Migrate documentation to MDsvex and add interactive Table of Contents component
+- Overhaul landing page showcase section and add FAQ page with screenshot assets
+- Update CI/CD workflows to support monorepo structure by adjusting file paths and working directories
 
 ### ⚙️ Miscellaneous Tasks
 
 - Add conventional-changelog-cli dependency and create CHANGELOG.md
 - Update CHANGELOG.md header and aur subproject commit reference
+- Update CHANGELOG.md to reflect recent changes and version updates
 ## [app-v1.2.6] - 2026-05-06
 
 ### 🚀 Features
