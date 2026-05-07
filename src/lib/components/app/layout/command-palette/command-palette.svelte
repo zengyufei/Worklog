@@ -7,22 +7,41 @@
     const palette = useCommandPalette();
 
     // ── Filtered actions ───────────────────────────────────────────────────
-    const filtered = $derived<CommandAction[]>(
-        palette.query.trim()
+    const filtered = $derived.by<CommandAction[]>(() => {
+        const query = palette.query.trim().toLowerCase();
+        let list = query
             ? palette.actions.filter(
                   (action) =>
-                      action.label
-                          .toLowerCase()
-                          .includes(palette.query.toLowerCase()) ||
-                      action.subtitle
-                          .toLowerCase()
-                          .includes(palette.query.toLowerCase()) ||
-                      action.shortcut
-                          .toLowerCase()
-                          .includes(palette.query.toLowerCase()),
+                      action.label.toLowerCase().includes(query) ||
+                      action.subtitle.toLowerCase().includes(query) ||
+                      action.shortcut.toLowerCase().includes(query),
               )
-            : palette.actions,
-    );
+            : [...palette.actions];
+
+        // Sort by category to match visual grouping
+        const categoryPriority: Record<string, number> = {
+            Application: 1,
+            Navigation: 2,
+            Workspace: 3,
+            Actions: 4,
+            Commands: 5,
+        };
+
+        list.sort((a, b) => {
+            const catA = a.category ?? "Commands";
+            const catB = b.category ?? "Commands";
+
+            if (catA !== catB) {
+                const priorityA = categoryPriority[catA] ?? 99;
+                const priorityB = categoryPriority[catB] ?? 99;
+                if (priorityA !== priorityB) return priorityA - priorityB;
+                return catA.localeCompare(catB);
+            }
+            return 0; // Maintain relative order within category
+        });
+
+        return list;
+    });
 
     // ── Grouped by category ────────────────────────────────────────────────
     // Preserves insertion order within each group. Flat index tracks global ↑/↓.
