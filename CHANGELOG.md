@@ -1,3 +1,66 @@
+## [unreleased]
+
+### 🚀 Features
+
+- Add Linux install script and hero section snippet with clipboard support
+
+### 🐛 Bug Fixes
+
+- Improve Linux compatibility and update handling by patching WebKitGTK crashes, adding explicit installation failure states, and providing manual download paths.
+## [app-v1.2.15] - 2026-05-09
+
+### ⚙️ Miscellaneous Tasks
+
+- Bump application version to 1.2.15
+## [app-v1.2.14] - 2026-05-09
+
+### 🚀 Features
+
+- Refactor updater into a reactive state-driven API with improved UI feedback and update process control
+
+### ⚙️ Miscellaneous Tasks
+
+- Bump application version to 1.2.14
+## [app-v1.2.13] - 2026-05-07
+
+### 🚀 Features
+
+- Update latest.json to version 1.2.12 with new download URLs and updated publication date
+## [app-v1.2.12] - 2026-05-07
+
+### 🚀 Features
+
+- Update latest.json to version 1.2.11 with new download URLs and updated publication date
+- Bump version to 1.2.12 across package.json, Cargo.toml, and tauri.conf.json
+## [app-v1.2.11] - 2026-05-07
+
+### 🚀 Features
+
+- Update latest.json to version 1.2.10 with new platform support and updated release URLs
+- Bump version to 1.2.11 and update dependencies with new process plugin integration
+## [app-v1.2.10] - 2026-05-07
+
+### 🚀 Features
+
+- Update latest.json to version 1.2.9 with new platform support and updated release URLs
+- Bump version to 1.2.10 across package.json, Cargo.toml, Cargo.lock, and tauri.conf.json
+## [app-v1.2.9] - 2026-05-07
+
+### 🚀 Features
+
+- Implement updater functionality and configuration for Tauri v2
+- Update latest.json with new version 1.2.9 and additional platform support
+- Bump version to 1.2.9 across package.json, Cargo.toml, Cargo.lock, and tauri.conf.json
+
+### 🐛 Bug Fixes
+
+- Improve formatting of update instructions in settings page
+- Update release workflow to use dynamic tag and release names
+## [app-v1.2.8] - 2026-05-07
+
+### ⚙️ Miscellaneous Tasks
+
+- Update CHANGELOG.md for version 1.2.7 and adjust aur subproject commit reference
 ## [app-v1.2.7] - 2026-05-07
 
 ### 🚀 Features

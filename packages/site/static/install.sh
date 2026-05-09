@@ -15,29 +15,30 @@ fi
 
 echo "🚀 Found version v$VERSION"
 
-# Setup directories
-mkdir -p ~/.local/bin
-mkdir -p ~/.local/share/applications
-mkdir -p ~/.local/share/icons/hicolor/256x256/apps
+# Setup temporary installation directory
+TMP_DIR=$(mktemp -d -t worklog-install-XXXXXX)
+cd "$TMP_DIR"
 
 # Download AppImage
 APPIMAGE_URL="https://github.com/regisx001/Worklog/releases/latest/download/worklog_${VERSION}_amd64.AppImage"
 echo "⬇️ Downloading AppImage..."
-curl -L -o ~/.local/bin/worklog.AppImage "$APPIMAGE_URL"
-chmod +x ~/.local/bin/worklog.AppImage
+curl -L -o worklog.AppImage "$APPIMAGE_URL"
+chmod +x worklog.AppImage
 
-# Create Wrapper Script for Wayland fix
-echo "⚙️ Creating wrapper script..."
-cat << 'EOF' > ~/.local/bin/worklog
-#!/bin/bash
-# Bypass Wayland AppImage crash by prioritizing system libwayland
-LD_PRELOAD=/usr/lib/libwayland-client.so ~/.local/bin/worklog.AppImage "$@"
-EOF
+# Extract AppImage (This automatically bypasses the Wayland bug by dropping bundled libs!)
+echo "📦 Extracting native binaries..."
+./worklog.AppImage --appimage-extract > /dev/null
+
+# Setup destination directories
+mkdir -p ~/.local/bin
+mkdir -p ~/.local/share/applications
+mkdir -p ~/.local/share/icons/hicolor/256x256/apps
+
+# Install files natively
+echo "⚙️ Installing files..."
+cp squashfs-root/usr/bin/worklog ~/.local/bin/worklog
 chmod +x ~/.local/bin/worklog
-
-# Download Icon
-ICON_URL="https://raw.githubusercontent.com/regisx001/Worklog/master/packages/site/static/favicon.png"
-curl -sL -o ~/.local/share/icons/hicolor/256x256/apps/worklog.png "$ICON_URL" || true
+cp squashfs-root/worklog.png ~/.local/share/icons/hicolor/256x256/apps/worklog.png
 
 # Create Desktop Entry
 echo "📝 Creating desktop shortcut..."
@@ -52,10 +53,17 @@ Terminal=false
 Comment=Local-first desktop project manager
 EOF
 
-# Update desktop database
+# Update desktop databases
 if command -v update-desktop-database &> /dev/null; then
     update-desktop-database ~/.local/share/applications || true
 fi
+
+if command -v gtk-update-icon-cache &> /dev/null; then
+    gtk-update-icon-cache -f -t ~/.local/share/icons/hicolor || true
+fi
+
+# Cleanup
+rm -rf "$TMP_DIR"
 
 echo "✅ Installation complete!"
 echo "You can now launch 'Worklog' from your application menu,"
