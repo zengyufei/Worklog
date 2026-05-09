@@ -38,7 +38,7 @@ mkdir -p ~/.local/share/icons/hicolor/256x256/apps
 echo "⚙️ Installing files..."
 cp squashfs-root/usr/bin/worklog ~/.local/bin/worklog
 chmod +x ~/.local/bin/worklog
-cp squashfs-root/worklog.png ~/.local/share/icons/hicolor/256x256/apps/worklog.png
+cp -dr squashfs-root/usr/share/icons/hicolor/* ~/.local/share/icons/hicolor/
 
 # Create Desktop Entry
 echo "📝 Creating desktop shortcut..."
