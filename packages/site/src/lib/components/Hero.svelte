@@ -19,6 +19,8 @@
     let isDropdownOpen = $state(false);
     let dropdownRef = $state();
     let appWindowRef = $state();
+    let snippetRef = $state();
+    let isCopied = $state(false);
 
     const platforms = [
         {
@@ -48,6 +50,14 @@
         },
     ];
 
+    function handleCopy() {
+        navigator.clipboard.writeText('curl -sSL https://regisx001.github.io/Worklog/install.sh | bash');
+        isCopied = true;
+        setTimeout(() => {
+            isCopied = false;
+        }, 2000);
+    }
+
     function toggleDropdown() {
         isDropdownOpen = !isDropdownOpen;
         if (isDropdownOpen) {
@@ -70,7 +80,7 @@
 
         gsap.set(bgRef, { autoAlpha: 0 });
         gsap.set(words, { yPercent: 120, rotateZ: 2 });
-        gsap.set([descRef, ctaContainer], { y: 20, autoAlpha: 0 });
+        gsap.set([descRef, ctaContainer, snippetRef], { y: 20, autoAlpha: 0 });
         gsap.set(appWindowRef, { y: 40, autoAlpha: 0, scale: 0.98 });
 
         tl.to(bgRef, {
@@ -101,6 +111,16 @@
             )
             .to(
                 ctaContainer,
+                {
+                    y: 0,
+                    autoAlpha: 1,
+                    duration: 1.2,
+                    ease: "power3.out",
+                },
+                "-=1.0",
+            )
+            .to(
+                snippetRef,
                 {
                     y: 0,
                     autoAlpha: 1,
@@ -243,6 +263,25 @@
                         </div>
                     </div>
                 {/if}
+            </div>
+        </div>
+
+        <!-- Linux Install Snippet -->
+        <div bind:this={snippetRef} class="mt-8 flex flex-col items-center z-20 w-full max-w-lg mx-auto opacity-0 translate-y-4">
+            <p class="text-[10px] text-white/30 mb-2 font-mono uppercase tracking-widest">Linux Install Script</p>
+            <div class="flex items-center w-full bg-[#0A0A0A]/80 border border-white/10 rounded-xl p-1 backdrop-blur-md shadow-lg group">
+                <code class="flex-1 px-4 py-3 text-sm text-[#3B82F6] font-mono text-left overflow-x-auto whitespace-nowrap scrollbar-hide">curl -sSL https://regisx001.github.io/Worklog/install.sh | bash</code>
+                <button 
+                    onclick={handleCopy}
+                    class="p-2.5 mr-1 rounded-lg transition-colors flex items-center justify-center min-w-[36px] {isCopied ? 'text-green-400 bg-white/10' : 'text-white/40 hover:text-white hover:bg-white/10 group-hover:text-white/60'}"
+                    title={isCopied ? "Copied!" : "Copy to clipboard"}
+                >
+                    {#if isCopied}
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="animate-in zoom-in duration-200"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    {:else}
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="animate-in zoom-in duration-200"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                    {/if}
+                </button>
             </div>
         </div>
 
