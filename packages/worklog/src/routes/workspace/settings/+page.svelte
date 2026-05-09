@@ -16,6 +16,7 @@
         PasswordInput,
         InlineLoading,
         Tag,
+        ProgressBar,
     } from "carbon-components-svelte";
     import { useWorkspace } from "$lib/hooks/workspace.svelte";
     import { getDb } from "$lib/db";
@@ -25,7 +26,12 @@
     } from "$lib/db/export";
     import { importFromFile } from "$lib/db/mappers";
     import { notifications } from "$lib/hooks/notifications.svelte";
-    import { runUpdate } from "$lib/updater";
+    import {
+        checkForUpdate,
+        installUpdate,
+        relaunchApp,
+        type UpdateState,
+    } from "$lib/updater";
     import type { ExportFormat, ExportMode } from "$lib/db/mappers";
     import { useSyncConfig } from "$lib/sync/sync-config.svelte";
     import { SyncEngine } from "$lib/sync/sync-engine";
@@ -43,6 +49,10 @@
         Renew,
         MagicWand,
         ColorPalette,
+        Download,
+        Restart,
+        CheckmarkOutline,
+        WarningAlt,
         TrashCan,
         Add,
         Checkmark,
@@ -81,6 +91,14 @@
 
     let exportFormat = $state<ExportFormat>("json");
     let exportMode = $state<ExportMode>("single-file");
+
+    // ── Updater State ─────────────────────────────────────────────────────
+    let updateState = $state<UpdateState>({
+        status: "idle",
+        info: null,
+        progress: { downloaded: 0, contentLength: 0, percent: 0 },
+        errorMessage: null,
+    });
 
     // ── Customization State ───────────────────────────────────────────────
     let newTypeName = $state("");
@@ -348,17 +366,27 @@
     }
 
     async function handleCheckForUpdates() {
-        try {
-            await runUpdate();
-        } catch (error) {
-            console.error("Update failed", error);
-            notifications.add({
-                kind: "error",
-                title: "Update failed",
-                subtitle: String(error),
-                timeout: 5000,
-            });
-        }
+        await checkForUpdate((s) => {
+            updateState = s;
+        });
+    }
+
+    async function handleInstallUpdate() {
+        await installUpdate((s) => {
+            updateState = s;
+        }, updateState);
+    }
+
+    async function handleRelaunch() {
+        await relaunchApp();
+    }
+
+    function formatBytes(bytes: number): string {
+        if (bytes === 0) return "0 B";
+        const k = 1024;
+        const sizes = ["B", "KB", "MB", "GB"];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
     }
 
     // ── Derived ────────────────────────────────────────────────────────────
@@ -502,13 +530,142 @@
                                 Check for updates and relaunch after the install
                                 completes.
                             </p>
-                            <div class="control-box">
-                                <Button
-                                    kind="primary"
-                                    onclick={handleCheckForUpdates}
-                                >
-                                    Check for updates
-                                </Button>
+
+                            <div class="updater-card">
+                                {#if updateState.status === "idle"}
+                                    <!-- Idle: show check button -->
+                                    <div class="updater-idle">
+                                        <div class="updater-current">
+                                            <span class="updater-label">Current version</span>
+                                            <span class="updater-version">v{version}</span>
+                                        </div>
+                                        <Button
+                                            kind="primary"
+                                            icon={Renew}
+                                            onclick={handleCheckForUpdates}
+                                        >
+                                            Check for updates
+                                        </Button>
+                                    </div>
+
+                                {:else if updateState.status === "checking"}
+                                    <!-- Checking: spinner -->
+                                    <div class="updater-status-row">
+                                        <InlineLoading description="Checking for updates…" />
+                                    </div>
+
+                                {:else if updateState.status === "no-update"}
+                                    <!-- No update: success state -->
+                                    <div class="updater-status-row updater-success">
+                                        <CheckmarkOutline size={20} />
+                                        <div class="updater-status-text">
+                                            <strong>You're up to date!</strong>
+                                            <span>Worklog v{version} is the latest version.</span>
+                                        </div>
+                                        <Button
+                                            kind="ghost"
+                                            size="small"
+                                            icon={Renew}
+                                            onclick={handleCheckForUpdates}
+                                        >
+                                            Check again
+                                        </Button>
+                                    </div>
+
+                                {:else if updateState.status === "update-available"}
+                                    <!-- Update available: show info + install button -->
+                                    <div class="updater-available">
+                                        <div class="updater-available-header">
+                                            <div class="updater-version-badge">
+                                                <Tag type="green" size="sm">New version</Tag>
+                                                <span class="updater-new-version">v{updateState.info?.version}</span>
+                                            </div>
+                                            {#if updateState.info?.date}
+                                                <span class="updater-date">
+                                                    {new Date(updateState.info.date).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
+                                                </span>
+                                            {/if}
+                                        </div>
+                                        {#if updateState.info?.body}
+                                            <div class="updater-notes">
+                                                <span class="updater-notes-label">Release notes</span>
+                                                <p class="updater-notes-body">{updateState.info.body}</p>
+                                            </div>
+                                        {/if}
+                                        <div class="updater-actions">
+                                            <Button
+                                                kind="primary"
+                                                icon={Download}
+                                                onclick={handleInstallUpdate}
+                                            >
+                                                Download & Install
+                                            </Button>
+                                            <Button
+                                                kind="ghost"
+                                                size="small"
+                                                onclick={() => { updateState = { status: "idle", info: null, progress: { downloaded: 0, contentLength: 0, percent: 0 }, errorMessage: null }; }}
+                                            >
+                                                Dismiss
+                                            </Button>
+                                        </div>
+                                    </div>
+
+                                {:else if updateState.status === "downloading"}
+                                    <!-- Downloading: progress bar -->
+                                    <div class="updater-downloading">
+                                        <div class="updater-download-header">
+                                            <Download size={20} />
+                                            <strong>Downloading v{updateState.info?.version}…</strong>
+                                        </div>
+                                        <ProgressBar
+                                            value={updateState.progress.percent}
+                                            max={100}
+                                            labelText="Downloading update"
+                                            helperText={`${updateState.progress.percent}% — ${formatBytes(updateState.progress.downloaded)} / ${formatBytes(updateState.progress.contentLength)}`}
+                                        />
+                                    </div>
+
+                                {:else if updateState.status === "installing"}
+                                    <!-- Installing: spinner -->
+                                    <div class="updater-status-row">
+                                        <InlineLoading description="Installing update…" />
+                                    </div>
+
+                                {:else if updateState.status === "ready-to-relaunch"}
+                                    <!-- Ready to relaunch -->
+                                    <div class="updater-status-row updater-ready">
+                                        <CheckmarkOutline size={20} />
+                                        <div class="updater-status-text">
+                                            <strong>Update installed!</strong>
+                                            <span>v{updateState.info?.version} is ready. Relaunch to apply.</span>
+                                        </div>
+                                        <Button
+                                            kind="primary"
+                                            icon={Restart}
+                                            onclick={handleRelaunch}
+                                        >
+                                            Relaunch now
+                                        </Button>
+                                    </div>
+
+                                {:else if updateState.status === "error"}
+                                    <!-- Error state -->
+                                    <div class="updater-status-row updater-error">
+                                        <WarningAlt size={20} />
+                                        <div class="updater-status-text">
+                                            <strong>Update failed</strong>
+                                            <span>{updateState.errorMessage ?? "An unknown error occurred."}</span>
+                                        </div>
+                                        <Button
+                                            kind="ghost"
+                                            size="small"
+                                            icon={Renew}
+                                            onclick={handleCheckForUpdates}
+                                        >
+                                            Retry
+                                        </Button>
+                                    </div>
+                                {/if}
                             </div>
                         </section>
                     {/if}
@@ -1290,5 +1447,154 @@
         background: var(--cds-ui-01);
         border-radius: 4px;
         cursor: pointer;
+    }
+
+    /* ── Updater Card ──────────────────────────────────────────────────── */
+    .updater-card {
+        background: var(--cds-ui-02);
+        border: 1px solid var(--cds-ui-03);
+        border-radius: 6px;
+        padding: 1.5rem;
+        transition: border-color 0.15s ease;
+    }
+
+    .updater-idle {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1.5rem;
+    }
+
+    .updater-current {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .updater-label {
+        font-size: 0.75rem;
+        color: var(--cds-text-helper);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .updater-version {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--cds-text-primary);
+        font-family: var(--cds-code-01-font-family);
+    }
+
+    .updater-status-row {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .updater-status-text {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.125rem;
+    }
+
+    .updater-status-text strong {
+        font-size: 0.875rem;
+        color: var(--cds-text-primary);
+    }
+
+    .updater-status-text span {
+        font-size: 0.8125rem;
+        color: var(--cds-text-secondary);
+    }
+
+    .updater-success {
+        color: var(--cds-support-success, #24a148);
+    }
+
+    .updater-ready {
+        color: var(--cds-support-success, #24a148);
+    }
+
+    .updater-error {
+        color: var(--cds-support-error, #da1e28);
+    }
+
+    .updater-available {
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+    }
+
+    .updater-available-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .updater-version-badge {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .updater-new-version {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--cds-text-primary);
+        font-family: var(--cds-code-01-font-family);
+    }
+
+    .updater-date {
+        font-size: 0.8125rem;
+        color: var(--cds-text-helper);
+    }
+
+    .updater-notes {
+        background: var(--cds-ui-01);
+        border: 1px solid var(--cds-ui-03);
+        border-radius: 4px;
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .updater-notes-label {
+        font-size: 0.75rem;
+        color: var(--cds-text-helper);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .updater-notes-body {
+        font-size: 0.875rem;
+        color: var(--cds-text-secondary);
+        margin: 0;
+        line-height: 1.5;
+        white-space: pre-wrap;
+    }
+
+    .updater-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .updater-downloading {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .updater-download-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--cds-interactive-01);
+    }
+
+    .updater-download-header strong {
+        font-size: 0.875rem;
     }
 </style>
