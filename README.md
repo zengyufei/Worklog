@@ -194,6 +194,18 @@ yay -S worklog-bin
 
 If `yay` is not installed yet, install it first and then use the command above to install `worklog-bin` from the AUR.[6][5]
 
+### AppImage (Wayland / Rolling Release Distros)
+
+If you download the `.AppImage` release and experience an immediate crash with the error `Could not create default EGL display: EGL_BAD_PARAMETER`, this is a known issue caused by the bundled Ubuntu Wayland library conflicting with modern Wayland compositors (like on Arch Linux).
+
+You can bypass this by forcing the AppImage to use your system's native Wayland library instead of the bundled one:
+
+```bash
+LD_PRELOAD=/usr/lib/libwayland-client.so ./worklog_x.x.x_amd64.AppImage
+```
+
+*Alternatively, we strongly recommend using the `.deb`, `.rpm`, or AUR package for better system integration on Linux.*
+
 ## Getting Started
 
 Install dependencies:

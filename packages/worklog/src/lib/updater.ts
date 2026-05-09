@@ -11,6 +11,7 @@ export type UpdateStatus =
     | "downloading"
     | "installing"
     | "ready-to-relaunch"
+    | "install-failed"
     | "error";
 
 export interface UpdateInfo {
@@ -43,6 +44,62 @@ function makeInitialState(): UpdateState {
         errorMessage: null,
     };
 }
+
+/** Classifies an error into a user-friendly message and an error type. */
+function classifyError(error: unknown): {
+    message: string;
+    isInstallFailure: boolean;
+} {
+    const raw =
+        error instanceof Error ? error.message : String(error);
+
+    // Package install failure — happens on Linux deb/rpm installs (needs root)
+    // and also in `tauri dev` where there's no installed binary at all.
+    if (
+        raw.includes("Failed to install") ||
+        raw.includes("install package") ||
+        raw.includes("failed to install")
+    ) {
+        const hint = import.meta.env.DEV
+            ? "The updater cannot work in development mode."
+            : "Auto-update is not supported for this installation type (e.g. .deb / .rpm on Linux).";
+
+        return {
+            message: `${hint} Download the latest version manually from the releases page.`,
+            isInstallFailure: true,
+        };
+    }
+
+    // Network / endpoint errors
+    if (
+        raw.includes("network") ||
+        raw.includes("dns") ||
+        raw.includes("connect") ||
+        raw.includes("timed out") ||
+        raw.includes("Could not fetch")
+    ) {
+        return {
+            message:
+                "Could not reach the update server. Check your internet connection and try again.",
+            isInstallFailure: false,
+        };
+    }
+
+    // Signature verification
+    if (raw.includes("signature")) {
+        return {
+            message:
+                "The update signature could not be verified. The update file may be corrupted.",
+            isInstallFailure: false,
+        };
+    }
+
+    return { message: raw, isInstallFailure: false };
+}
+
+/** The GitHub releases URL for manual downloads. */
+export const RELEASES_URL =
+    "https://github.com/regisx001/Worklog/releases/latest";
 
 /**
  * Check for updates, download, install, and relaunch — calling `onState`
@@ -87,9 +144,9 @@ export async function checkForUpdate(
         // ── Download & install ────────────────────────────────────────
         await downloadAndInstall(update, state, emit);
     } catch (error) {
-        state.status = "error";
-        state.errorMessage =
-            error instanceof Error ? error.message : String(error);
+        const classified = classifyError(error);
+        state.status = classified.isInstallFailure ? "install-failed" : "error";
+        state.errorMessage = classified.message;
         emit();
     }
 }
@@ -120,9 +177,9 @@ export async function installUpdate(
 
         await downloadAndInstall(update, state, emit);
     } catch (error) {
-        state.status = "error";
-        state.errorMessage =
-            error instanceof Error ? error.message : String(error);
+        const classified = classifyError(error);
+        state.status = classified.isInstallFailure ? "install-failed" : "error";
+        state.errorMessage = classified.message;
         emit();
     }
 }

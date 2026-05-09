@@ -30,6 +30,7 @@
         checkForUpdate,
         installUpdate,
         relaunchApp,
+        RELEASES_URL,
         type UpdateState,
     } from "$lib/updater";
     import type { ExportFormat, ExportMode } from "$lib/db/mappers";
@@ -53,6 +54,7 @@
         Restart,
         CheckmarkOutline,
         WarningAlt,
+        Launch,
         TrashCan,
         Add,
         Checkmark,
@@ -381,6 +383,11 @@
         await relaunchApp();
     }
 
+    async function openReleasesPage() {
+        const { openUrl } = await import("@tauri-apps/plugin-opener");
+        await openUrl(RELEASES_URL);
+    }
+
     function formatBytes(bytes: number): string {
         if (bytes === 0) return "0 B";
         const k = 1024;
@@ -646,6 +653,34 @@
                                         >
                                             Relaunch now
                                         </Button>
+                                    </div>
+
+                                {:else if updateState.status === "install-failed"}
+                                    <!-- Install failed: offer manual download -->
+                                    <div class="updater-install-failed">
+                                        <div class="updater-status-row updater-error">
+                                            <WarningAlt size={20} />
+                                            <div class="updater-status-text">
+                                                <strong>Auto-update unavailable</strong>
+                                                <span>{updateState.errorMessage}</span>
+                                            </div>
+                                        </div>
+                                        <div class="updater-actions">
+                                            <Button
+                                                kind="primary"
+                                                icon={Launch}
+                                                onclick={openReleasesPage}
+                                            >
+                                                Download manually
+                                            </Button>
+                                            <Button
+                                                kind="ghost"
+                                                size="small"
+                                                onclick={() => { updateState = { status: "idle", info: null, progress: { downloaded: 0, contentLength: 0, percent: 0 }, errorMessage: null }; }}
+                                            >
+                                                Dismiss
+                                            </Button>
+                                        </div>
                                     </div>
 
                                 {:else if updateState.status === "error"}
@@ -1596,5 +1631,11 @@
 
     .updater-download-header strong {
         font-size: 0.875rem;
+    }
+
+    .updater-install-failed {
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
     }
 </style>
