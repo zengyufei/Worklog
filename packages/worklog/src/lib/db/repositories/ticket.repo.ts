@@ -15,12 +15,44 @@ function deserialize(row: any): Ticket {
     };
 }
 
-export async function listTickets(db: Database, board_id: string): Promise<Ticket[]> {
-    const rows = await db.select<any[]>(
-        `SELECT * FROM tickets WHERE board_id = ? ORDER BY position ASC, created_at ASC`,
-        [board_id]
-    );
+export async function listTickets(
+    db: Database,
+    board_id: string,
+    options: { limit?: number; offset?: number; status?: string } = {}
+): Promise<Ticket[]> {
+    let query = `SELECT * FROM tickets WHERE board_id = ?`;
+    const params: any[] = [board_id];
+
+    if (options.status) {
+        query += ` AND status = ?`;
+        params.push(options.status);
+    }
+
+    query += ` ORDER BY position ASC, created_at ASC`;
+
+    if (options.limit !== undefined) {
+        query += ` LIMIT ?`;
+        params.push(options.limit);
+    }
+    if (options.offset !== undefined) {
+        query += ` OFFSET ?`;
+        params.push(options.offset);
+    }
+
+    const rows = await db.select<any[]>(query, params);
     return rows.map(deserialize);
+}
+
+export async function countTicketsByStatus(
+    db: Database,
+    board_id: string,
+    status: string
+): Promise<number> {
+    const rows = await db.select<{ count: number }[]>(
+        `SELECT COUNT(*) as count FROM tickets WHERE board_id = ? AND status = ?`,
+        [board_id, status]
+    );
+    return rows[0]?.count ?? 0;
 }
 
 export async function getTicketById(db: Database, id: string): Promise<Ticket | null> {

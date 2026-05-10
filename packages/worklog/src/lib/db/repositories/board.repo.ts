@@ -2,10 +2,23 @@ import type Database from '@tauri-apps/plugin-sql';
 import type { Board, CreateBoardInput } from '$lib/components/app/types';
 import { generateId } from '$lib/utils';
 
-export async function listBoards(db: Database): Promise<Board[]> {
-    return db.select<Board[]>(
-        `SELECT * FROM boards ORDER BY created_at ASC`
-    );
+export async function listBoards(
+    db: Database,
+    options: { limit?: number; offset?: number } = {}
+): Promise<Board[]> {
+    let query = `SELECT * FROM boards ORDER BY created_at ASC`;
+    const params: any[] = [];
+
+    if (options.limit !== undefined) {
+        query += ` LIMIT ?`;
+        params.push(options.limit);
+    }
+    if (options.offset !== undefined) {
+        query += ` OFFSET ?`;
+        params.push(options.offset);
+    }
+
+    return db.select<Board[]>(query, params);
 }
 
 export async function getBoardById(db: Database, id: string): Promise<Board | null> {

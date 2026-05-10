@@ -21,13 +21,30 @@ export function useBoards(getWorkspacePath: () => string | null) {
         }
 
         _loading = true;
-        const db = await getDb(workspacePath);
-        _boards = await BoardRepo.listBoards(db);
-        // Auto-select first board if none active
-        if (!_active && _boards.length > 0) {
-            _active = _boards[0];
+        try {
+            const db = await getDb(workspacePath);
+            // Load initial 50 boards
+            _boards = await BoardRepo.listBoards(db, { limit: 50 });
+            // Auto-select first board if none active
+            if (!_active && _boards.length > 0) {
+                _active = _boards[0];
+            }
+        } finally {
+            _loading = false;
         }
-        _loading = false;
+    }
+
+    async function loadMore() {
+        const workspacePath = getWorkspacePath();
+        if (!workspacePath) return;
+
+        const db = await getDb(workspacePath);
+        const batch = await BoardRepo.listBoards(db, { 
+            limit: 50, 
+            offset: _boards.length 
+        });
+
+        _boards = [..._boards, ...batch];
     }
 
     async function create(input: CreateBoardInput) {
@@ -75,6 +92,6 @@ export function useBoards(getWorkspacePath: () => string | null) {
         get boards() { return _boards },
         get active() { return _active },
         get loading() { return _loading },
-        load, create, remove, rename, setActive
+        load, loadMore, create, remove, rename, setActive
     };
 }

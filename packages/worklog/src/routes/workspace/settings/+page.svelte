@@ -61,6 +61,7 @@
         Close,
     } from "carbon-icons-svelte";
     import { getWorkspaceShellContext } from "$lib/hooks/workspace-shell-context";
+    import { seedDatabase, seedLazyLoadingTest } from "$lib/db/seed";
 
     type SettingsCategory =
         | "general"
@@ -68,6 +69,7 @@
         | "customization"
         | "data"
         | "sync"
+        | "debug"
         | "advanced";
     let activeCategory = $state<SettingsCategory>("general");
 
@@ -77,7 +79,8 @@
         { id: "customization", label: "Customization", icon: MagicWand },
         { id: "data", label: "Data Management", icon: DataBase },
         { id: "sync", label: "Synchronization", icon: Cloud },
-        { id: "advanced", label: "Advanced", icon: Code },
+        // { id: "debug", label: "Debug", icon: Code },
+        { id: "advanced", label: "Advanced", icon: Settings },
     ] as const;
     let searchQuery = $state("");
 
@@ -421,6 +424,35 @@
         },
     );
 
+    async function handleSeedPerformance() {
+        if (!workspace.path) return;
+        try {
+            const db = await getDb(workspace.path);
+            notifications.add({
+                kind: "info",
+                title: "Seeding...",
+                subtitle:
+                    "Creating 200 performance test tickets. This may take a moment.",
+                timeout: 3000,
+            });
+            await seedLazyLoadingTest(db);
+            notifications.add({
+                kind: "success",
+                title: "Seeding Complete",
+                subtitle: "Performance test board and 200 tickets created.",
+                timeout: 5000,
+            });
+            void workspace.init(); // Refresh workspace state
+        } catch (e) {
+            notifications.add({
+                kind: "error",
+                title: "Seeding Failed",
+                subtitle: String(e),
+                timeout: 5000,
+            });
+        }
+    }
+
     // @ts-ignore
     const version = __APP_VERSION__;
     function matchesSearch(text: string) {
@@ -543,8 +575,12 @@
                                     <!-- Idle: show check button -->
                                     <div class="updater-idle">
                                         <div class="updater-current">
-                                            <span class="updater-label">Current version</span>
-                                            <span class="updater-version">v{version}</span>
+                                            <span class="updater-label"
+                                                >Current version</span
+                                            >
+                                            <span class="updater-version"
+                                                >v{version}</span
+                                            >
                                         </div>
                                         <Button
                                             kind="primary"
@@ -554,20 +590,25 @@
                                             Check for updates
                                         </Button>
                                     </div>
-
                                 {:else if updateState.status === "checking"}
                                     <!-- Checking: spinner -->
                                     <div class="updater-status-row">
-                                        <InlineLoading description="Checking for updates…" />
+                                        <InlineLoading
+                                            description="Checking for updates…"
+                                        />
                                     </div>
-
                                 {:else if updateState.status === "no-update"}
                                     <!-- No update: success state -->
-                                    <div class="updater-status-row updater-success">
+                                    <div
+                                        class="updater-status-row updater-success"
+                                    >
                                         <CheckmarkOutline size={20} />
                                         <div class="updater-status-text">
                                             <strong>You're up to date!</strong>
-                                            <span>Worklog v{version} is the latest version.</span>
+                                            <span
+                                                >Worklog v{version} is the latest
+                                                version.</span
+                                            >
                                         </div>
                                         <Button
                                             kind="ghost"
@@ -578,25 +619,44 @@
                                             Check again
                                         </Button>
                                     </div>
-
                                 {:else if updateState.status === "update-available"}
                                     <!-- Update available: show info + install button -->
                                     <div class="updater-available">
                                         <div class="updater-available-header">
                                             <div class="updater-version-badge">
-                                                <Tag type="green" size="sm">New version</Tag>
-                                                <span class="updater-new-version">v{updateState.info?.version}</span>
+                                                <Tag type="green" size="sm"
+                                                    >New version</Tag
+                                                >
+                                                <span
+                                                    class="updater-new-version"
+                                                    >v{updateState.info
+                                                        ?.version}</span
+                                                >
                                             </div>
                                             {#if updateState.info?.date}
                                                 <span class="updater-date">
-                                                    {new Date(updateState.info.date).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
+                                                    {new Date(
+                                                        updateState.info.date,
+                                                    ).toLocaleDateString(
+                                                        undefined,
+                                                        {
+                                                            year: "numeric",
+                                                            month: "short",
+                                                            day: "numeric",
+                                                        },
+                                                    )}
                                                 </span>
                                             {/if}
                                         </div>
                                         {#if updateState.info?.body}
                                             <div class="updater-notes">
-                                                <span class="updater-notes-label">Release notes</span>
-                                                <p class="updater-notes-body">{updateState.info.body}</p>
+                                                <span
+                                                    class="updater-notes-label"
+                                                    >Release notes</span
+                                                >
+                                                <p class="updater-notes-body">
+                                                    {updateState.info.body}
+                                                </p>
                                             </div>
                                         {/if}
                                         <div class="updater-actions">
@@ -610,19 +670,32 @@
                                             <Button
                                                 kind="ghost"
                                                 size="small"
-                                                onclick={() => { updateState = { status: "idle", info: null, progress: { downloaded: 0, contentLength: 0, percent: 0 }, errorMessage: null }; }}
+                                                onclick={() => {
+                                                    updateState = {
+                                                        status: "idle",
+                                                        info: null,
+                                                        progress: {
+                                                            downloaded: 0,
+                                                            contentLength: 0,
+                                                            percent: 0,
+                                                        },
+                                                        errorMessage: null,
+                                                    };
+                                                }}
                                             >
                                                 Dismiss
                                             </Button>
                                         </div>
                                     </div>
-
                                 {:else if updateState.status === "downloading"}
                                     <!-- Downloading: progress bar -->
                                     <div class="updater-downloading">
                                         <div class="updater-download-header">
                                             <Download size={20} />
-                                            <strong>Downloading v{updateState.info?.version}…</strong>
+                                            <strong
+                                                >Downloading v{updateState.info
+                                                    ?.version}…</strong
+                                            >
                                         </div>
                                         <ProgressBar
                                             value={updateState.progress.percent}
@@ -631,20 +704,25 @@
                                             helperText={`${updateState.progress.percent}% — ${formatBytes(updateState.progress.downloaded)} / ${formatBytes(updateState.progress.contentLength)}`}
                                         />
                                     </div>
-
                                 {:else if updateState.status === "installing"}
                                     <!-- Installing: spinner -->
                                     <div class="updater-status-row">
-                                        <InlineLoading description="Installing update…" />
+                                        <InlineLoading
+                                            description="Installing update…"
+                                        />
                                     </div>
-
                                 {:else if updateState.status === "ready-to-relaunch"}
                                     <!-- Ready to relaunch -->
-                                    <div class="updater-status-row updater-ready">
+                                    <div
+                                        class="updater-status-row updater-ready"
+                                    >
                                         <CheckmarkOutline size={20} />
                                         <div class="updater-status-text">
                                             <strong>Update installed!</strong>
-                                            <span>v{updateState.info?.version} is ready. Relaunch to apply.</span>
+                                            <span
+                                                >v{updateState.info?.version} is
+                                                ready. Relaunch to apply.</span
+                                            >
                                         </div>
                                         <Button
                                             kind="primary"
@@ -654,15 +732,20 @@
                                             Relaunch now
                                         </Button>
                                     </div>
-
                                 {:else if updateState.status === "install-failed"}
                                     <!-- Install failed: offer manual download -->
                                     <div class="updater-install-failed">
-                                        <div class="updater-status-row updater-error">
+                                        <div
+                                            class="updater-status-row updater-error"
+                                        >
                                             <WarningAlt size={20} />
                                             <div class="updater-status-text">
-                                                <strong>Auto-update unavailable</strong>
-                                                <span>{updateState.errorMessage}</span>
+                                                <strong
+                                                    >Auto-update unavailable</strong
+                                                >
+                                                <span
+                                                    >{updateState.errorMessage}</span
+                                                >
                                             </div>
                                         </div>
                                         <div class="updater-actions">
@@ -676,20 +759,35 @@
                                             <Button
                                                 kind="ghost"
                                                 size="small"
-                                                onclick={() => { updateState = { status: "idle", info: null, progress: { downloaded: 0, contentLength: 0, percent: 0 }, errorMessage: null }; }}
+                                                onclick={() => {
+                                                    updateState = {
+                                                        status: "idle",
+                                                        info: null,
+                                                        progress: {
+                                                            downloaded: 0,
+                                                            contentLength: 0,
+                                                            percent: 0,
+                                                        },
+                                                        errorMessage: null,
+                                                    };
+                                                }}
                                             >
                                                 Dismiss
                                             </Button>
                                         </div>
                                     </div>
-
                                 {:else if updateState.status === "error"}
                                     <!-- Error state -->
-                                    <div class="updater-status-row updater-error">
+                                    <div
+                                        class="updater-status-row updater-error"
+                                    >
                                         <WarningAlt size={20} />
                                         <div class="updater-status-text">
                                             <strong>Update failed</strong>
-                                            <span>{updateState.errorMessage ?? "An unknown error occurred."}</span>
+                                            <span
+                                                >{updateState.errorMessage ??
+                                                    "An unknown error occurred."}</span
+                                            >
                                         </div>
                                         <Button
                                             kind="ghost"
@@ -1094,6 +1192,69 @@
                                         {/if}
                                     </div>
                                 {/if}
+                            </div>
+                        </section>
+                    {/if}
+                </div>
+            {/if}
+
+            <!-- ── Debug Category ────────────────────────────────────── -->
+            {#if activeCategory === "debug"}
+                <div class="category-view">
+                    {#if matchesSearch("Performance Testing Seeding Lazy Loading")}
+                        <section class="settings-section">
+                            <div class="header-with-tag">
+                                <h2>Performance Testing</h2>
+                                <Tag type="magenta" size="sm">Debug Only</Tag>
+                            </div>
+                            <p class="section-desc">
+                                Tools to test application performance with large
+                                datasets.
+                            </p>
+
+                            <div class="debug-card">
+                                <h3>Seed Large Board</h3>
+                                <p>
+                                    Create a new board named "Performance Test
+                                    Board" with 200 tickets (50 per status).
+                                    This is useful for verifying lazy loading,
+                                    infinite scroll, and deferred rendering.
+                                </p>
+                                <div class="debug-actions">
+                                    <Button
+                                        kind="tertiary"
+                                        icon={MagicWand}
+                                        onclick={handleSeedPerformance}
+                                    >
+                                        Seed 200 Tickets
+                                    </Button>
+                                </div>
+                            </div>
+
+                            <div class="debug-card" style="margin-top: 1.5rem;">
+                                <h3>How to Verify Lazy Loading</h3>
+                                <ul class="debug-guide">
+                                    <li>
+                                        <strong>Infinite Scroll:</strong> Open the
+                                        "Performance Test Board". Scroll down any
+                                        column. You should see an "Inline Loading"
+                                        spinner briefly at the bottom before more
+                                        tickets appear.
+                                    </li>
+                                    <li>
+                                        <strong>Deferred Rendering:</strong> Open
+                                        the browser/Tauri inspector (F12). Look at
+                                        the DOM for tickets far down the list. Their
+                                        body content should be empty (skeleton) until
+                                        you scroll near them.
+                                    </li>
+                                    <li>
+                                        <strong>Network/DB Activity:</strong> Observe
+                                        the database logs or debug console to see
+                                        paginated SQL queries (LIMIT/OFFSET) being
+                                        executed as you scroll.
+                                    </li>
+                                </ul>
                             </div>
                         </section>
                     {/if}
@@ -1637,5 +1798,56 @@
         display: flex;
         flex-direction: column;
         gap: 1.25rem;
+    }
+
+    /* ── Debug Category ────────────────────────────────────────────────── */
+    .debug-card {
+        background: var(--cds-ui-02);
+        border: 1px solid var(--cds-ui-03);
+        border-radius: 6px;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .debug-card h3 {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--cds-text-primary);
+        margin: 0;
+    }
+
+    .debug-card p {
+        font-size: 0.875rem;
+        color: var(--cds-text-secondary);
+        line-height: 1.5;
+        margin: 0;
+    }
+
+    .debug-actions {
+        display: flex;
+        justify-content: flex-start;
+        padding-top: 0.5rem;
+    }
+
+    .debug-guide {
+        list-style-type: disc;
+        padding-left: 1.25rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .debug-guide li {
+        font-size: 0.875rem;
+        color: var(--cds-text-secondary);
+        line-height: 1.5;
+    }
+
+    .debug-guide li strong {
+        color: var(--cds-text-primary);
+        display: block;
+        margin-bottom: 0.125rem;
     }
 </style>

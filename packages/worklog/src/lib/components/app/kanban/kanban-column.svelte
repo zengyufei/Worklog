@@ -17,10 +17,12 @@
         label,
         status,
         tickets,
+        totalCount = 0,
         accentColor = "blue",
         isLoading = false,
         onconsider,
         onfinalize,
+        onloadMore,
         onAddTicket,
         onEditTicket,
         onDeleteTicket,
@@ -29,15 +31,42 @@
         label: string;
         status: TicketStatus;
         tickets: Ticket[];
+        totalCount?: number;
         accentColor?: string;
         isLoading?: boolean;
         onconsider: (e: CustomEvent) => void;
         onfinalize: (e: CustomEvent) => void;
+        onloadMore?: (status: TicketStatus) => void;
         onAddTicket?: (status: TicketStatus) => void;
         onEditTicket?: (ticket: Ticket) => void;
         onDeleteTicket?: (id: string) => void;
         onStatusChange?: (id: string, status: TicketStatus) => void;
     } = $props();
+
+    let loadingMore = $state(false);
+    const hasMore = $derived(tickets.length < totalCount);
+
+    function setupObserver(node: HTMLElement) {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting && hasMore && !loadingMore && !isLoading) {
+                    void (async () => {
+                        loadingMore = true;
+                        await onloadMore?.(status);
+                        loadingMore = false;
+                    })();
+                }
+            },
+            { threshold: 0.1 }
+        );
+
+        observer.observe(node);
+        return {
+            destroy() {
+                observer.disconnect();
+            },
+        };
+    }
 
     const flipDurationMs = 180;
 
@@ -130,6 +159,15 @@
                     />
                 </div>
             {/each}
+
+            <!-- Intersection sentinel -->
+            <div use:setupObserver class="sentinel"></div>
+
+            {#if loadingMore}
+                <div class="column-loading-more">
+                    <InlineLoading description="Loading more..." />
+                </div>
+            {/if}
 
             {#if zoneItems.length === 0}
                 <div class="empty-state" aria-hidden="true">
@@ -260,5 +298,16 @@
     .column-footer :global(.bx--btn--ghost:hover) {
         color: var(--cds-text-01);
         background: var(--cds-hover-ui);
+    }
+    .sentinel {
+        height: 1px;
+        width: 100%;
+        pointer-events: none;
+    }
+
+    .column-loading-more {
+        padding: 0.5rem;
+        display: flex;
+        justify-content: center;
     }
 </style>

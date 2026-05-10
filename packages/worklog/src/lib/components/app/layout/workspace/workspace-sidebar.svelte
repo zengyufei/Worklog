@@ -23,6 +23,7 @@
         ContextMenuOption,
         ContextMenuDivider,
         Modal,
+        InlineLoading,
     } from "carbon-components-svelte";
 
     import { getWorkspaceShellContext } from "$lib/hooks/workspace-shell-context";
@@ -51,7 +52,9 @@
     let createError = $state<string | null>(null);
     let showCreateDiscard = $state(false);
 
-    const isCreateDirty = $derived(draftName.trim() !== "" || draftDescription.trim() !== "");
+    const isCreateDirty = $derived(
+        draftName.trim() !== "" || draftDescription.trim() !== "",
+    );
 
     const selectedBoardId = $derived(boardsApi.active?.id ?? undefined);
     const hasBoards = $derived(boardsApi.boards.length > 0);
@@ -140,6 +143,34 @@
         }
     }
 
+    let loadingMore = $state(false);
+
+    function setupObserver(node: HTMLElement) {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (
+                    entries[0].isIntersecting &&
+                    !loadingMore &&
+                    !boardsApi.loading
+                ) {
+                    void (async () => {
+                        loadingMore = true;
+                        await boardsApi.loadMore?.();
+                        loadingMore = false;
+                    })();
+                }
+            },
+            { threshold: 0.1 },
+        );
+
+        observer.observe(node);
+        return {
+            destroy() {
+                observer.disconnect();
+            },
+        };
+    }
+
     $effect(() => {
         if (createModalOpen) {
             return;
@@ -185,7 +216,7 @@
 
     const isEditDirty = $derived(
         editDraftName.trim() !== initialEditName ||
-        editDraftDescription.trim() !== initialEditDescription
+            editDraftDescription.trim() !== initialEditDescription,
     );
 
     function promptEditBoard(board: {
@@ -338,6 +369,15 @@
                         />
                     </ContextMenu>
                 {/each}
+
+                <!-- Sentinel for loading more boards -->
+                <div use:setupObserver class="sentinel"></div>
+
+                {#if loadingMore}
+                    <div class="sidebar-loading-more">
+                        <InlineLoading description="Loading more..." />
+                    </div>
+                {/if}
             </TileGroup>
         {/if}
     </SideNavItems>
@@ -484,32 +524,35 @@
     </p>
 </Modal>
 
-<ComposedModal
-    danger
-    bind:open={showCreateDiscard}
-    size="sm"
->
+<ComposedModal danger bind:open={showCreateDiscard} size="sm">
     <ModalHeader title="Discard unsaved changes?" />
     <ModalBody>
-        <p>You have unsaved changes in your new board draft. Are you sure you want to discard them?</p>
+        <p>
+            You have unsaved changes in your new board draft. Are you sure you
+            want to discard them?
+        </p>
     </ModalBody>
     <ModalFooter>
-        <Button kind="secondary" onclick={() => (showCreateDiscard = false)}>Continue editing</Button>
-        <Button kind="danger" onclick={forceCloseCreate}>Discard changes</Button>
+        <Button kind="secondary" onclick={() => (showCreateDiscard = false)}
+            >Continue editing</Button
+        >
+        <Button kind="danger" onclick={forceCloseCreate}>Discard changes</Button
+        >
     </ModalFooter>
 </ComposedModal>
 
-<ComposedModal
-    danger
-    bind:open={showEditDiscard}
-    size="sm"
->
+<ComposedModal danger bind:open={showEditDiscard} size="sm">
     <ModalHeader title="Discard unsaved changes?" />
     <ModalBody>
-        <p>You have unsaved changes in your board info. Are you sure you want to discard them?</p>
+        <p>
+            You have unsaved changes in your board info. Are you sure you want
+            to discard them?
+        </p>
     </ModalBody>
     <ModalFooter>
-        <Button kind="secondary" onclick={() => (showEditDiscard = false)}>Continue editing</Button>
+        <Button kind="secondary" onclick={() => (showEditDiscard = false)}
+            >Continue editing</Button
+        >
         <Button kind="danger" onclick={forceCloseEdit}>Discard changes</Button>
     </ModalFooter>
 </ComposedModal>
@@ -601,5 +644,16 @@
 
     .workspace-sidebar-footer :global(.bx--btn svg) {
         flex-shrink: 0;
+    }
+    .sentinel {
+        height: 1px;
+        width: 100%;
+        pointer-events: none;
+    }
+
+    .sidebar-loading-more {
+        padding: 0.5rem;
+        display: flex;
+        justify-content: center;
     }
 </style>
