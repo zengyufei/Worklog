@@ -141,3 +141,25 @@ export async function seedDatabase(db: Database): Promise<void> {
     console.log('[seed] Tickets created');
     console.log('[seed] Done');
 }
+
+export async function seedLazyLoadingTest(db: Database): Promise<void> {
+    const board = await BoardRepo.createBoard(db, {
+        name: 'Performance Test Board',
+        description: 'Large board with 200 tickets to test lazy loading and infinite scroll.'
+    });
+
+    const statuses: any[] = ['backlog', 'todo', 'in_progress', 'done'];
+
+    for (let i = 1; i <= 200; i++) {
+        const status = statuses[Math.floor((i - 1) / 50)];
+        await TicketRepo.createTicket(db, {
+            board_id: board.id,
+            title: `Performance Ticket #${i}`,
+            description: `This is ticket number ${i}. It has a relatively long description to test how deferred rendering handles larger blocks of text and maintains layout stability while the user scrolls through the Kanban columns.`,
+            status: status,
+            priority: (i % 3 === 0) ? 'p1' : (i % 2 === 0) ? 'p2' : 'p3',
+            ticket_type: 'task',
+            labels: ['performance', 'lazy-loading', `batch-${Math.ceil(i / 20)}`]
+        });
+    }
+}

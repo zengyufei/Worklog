@@ -118,133 +118,161 @@
             void navigator.clipboard.writeText(text);
         }
     }
+
+    let isVisible = $state(false);
+
+    function setupVisibility(node: HTMLElement) {
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting) {
+                    isVisible = true;
+                    observer.disconnect();
+                }
+            },
+            { rootMargin: "200px" }
+        );
+        observer.observe(node);
+        return {
+            destroy() {
+                observer.disconnect();
+            },
+        };
+    }
 </script>
 
-<article class="ticket-card" bind:this={cardElement}>
-    <ContextMenu target={cardElement ? [cardElement] : []}>
-        <ContextMenuOption
-            labelText="Copy Ticket ID"
-            icon={CopyFile}
-            on:click={() => copyToClipboard(ticket.id)}
-        />
-        <ContextMenuOption
-            labelText="Copy Title"
-            icon={CopyFile}
-            on:click={() => copyToClipboard(ticket.title)}
-        />
-        <ContextMenuDivider />
-        <ContextMenuOption labelText="Move to..." icon={ArrowRight}>
+<article 
+    class="ticket-card" 
+    bind:this={cardElement}
+    use:setupVisibility
+>
+    {#if isVisible}
+        <ContextMenu target={cardElement ? [cardElement] : []}>
             <ContextMenuOption
-                labelText="Backlog"
-                on:click={() => onStatusChange?.(ticket.id, "backlog")}
+                labelText="Copy Ticket ID"
+                icon={CopyFile}
+                on:click={() => copyToClipboard(ticket.id)}
             />
             <ContextMenuOption
-                labelText="Todo"
-                on:click={() => onStatusChange?.(ticket.id, "todo")}
+                labelText="Copy Title"
+                icon={CopyFile}
+                on:click={() => copyToClipboard(ticket.title)}
+            />
+            <ContextMenuDivider />
+            <ContextMenuOption labelText="Move to..." icon={ArrowRight}>
+                <ContextMenuOption
+                    labelText="Backlog"
+                    on:click={() => onStatusChange?.(ticket.id, "backlog")}
+                />
+                <ContextMenuOption
+                    labelText="Todo"
+                    on:click={() => onStatusChange?.(ticket.id, "todo")}
+                />
+                <ContextMenuOption
+                    labelText="In Progress"
+                    on:click={() => onStatusChange?.(ticket.id, "in_progress")}
+                />
+                <ContextMenuOption
+                    labelText="Done"
+                    on:click={() => onStatusChange?.(ticket.id, "done")}
+                />
+            </ContextMenuOption>
+            <ContextMenuDivider />
+            <ContextMenuOption
+                labelText="Edit Ticket"
+                icon={Edit}
+                on:click={() => onEdit?.(ticket)}
             />
             <ContextMenuOption
-                labelText="In Progress"
-                on:click={() => onStatusChange?.(ticket.id, "in_progress")}
+                kind="danger"
+                labelText="Delete Ticket"
+                icon={TrashCan}
+                on:click={() => onDelete?.(ticket.id)}
             />
-            <ContextMenuOption
-                labelText="Done"
-                on:click={() => onStatusChange?.(ticket.id, "done")}
-            />
-        </ContextMenuOption>
-        <ContextMenuDivider />
-        <ContextMenuOption
-            labelText="Edit Ticket"
-            icon={Edit}
-            on:click={() => onEdit?.(ticket)}
-        />
-        <ContextMenuOption
-            kind="danger"
-            labelText="Delete Ticket"
-            icon={TrashCan}
-            on:click={() => onDelete?.(ticket.id)}
-        />
-    </ContextMenu>
+        </ContextMenu>
 
-    <!-- Drag handle -->
-    <div class="drag-handle" aria-hidden="true">
-        <Draggable size={16} />
-    </div>
-
-    <!-- Priority stripe -->
-    <div class="priority-stripe priority-stripe--{ticket.priority}"></div>
-
-    <div class="ticket-body">
-        <!-- Header row -->
-        <div class="ticket-header">
-            <span class="ticket-id">#{ticket.id}</span>
-            <div class="ticket-actions">
-                <OverflowMenu size="sm" flipped>
-                    <OverflowMenuItem
-                        text="Edit"
-                        on:click={() => onEdit?.(ticket)}
-                    />
-                    <OverflowMenuItem
-                        text="Delete"
-                        danger
-                        on:click={() => onDelete?.(ticket.id)}
-                    />
-                </OverflowMenu>
-            </div>
+        <!-- Drag handle -->
+        <div class="drag-handle" aria-hidden="true">
+            <Draggable size={16} />
         </div>
 
-        <!-- Title -->
-        <h4 class="ticket-title">{ticket.title}</h4>
+        <!-- Priority stripe -->
+        <div class="priority-stripe priority-stripe--{ticket.priority}"></div>
 
-        <!-- Description -->
-        {#if ticket.description}
-            <p class="ticket-desc">{ticket.description}</p>
-        {/if}
-
-        <!-- Tags -->
-        {#if ticket.labels?.length}
-            <div class="ticket-tags">
-                {#each ticket.labels as tag}
-                    <Tag size="sm" type="cool-gray">{tag}</Tag>
-                {/each}
-            </div>
-        {/if}
-
-        <!-- Footer -->
-        <div class="ticket-footer">
-            <div class="ticket-badges">
-                <Tag size="sm" type={priorityConfig.tagColor}>
-                    <span class="tag-with-icon">
-                        <PriorityIcon size={12} />
-                        {priorityConfig.label}
-                    </span>
-                </Tag>
-                <Tag 
-                    size="sm" 
-                    style="background-color: {typeConfig.color}; color: white;"
-                >
-                    <span class="tag-with-icon">
-                        <TypeIcon size={12} />
-                        {typeConfig.label}
-                    </span>
-                </Tag>
+        <div class="ticket-body">
+            <!-- Header row -->
+            <div class="ticket-header">
+                <span class="ticket-id">#{ticket.id}</span>
+                <div class="ticket-actions">
+                    <OverflowMenu size="sm" flipped>
+                        <OverflowMenuItem
+                            text="Edit"
+                            on:click={() => onEdit?.(ticket)}
+                        />
+                        <OverflowMenuItem
+                            text="Delete"
+                            danger
+                            on:click={() => onDelete?.(ticket.id)}
+                        />
+                    </OverflowMenu>
+                </div>
             </div>
 
-            <div class="ticket-meta">
-                {#if ticket.comments?.length}
-                    <span class="meta-item">
-                        <ChatBot size={14} />
-                        <span>{ticket.comments.length}</span>
-                    </span>
-                {/if}
-                {#if ticket.due_date}
-                    <span class="meta-item" class:overdue={isOverdue}>
-                        <Calendar size={14} />
-                        <span>{ticket.due_date}</span>
-                    </span>
-                {/if}
+            <!-- Title -->
+            <h4 class="ticket-title">{ticket.title}</h4>
+
+            <!-- Description -->
+            {#if ticket.description}
+                <p class="ticket-desc">{ticket.description}</p>
+            {/if}
+
+            <!-- Tags -->
+            {#if ticket.labels?.length}
+                <div class="ticket-tags">
+                    {#each ticket.labels as tag}
+                        <Tag size="sm" type="cool-gray">{tag}</Tag>
+                    {/each}
+                </div>
+            {/if}
+
+            <!-- Footer -->
+            <div class="ticket-footer">
+                <div class="ticket-badges">
+                    <Tag size="sm" type={priorityConfig.tagColor}>
+                        <span class="tag-with-icon">
+                            <PriorityIcon size={12} />
+                            {priorityConfig.label}
+                        </span>
+                    </Tag>
+                    <Tag 
+                        size="sm" 
+                        style="background-color: {typeConfig.color}; color: white;"
+                    >
+                        <span class="tag-with-icon">
+                            <TypeIcon size={12} />
+                            {typeConfig.label}
+                        </span>
+                    </Tag>
+                </div>
+
+                <div class="ticket-meta">
+                    {#if ticket.comments?.length}
+                        <span class="meta-item">
+                            <ChatBot size={14} />
+                            <span>{ticket.comments.length}</span>
+                        </span>
+                    {/if}
+                    {#if ticket.due_date}
+                        <span class="meta-item" class:overdue={isOverdue}>
+                            <Calendar size={14} />
+                            <span>{ticket.due_date}</span>
+                        </span>
+                    {/if}
+                </div>
             </div>
         </div>
-    </div>
+    {:else}
+        <div class="ticket-skeleton"></div>
+    {/if}
 </article>
 
 <style>
@@ -400,5 +428,11 @@
     .meta-item.overdue {
         color: var(--cds-support-01);
         font-weight: 500;
+    }
+
+    .ticket-skeleton {
+        height: 120px;
+        width: 100%;
+        background: var(--cds-ui-01);
     }
 </style>

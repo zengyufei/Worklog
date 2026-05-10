@@ -204,8 +204,10 @@
 	{/if}
 </div>
 
-<!-- Command Palette (always rendered, visibility managed internally) -->
-<CommandPalette />
+<!-- Command Palette (deferred rendering) -->
+{#if palette.isOpen}
+	<CommandPalette />
+{/if}
 
 <!-- Global Notifications Queue -->
 <NotificationQueue bind:this={notifications.queue} />

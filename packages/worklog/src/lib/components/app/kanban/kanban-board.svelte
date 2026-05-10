@@ -369,10 +369,12 @@
                 label={col.label}
                 status={col.status}
                 tickets={col.tickets}
+                totalCount={ticketsHook.counts[col.status]}
                 accentColor={col.accentColor}
                 isLoading={ticketsHook.loading}
                 onconsider={handlers.consider}
                 onfinalize={handlers.finalize}
+                onloadMore={ticketsHook.loadMore}
                 onAddTicket={openAddModal}
                 onEditTicket={openEditModal}
                 onDeleteTicket={promptDeleteTicket}
@@ -383,18 +385,22 @@
 </div>
 
 <!-- ── Add / Edit Modal ──────────────────────────────────────────────────────── -->
-<TicketAddEditModal
-    bind:open={modalOpen}
-    ticket={editTicket}
-    defaultStatus={targetStatus}
-    onSubmit={handleSubmit}
-/>
+{#if modalOpen}
+    <TicketAddEditModal
+        bind:open={modalOpen}
+        ticket={editTicket}
+        defaultStatus={targetStatus}
+        onSubmit={handleSubmit}
+    />
+{/if}
 
-<TicketDeleteConfirm
-    bind:open={deleteTicketModalOpen}
-    ticketTitle={deleteTicketTarget?.title ?? ""}
-    onConfirm={confirmDeleteTicket}
-/>
+{#if deleteTicketModalOpen}
+    <TicketDeleteConfirm
+        bind:open={deleteTicketModalOpen}
+        ticketTitle={deleteTicketTarget?.title ?? ""}
+        onConfirm={confirmDeleteTicket}
+    />
+{/if}
 
 <style>
     .board-shell {
