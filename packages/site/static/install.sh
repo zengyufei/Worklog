@@ -4,23 +4,23 @@ set -e
 echo "📦 Installing Worklog for Linux..."
 
 # Detect latest version
-# echo "🔍 Finding latest release..."
-# API_RESPONSE=$(curl -s "https://api.github.com/repos/regisx001/Worklog/releases/latest")
-# VERSION=$(echo "$API_RESPONSE" | grep -oP '"tag_name": "\K(.*)(?=")' | sed 's/^app-v//')
+echo "🔍 Finding latest release..."
+API_RESPONSE=$(curl -s "https://api.github.com/repos/regisx001/Worklog/releases/latest")
+VERSION=$(echo "$API_RESPONSE" | grep -oP '"tag_name": "\K(.*)(?=")' | sed 's/^app-v//')
 
-# if [ -z "$VERSION" ]; then
-#     echo "❌ Failed to fetch latest version."
-#     exit 1
-# fi
+if [ -z "$VERSION" ]; then
+    echo "❌ Failed to fetch latest version."
+    exit 1
+fi
 
-# echo "🚀 Found version v$VERSION"
+echo "🚀 Found version v$VERSION"
 
-# # Setup temporary installation directory
-# TMP_DIR=$(mktemp -d -t worklog-install-XXXXXX)
-# cd "$TMP_DIR"
+# Setup temporary installation directory
+TMP_DIR=$(mktemp -d -t worklog-install-XXXXXX)
+cd "$TMP_DIR"
 
 # Download AppImage
-APPIMAGE_URL="https://github.com/regisx001/Worklog/releases/download/app-v1.2.18/worklog_1.2.17_amd64.AppImage"
+APPIMAGE_URL="https://github.com/regisx001/Worklog/releases/latest/download/worklog_${VERSION}_amd64.AppImage"
 echo "⬇️ Downloading AppImage..."
 curl -L -o worklog.AppImage "$APPIMAGE_URL"
 chmod +x worklog.AppImage
