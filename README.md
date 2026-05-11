@@ -30,19 +30,6 @@ It is designed for fast, keyboard-driven planning with a Kanban workflow, transp
 
 v1.3.0 is a stability-focused release that brings robust Linux rendering fixes and a refined update workflow. We've hardcoded environment overrides to prevent crashes on modern Wayland systems and streamlined how you receive new versions.
 
-<table>
-  <tr>
-    <td align="center">
-      <!-- <img src="[SCREENSHOT_PLACEHOLDER_1]" alt="Linux Stable Rendering" /> -->
-      <br /><strong>Linux Stability — Hardcoded rendering overrides for Wayland/NVIDIA</strong>
-    </td>
-    <td align="center">
-      <!-- <img src="[SCREENSHOT_PLACEHOLDER_2]" alt="New Update Discovery" /> -->
-      <br /><strong>Discovery Updates — Version notification with direct manual links</strong>
-    </td>
-  </tr>
-</table>
-
 ### What shipped in v1.3.0
 
 **🐧 Native Linux Rendering Fixes**
