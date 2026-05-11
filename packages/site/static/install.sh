@@ -45,7 +45,7 @@ echo "📝 Creating desktop shortcut..."
 cat << EOF > ~/.local/share/applications/worklog.desktop
 [Desktop Entry]
 Name=Worklog
-Exec=$HOME/.local/bin/worklog
+Exec=env WEBKIT_DISABLE_DMABUF_RENDERER=1 WEBKIT_DISABLE_COMPOSITING_MODE=1 GDK_BACKEND=x11 $HOME/.local/bin/worklog
 Icon=worklog
 Type=Application
 Categories=Development;Utility;Office;
