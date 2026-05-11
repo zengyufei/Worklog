@@ -1,8 +1,20 @@
-## [unreleased]
+## [app-v1.3.0] - 2026-05-11
+
+### 🚀 Features
+
+- **Database Lazy Loading**: Implemented infinite scroll and deferred rendering for Kanban boards to support large datasets with paginated SQL queries.
+- **Linux Stability**: Hardcoded internal environment overrides (`WEBKIT_DISABLE_DMABUF_RENDERER`, `GDK_BACKEND=x11`) to prevent EGL crashes and grey-screens on Wayland.
+- **Native Installer**: Refactored Linux distribution to a "native extraction" model via a new shell installer that handles high-res icons and desktop integration automatically.
 
 ### 🚜 Refactor
 
-- Deprecate automatic update installation in favor of manual downloads
+- **Manual Updater**: Deprecated automatic update installation in favor of a robust version discovery and manual download model for better platform reliability.
+- **Settings Cleanup**: Removed legacy updater UI components and unused assets.
+
+### ⚙️ Miscellaneous Tasks
+
+- Bump project version to 1.3.0 across all package manifests and build configs.
+
 ## [app-v1.2.20] - 2026-05-11
 
 ### ⚙️ Miscellaneous Tasks

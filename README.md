@@ -24,50 +24,40 @@ It is designed for fast, keyboard-driven planning with a Kanban workflow, transp
 
 ***
 
-## 🎉 Latest Release — v1.2
+## 🎉 Latest Release — v1.3.0
 
-> **[Download v1.2.0 for your platform →](https://github.com/regisx001/Worklog/releases/tag/app-v1.2.0)**
+> **[Download v1.3.0 for your platform →](https://github.com/regisx001/Worklog/releases/tag/app-v1.3.0)**
 
-v1.2 is a major power-user update that moves Worklog beyond basic task management and into deeper workflow integration. It introduces background Git synchronization, adaptive UI scaling, and direct board management — all without touching the local-first, offline-first foundation.
+v1.3.0 is a stability-focused release that brings robust Linux rendering fixes and a refined update workflow. We've hardcoded environment overrides to prevent crashes on modern Wayland systems and streamlined how you receive new versions.
 
 <table>
   <tr>
     <td align="center">
-      <img src="https://github.com/user-attachments/assets/d419804a-734a-4398-99e0-89fdbafe66af" alt="Worklog Kanban board with Backlog, To Do, In Progress, and Done columns" />
-      <br /><strong>Kanban Board — full workspace overview</strong>
+      <!-- <img src="[SCREENSHOT_PLACEHOLDER_1]" alt="Linux Stable Rendering" /> -->
+      <br /><strong>Linux Stability — Hardcoded rendering overrides for Wayland/NVIDIA</strong>
     </td>
     <td align="center">
-      <img src="https://github.com/user-attachments/assets/dbbf244f-0700-494c-a0ea-78895de22f00" alt="Git Sync settings panel with remote URL, access token, branch, and auto-sync toggle" />
-      <br /><strong>Git Auto-Sync — configure and forget</strong>
-    </td>
-  </tr>
-  <tr>
-    <td align="center">
-      <img src="https://github.com/user-attachments/assets/126f120e-8453-4cba-bc39-15ccc1921da4" alt="Application Zoom settings showing 190% scale with Ctrl+/- hint" />
-      <br /><strong>Global Zoom — 50 % to 200 % with keyboard shortcuts</strong>
-    </td>
-    <td align="center">
-      <img src="https://github.com/user-attachments/assets/fc58155e-e808-46b1-9fc5-8daf260b426d" alt="Board context menu showing Open Board, Edit Board, Copy Board ID, and Delete Board" />
-      <br /><strong>Board Context Menu — rename and edit without leaving the sidebar</strong>
+      <!-- <img src="[SCREENSHOT_PLACEHOLDER_2]" alt="New Update Discovery" /> -->
+      <br /><strong>Discovery Updates — Version notification with direct manual links</strong>
     </td>
   </tr>
 </table>
 
-### What shipped in v1.2
+### What shipped in v1.3.0
 
-**🔄 Git Auto-Sync**
-Background scheduler keeps your local workspace in parity with a private GitHub repository. Configure the remote URL, personal access token, branch, and sync interval (1 minute to 6 hours) directly from Settings → Git Sync. Uses a pull-before-push strategy to keep history clean. Toggle auto-sync on or off at any time.
+**🐧 Native Linux Rendering Fixes**
+Hardcoded `WEBKIT_DISABLE_DMABUF_RENDERER=1` and `GDK_BACKEND=x11` internally to solve the `EGL_BAD_PARAMETER` crashes and "grey screen" issues on modern rolling-release distributions like Arch Linux.
 
-**🔍 Global Application Zoom**
-Scale the entire UI from 50 % to 200 % using the Zoom settings tab or live keyboard shortcuts (`Ctrl/Cmd` + `+`, `-`, `0`). The preference is persisted locally and restored on the next launch, so the app always opens at the scale you chose.
+**🛠️ Simplified Update Workflow**
+Transitioned to a "Discovery & Manual Update" model. The app will still notify you of new versions, but will direct you to the releases page to ensure a clean, stable installation every time.
 
-**✏️ Edit Board from Sidebar**
-Right-click any board in the sidebar to open a context menu with options to open, edit, copy the board ID, or delete. The Edit Board action lets you update the board name and description inline without navigating away from your current view.
+**📦 New Linux Installer**
+A native shell installer that extracts the AppImage and merges high-resolution icons directly into your desktop environment.
 
-**🛠️ Schema Migration Infrastructure**
-A professional SQLite migration system (now at schema version 11) ensures that every future feature addition safely migrates existing data with no manual steps and no data loss.
+**⚡ Database Lazy Loading**
+Implemented infinite scroll and deferred rendering for the Kanban board. The application now uses paginated SQL queries and only renders tickets as you scroll, dramatically improving performance and memory usage for workspaces with hundreds of tickets.
 
-**Full changelog:** https://github.com/regisx001/Worklog/compare/app-v1.1.0...app-v1.2.0
+**Full changelog:** https://github.com/regisx001/Worklog/compare/app-v1.2.0...app-v1.3.0
 
 ***
 
@@ -111,6 +101,8 @@ The app already supports:
 - background Git auto-sync with configurable intervals and pull-before-push strategy
 - global application zoom (50 % – 200 %) with keyboard shortcuts and persistence
 - Edit Board action from the sidebar context menu
+- Hardcoded Linux rendering overrides for maximum stability
+- Database lazy loading and infinite scroll for large datasets
 - SQLite schema migration infrastructure for safe, lossless upgrades
 
 ## Future Plans
