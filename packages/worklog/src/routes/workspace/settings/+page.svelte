@@ -16,7 +16,6 @@
         PasswordInput,
         InlineLoading,
         Tag,
-        ProgressBar,
     } from "carbon-components-svelte";
     import { useWorkspace } from "$lib/hooks/workspace.svelte";
     import { getDb } from "$lib/db";
@@ -28,8 +27,6 @@
     import { notifications } from "$lib/hooks/notifications.svelte";
     import {
         checkForUpdate,
-        installUpdate,
-        relaunchApp,
         RELEASES_URL,
         type UpdateState,
     } from "$lib/updater";
@@ -50,15 +47,13 @@
         Renew,
         MagicWand,
         ColorPalette,
-        Download,
-        Restart,
-        CheckmarkOutline,
         WarningAlt,
         Launch,
         TrashCan,
         Add,
         Checkmark,
         Close,
+        CheckmarkOutline,
     } from "carbon-icons-svelte";
     import { getWorkspaceShellContext } from "$lib/hooks/workspace-shell-context";
     import { seedDatabase, seedLazyLoadingTest } from "$lib/db/seed";
@@ -376,16 +371,6 @@
         });
     }
 
-    async function handleInstallUpdate() {
-        await installUpdate((s) => {
-            updateState = s;
-        }, updateState);
-    }
-
-    async function handleRelaunch() {
-        await relaunchApp();
-    }
-
     async function openReleasesPage() {
         const { openUrl } = await import("@tauri-apps/plugin-opener");
         await openUrl(RELEASES_URL);
@@ -620,7 +605,7 @@
                                         </Button>
                                     </div>
                                 {:else if updateState.status === "update-available"}
-                                    <!-- Update available: show info + install button -->
+                                    <!-- Update available: show info + manual download button -->
                                     <div class="updater-available">
                                         <div class="updater-available-header">
                                             <div class="updater-version-badge">
@@ -662,10 +647,10 @@
                                         <div class="updater-actions">
                                             <Button
                                                 kind="primary"
-                                                icon={Download}
-                                                onclick={handleInstallUpdate}
+                                                icon={Launch}
+                                                onclick={openReleasesPage}
                                             >
-                                                Download & Install
+                                                Go to Download Page
                                             </Button>
                                             <Button
                                                 kind="ghost"
@@ -686,51 +671,6 @@
                                                 Dismiss
                                             </Button>
                                         </div>
-                                    </div>
-                                {:else if updateState.status === "downloading"}
-                                    <!-- Downloading: progress bar -->
-                                    <div class="updater-downloading">
-                                        <div class="updater-download-header">
-                                            <Download size={20} />
-                                            <strong
-                                                >Downloading v{updateState.info
-                                                    ?.version}…</strong
-                                            >
-                                        </div>
-                                        <ProgressBar
-                                            value={updateState.progress.percent}
-                                            max={100}
-                                            labelText="Downloading update"
-                                            helperText={`${updateState.progress.percent}% — ${formatBytes(updateState.progress.downloaded)} / ${formatBytes(updateState.progress.contentLength)}`}
-                                        />
-                                    </div>
-                                {:else if updateState.status === "installing"}
-                                    <!-- Installing: spinner -->
-                                    <div class="updater-status-row">
-                                        <InlineLoading
-                                            description="Installing update…"
-                                        />
-                                    </div>
-                                {:else if updateState.status === "ready-to-relaunch"}
-                                    <!-- Ready to relaunch -->
-                                    <div
-                                        class="updater-status-row updater-ready"
-                                    >
-                                        <CheckmarkOutline size={20} />
-                                        <div class="updater-status-text">
-                                            <strong>Update installed!</strong>
-                                            <span
-                                                >v{updateState.info?.version} is
-                                                ready. Relaunch to apply.</span
-                                            >
-                                        </div>
-                                        <Button
-                                            kind="primary"
-                                            icon={Restart}
-                                            onclick={handleRelaunch}
-                                        >
-                                            Relaunch now
-                                        </Button>
                                     </div>
                                 {:else if updateState.status === "install-failed"}
                                     <!-- Install failed: offer manual download -->
