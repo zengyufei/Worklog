@@ -1,6 +1,9 @@
 /**
  * Updater module — exposes a reactive state-driven API for the UI
- * to show rich feedback during the check → download → install → relaunch cycle.
+ * to show update availability.
+ *
+ * NOTE: Automatic download and installation is disabled (LEGACY) due to
+ * implementation complexities with AppImage/Linux environments.
  */
 
 export type UpdateStatus =
@@ -102,15 +105,10 @@ export const RELEASES_URL =
     "https://github.com/regisx001/Worklog/releases/latest";
 
 /**
- * Check for updates, download, install, and relaunch — calling `onState`
- * with every status transition so the UI can render rich feedback.
- *
- * Set `autoInstall` to false to stop after finding an update and let the
- * user decide when to proceed (call `installUpdate()` later).
+ * Check for updates and notify the UI of the result.
  */
 export async function checkForUpdate(
     onState: UpdateCallback,
-    autoInstall = false,
 ): Promise<void> {
     const state: UpdateState = makeInitialState();
 
@@ -138,50 +136,24 @@ export async function checkForUpdate(
             body: update.body ?? null,
         };
         emit();
-
-        if (!autoInstall) return; // let UI call installUpdate()
-
-        // ── Download & install ────────────────────────────────────────
-        await downloadAndInstall(update, state, emit);
     } catch (error) {
         const classified = classifyError(error);
-        state.status = classified.isInstallFailure ? "install-failed" : "error";
+        state.status = "error";
         state.errorMessage = classified.message;
         emit();
     }
 }
 
 /**
- * Download and install a previously found update, with full progress
- * tracking and state callbacks.
+ * @deprecated LEGACY — Automatic installation is not planned.
+ * Use checkForUpdate and redirect users to the manual download page.
  */
 export async function installUpdate(
-    onState: UpdateCallback,
-    existingState?: UpdateState,
+    _onState: UpdateCallback,
+    _existingState?: UpdateState,
 ): Promise<void> {
-    const state: UpdateState = existingState
-        ? { ...existingState, progress: { ...existingState.progress } }
-        : makeInitialState();
-
-    const emit = () => onState({ ...state, progress: { ...state.progress } });
-
-    try {
-        const { check } = await import("@tauri-apps/plugin-updater");
-        const update = await check();
-
-        if (!update) {
-            state.status = "no-update";
-            emit();
-            return;
-        }
-
-        await downloadAndInstall(update, state, emit);
-    } catch (error) {
-        const classified = classifyError(error);
-        state.status = classified.isInstallFailure ? "install-failed" : "error";
-        state.errorMessage = classified.message;
-        emit();
-    }
+    console.warn("installUpdate is LEGACY and no longer functional.");
+    return Promise.resolve();
 }
 
 /**
@@ -194,43 +166,14 @@ export async function relaunchApp(): Promise<void> {
 
 // ── Internal ──────────────────────────────────────────────────────────────
 
+/**
+ * @deprecated LEGACY — Automatic download is not planned.
+ */
 async function downloadAndInstall(
-    update: Awaited<ReturnType<typeof import("@tauri-apps/plugin-updater")["check"]>> & {},
-    state: UpdateState,
-    emit: () => void,
+    _update: unknown,
+    _state: UpdateState,
+    _emit: () => void,
 ): Promise<void> {
-    state.status = "downloading";
-    state.progress = { downloaded: 0, contentLength: 0, percent: 0 };
-    emit();
-
-    await update.downloadAndInstall((event) => {
-        switch (event.event) {
-            case "Started":
-                state.progress.contentLength = event.data.contentLength ?? 0;
-                emit();
-                break;
-            case "Progress":
-                state.progress.downloaded += event.data.chunkLength ?? 0;
-                if (state.progress.contentLength > 0) {
-                    state.progress.percent = Math.min(
-                        100,
-                        Math.round(
-                            (state.progress.downloaded /
-                                state.progress.contentLength) *
-                                100,
-                        ),
-                    );
-                }
-                emit();
-                break;
-            case "Finished":
-                state.progress.percent = 100;
-                state.status = "installing";
-                emit();
-                break;
-        }
-    });
-
-    state.status = "ready-to-relaunch";
-    emit();
+    console.warn("downloadAndInstall is LEGACY and no longer functional.");
+    return Promise.resolve();
 }
