@@ -25,9 +25,12 @@ export function useTickets(
     async function load() {
         const workspacePath = getWorkspacePath();
         const boardId = getBoardId();
+
+        // Clear existing tickets immediately to avoid flashing old data
+        _tickets = [];
+        _counts = {};
+
         if (!workspacePath || !boardId) {
-            _tickets = [];
-            _counts = {};
             return;
         }
 

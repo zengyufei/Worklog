@@ -51,23 +51,7 @@
     let loadError = $state<string | null>(null);
     let actionError = $state<string | null>(null);
 
-    $effect(() => {
-        const workspacePath = getWorkspacePath();
-        const boardId = getBoardId();
-
-        if (!workspacePath || !boardId) {
-            return;
-        }
-
-        void (async () => {
-            try {
-                loadError = null;
-                await ticketsHook.load();
-            } catch (error) {
-                loadError = String(error);
-            }
-        })();
-    });
+    // Loading is now handled by the parent component (+page.svelte)
 
     // ── Column definitions from config ─────────────────────────────────────────
     const columnsDef = TICKET_STATUS_ORDER.map((status) => ({
