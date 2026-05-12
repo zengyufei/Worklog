@@ -3,18 +3,25 @@
     import KanbanBoard from "$lib/components/app/kanban/kanban-board.svelte";
     import TableView from "$lib/components/app/table/table-board.svelte";
     import GanttView from "$lib/components/app/gantt/gantt-board.svelte";
-    import { Tabs, Tab, TabContent } from "carbon-components-svelte";
+    import { Tabs, Tab, TabContent, Loading, InlineNotification } from "carbon-components-svelte";
     import { Dashboard, Table, ChartBarFloating } from "carbon-icons-svelte";
     import { getWorkspaceShellContext } from "$lib/hooks/workspace-shell-context";
+    import { useTickets } from "$lib/hooks/tickets.svelte";
 
     import type { PageProps } from "./$types";
 
     let { data }: PageProps = $props();
 
-    const { boardsApi } = getWorkspaceShellContext();
+    const shell = getWorkspaceShellContext();
+    const { boardsApi } = shell;
 
     const board = $derived(
         boardsApi.boards.find((item) => item.id === data.boardId) ?? null,
+    );
+
+    const ticketsApi = useTickets(
+        () => shell.workspace.path,
+        () => board?.id ?? null,
     );
 
     function goToWorkspaceRoot() {
@@ -37,6 +44,21 @@
         }
 
         boardsApi.setActive(board);
+    });
+
+    let loadError = $state<string | null>(null);
+
+    // Load tickets when board changes
+    $effect(() => {
+        if (!board) return;
+        void (async () => {
+            try {
+                loadError = null;
+                await ticketsApi.load();
+            } catch (e) {
+                loadError = String(e);
+            }
+        })();
     });
 
     // Save/Restore tab index (Board-specific)
@@ -82,6 +104,22 @@
         </header>
 
         <section class="workspace-board-content" aria-label="Board content">
+            {#if loadError}
+                <div class="workspace-board-error">
+                    <InlineNotification
+                        kind="error"
+                        title="Failed to load board data"
+                        subtitle={loadError}
+                        hideCloseButton
+                    />
+                </div>
+            {/if}
+
+            {#if ticketsApi.loading}
+                <div class="workspace-board-loading">
+                    <Loading withOverlay={false} description="Loading board data..." />
+                </div>
+            {/if}
             <Tabs autoWidth bind:selected={selectedTab}>
                 <Tab label="Board" icon={Dashboard} />
                 <Tab label="Table" icon={Table} />
@@ -150,6 +188,29 @@
         min-height: 0;
         display: flex;
         flex-direction: column;
+        position: relative;
+    }
+
+    .workspace-board-loading {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: grid;
+        place-items: center;
+        background: var(--cds-ui-background);
+        z-index: 1000;
+        animation: workspace-board-fade-in 0.2s ease-out;
+    }
+
+    @keyframes workspace-board-fade-in {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
     }
 
     /* Make Tabs container take full height */
@@ -162,5 +223,9 @@
         min-height: 0;
         padding: 0 !important;
         overflow: hidden;
+    }
+
+    .workspace-board-error {
+        padding: var(--cds-spacing-05, 1rem);
     }
 </style>
