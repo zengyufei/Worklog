@@ -93,12 +93,14 @@
         createError = null;
     }
 
-    function closeCreateBoardModal() {
-        if (isCreateDirty) {
+    function closeCreateBoardModal(options?: { ignoreDirty?: boolean }) {
+        if (!options?.ignoreDirty && isCreateDirty) {
             showCreateDiscard = true;
-        } else {
-            createModalOpen = false;
+            return;
         }
+
+        createModalOpen = false;
+        showCreateDiscard = false;
     }
 
     function openSettings() {
@@ -135,7 +137,7 @@
                 description: draftDescription.trim(),
             });
 
-            closeCreateBoardModal();
+            closeCreateBoardModal({ ignoreDirty: true });
             onOpenBoard(createdBoard.id);
         } catch (error) {
             createError = String(error);
@@ -437,7 +439,7 @@
     <ModalFooter>
         <Button
             kind="secondary"
-            onclick={closeCreateBoardModal}
+            onclick={() => closeCreateBoardModal()}
             disabled={creatingBoard}
         >
             Cancel
