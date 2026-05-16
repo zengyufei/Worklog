@@ -22,9 +22,11 @@
     import {
         type Ticket,
         type TicketStatus,
+        type Comment,
         TICKET_STATUS_CONFIG,
         TICKET_STATUS_ORDER,
     } from "$lib/components/app/types";
+    import { getDb, SettingsRepo } from "$lib/db";
 
     type Column = {
         status: TicketStatus;
@@ -261,6 +263,29 @@
         }
     }
 
+    async function handleAddComment(ticketId: string, body: string) {
+        const workspacePath = shell.workspace.path;
+        if (!workspacePath) return;
+
+        // Resolve the author name from settings; fall back to "Anonymous"
+        let author = "Anonymous";
+        try {
+            const db = await getDb(workspacePath);
+            const settings = await SettingsRepo.getSettings(db);
+            author = settings.author_name?.trim() || "Anonymous";
+        } catch {
+            // Silently use fallback
+        }
+
+        const comment: Comment = {
+            author,
+            body,
+            timestamp: new Date().toISOString(),
+        };
+
+        await ticketsHook.addComment(ticketId, comment);
+    }
+
     // ── Stats (exclude backlog from progress) ─────────────────────────────────
     const activeTickets = $derived(
         columns
@@ -422,6 +447,7 @@
         promptDeleteTicket(id);
     }}
     onStatusChange={handleStatusChange}
+    onAddComment={handleAddComment}
 />
 
 <style>

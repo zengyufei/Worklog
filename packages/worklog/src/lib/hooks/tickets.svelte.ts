@@ -1,4 +1,4 @@
-import type { Ticket, CreateTicketInput, UpdateTicketInput } from '$lib/components/app/types';
+import type { Ticket, CreateTicketInput, UpdateTicketInput, Comment } from '$lib/components/app/types';
 import { getDb, TicketRepo } from '$lib/db';
 
 
@@ -102,6 +102,14 @@ export function useTickets(
         return ticket;
     }
 
+    async function addComment(id: string, comment: Comment) {
+        const ticket = _tickets.find(t => t.id === id);
+        if (!ticket) throw new Error(`Ticket ${id} not found`);
+
+        const updatedComments: Comment[] = [...ticket.comments, comment];
+        return update(id, { comments: updatedComments });
+    }
+
     async function remove(id: string) {
         const workspacePath = requireWorkspacePath();
         requireBoardId();
@@ -118,6 +126,6 @@ export function useTickets(
         get tickets() { return _tickets },
         get counts() { return _counts },
         get loading() { return _loading },
-        load, loadMore, create, update, remove
+        load, loadMore, create, update, addComment, remove
     };
 }

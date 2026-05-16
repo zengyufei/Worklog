@@ -27,6 +27,7 @@
         InProgress as InProgressIcon,
         CheckmarkFilled,
         Time,
+        Send,
     } from "carbon-icons-svelte";
     import {
         type Ticket,
@@ -43,12 +44,14 @@
         onEdit,
         onDelete,
         onStatusChange,
+        onAddComment,
     }: {
         ticket: Ticket | null;
         open: boolean;
         onEdit?: (ticket: Ticket) => void;
         onDelete?: (id: string) => void;
         onStatusChange?: (id: string, status: TicketStatus) => void;
+        onAddComment?: (ticketId: string, body: string) => Promise<void>;
     } = $props();
 
     const context = getWorkspaceShellContext();
@@ -159,6 +162,59 @@
     function handleKeydown(e: KeyboardEvent) {
         if (e.key === "Escape" && open) close();
     }
+
+    // ── Comment input state ─────────────────────────────────────────────────────
+    let commentDraft = $state("");
+    let submittingComment = $state(false);
+    let commentError = $state<string | null>(null);
+
+    async function submitComment() {
+        if (!ticket || !commentDraft.trim() || submittingComment) return;
+
+        submittingComment = true;
+        commentError = null;
+        const body = commentDraft.trim();
+
+        try {
+            await onAddComment?.(ticket.id, body);
+            commentDraft = "";
+        } catch (e) {
+            commentError = String(e);
+        } finally {
+            submittingComment = false;
+        }
+    }
+
+    function handleCommentKeydown(e: KeyboardEvent) {
+        // Ctrl+Enter or Cmd+Enter to submit
+        if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+            e.preventDefault();
+            void submitComment();
+        }
+    }
+
+    function formatCommentTimestamp(dateStr: string): string {
+        const d = new Date(dateStr);
+        const now = new Date();
+        const diffMs = now.getTime() - d.getTime();
+        const diffMins = Math.floor(diffMs / 60000);
+        const diffHours = Math.floor(diffMs / 3600000);
+        const diffDays = Math.floor(diffMs / 86400000);
+
+        if (diffMins < 1) return "just now";
+        if (diffMins < 60) return `${diffMins}m ago`;
+        if (diffHours < 24) return `${diffHours}h ago`;
+        if (diffDays < 7) return `${diffDays}d ago`;
+        return d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+    }
+
+    // Clear comment input when sheet closes
+    $effect(() => {
+        if (!open) {
+            commentDraft = "";
+            commentError = null;
+        }
+    });
 
     // Stamp a class on <html> so a global CSS rule can hide all document
     // scrollbars — WebKitGTK composites them above position:fixed overlays.
@@ -362,30 +418,74 @@
                 </div>
             </section>
 
-            <!-- ── Comments ───────────────────────────────────────────────── -->
-            {#if ticket.comments?.length}
-                <section class="sheet-section">
-                    <h3 class="sheet-section-title">
-                        <ChatBot size={15} />
-                        Comments ({ticket.comments.length})
-                    </h3>
+            <!-- ── Comments ────────────────────────────────────────────── -->
+            <section class="sheet-section sheet-section--comments">
+                <h3 class="sheet-section-title">
+                    <ChatBot size={15} />
+                    Comments
+                    {#if ticket.comments?.length}
+                        <span class="comment-count">{ticket.comments.length}</span>
+                    {/if}
+                </h3>
+
+                <!-- Comment list -->
+                {#if ticket.comments?.length}
                     <ul class="sheet-comments">
-                        {#each ticket.comments as comment}
+                        {#each ticket.comments as comment, i (i)}
                             <li class="comment-item">
-                                <div class="comment-meta">
-                                    <span class="comment-author"
-                                        >{comment.author}</span
-                                    >
-                                    <span class="comment-time"
-                                        >{formatDate(comment.timestamp)}</span
-                                    >
+                                <div class="comment-avatar">
+                                    {comment.author.charAt(0).toUpperCase()}
                                 </div>
-                                <p class="comment-body">{comment.body}</p>
+                                <div class="comment-content">
+                                    <div class="comment-meta">
+                                        <span class="comment-author">{comment.author}</span>
+                                        <span
+                                            class="comment-time"
+                                            title={new Date(comment.timestamp).toLocaleString()}
+                                        >
+                                            {formatCommentTimestamp(comment.timestamp)}
+                                        </span>
+                                    </div>
+                                    <p class="comment-body">{comment.body}</p>
+                                </div>
                             </li>
                         {/each}
                     </ul>
-                </section>
-            {/if}
+                {:else}
+                    <p class="comment-empty">No comments yet. Be the first to comment!</p>
+                {/if}
+
+                <!-- Add comment input -->
+                <div class="comment-input-area">
+                    <textarea
+                        class="comment-textarea"
+                        placeholder="Add a comment… (Ctrl+Enter to send)"
+                        bind:value={commentDraft}
+                        onkeydown={handleCommentKeydown}
+                        rows={3}
+                        disabled={submittingComment}
+                    ></textarea>
+                    {#if commentError}
+                        <p class="comment-input-error">{commentError}</p>
+                    {/if}
+                    <div class="comment-input-footer">
+                        <span class="comment-hint">Ctrl+Enter to send</span>
+                        <button
+                            class="comment-send-btn"
+                            class:comment-send-btn--loading={submittingComment}
+                            onclick={submitComment}
+                            disabled={!commentDraft.trim() || submittingComment}
+                        >
+                            {#if submittingComment}
+                                <span class="comment-send-spinner"></span>
+                            {:else}
+                                <Send size={14} />
+                            {/if}
+                            {submittingComment ? "Sending…" : "Send"}
+                        </button>
+                    </div>
+                </div>
+            </section>
         </div>
     {/if}
 </aside>
@@ -686,14 +786,46 @@
         gap: 0.75rem;
     }
 
+    .comment-count {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--cds-ui-04);
+        color: var(--cds-text-01);
+        font-size: 0.625rem;
+        font-weight: 700;
+        border-radius: 999px;
+        min-width: 1.125rem;
+        height: 1.125rem;
+        padding: 0 0.25rem;
+    }
+
     .comment-item {
-        background: var(--cds-ui-background);
-        border: 1px solid var(--cds-ui-03);
-        border-radius: 4px;
-        padding: 0.75rem;
+        display: flex;
+        gap: 0.625rem;
+        align-items: flex-start;
+    }
+
+    .comment-avatar {
+        width: 1.75rem;
+        height: 1.75rem;
+        border-radius: 50%;
+        background: var(--cds-interactive-01);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+
+    .comment-content {
+        flex: 1;
+        min-width: 0;
         display: flex;
         flex-direction: column;
-        gap: 0.375rem;
+        gap: 0.25rem;
     }
 
     .comment-meta {
@@ -720,5 +852,112 @@
         line-height: 1.5;
         white-space: pre-wrap;
         word-break: break-word;
+    }
+
+    .comment-empty {
+        margin: 0;
+        font-size: 0.8125rem;
+        color: var(--cds-text-helper);
+        font-style: italic;
+    }
+
+    /* ── Comment input ───────────────────────────────────────────────────────── */
+    .sheet-section--comments {
+        gap: 0.875rem;
+    }
+
+    .comment-input-area {
+        display: flex;
+        flex-direction: column;
+        gap: 0.375rem;
+        border: 1px solid var(--cds-ui-04);
+        border-radius: 4px;
+        background: var(--cds-ui-background);
+        transition: border-color 0.15s ease;
+    }
+
+    .comment-input-area:focus-within {
+        border-color: var(--cds-interactive-01);
+        box-shadow: 0 0 0 1px var(--cds-interactive-01);
+    }
+
+    .comment-textarea {
+        width: 100%;
+        padding: 0.625rem 0.75rem;
+        background: transparent;
+        border: none;
+        outline: none;
+        resize: none;
+        font-size: 0.8125rem;
+        font-family: var(--font-body);
+        color: var(--cds-text-01);
+        line-height: 1.5;
+        box-sizing: border-box;
+    }
+
+    .comment-textarea::placeholder {
+        color: var(--cds-text-placeholder);
+    }
+
+    .comment-textarea:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .comment-input-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.375rem 0.5rem 0.5rem;
+        border-top: 1px solid var(--cds-ui-03);
+    }
+
+    .comment-hint {
+        font-size: 0.6875rem;
+        color: var(--cds-text-helper);
+    }
+
+    .comment-send-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        padding: 0.3125rem 0.75rem;
+        border-radius: 4px;
+        border: none;
+        background: var(--cds-interactive-01);
+        color: #fff;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.15s ease, opacity 0.15s ease;
+    }
+
+    .comment-send-btn:hover:not(:disabled) {
+        background: var(--cds-interactive-02);
+    }
+
+    .comment-send-btn:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+    }
+
+    .comment-send-spinner {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border: 2px solid rgba(255, 255, 255, 0.4);
+        border-top-color: #fff;
+        border-radius: 50%;
+        animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    .comment-input-error {
+        margin: 0 0.75rem 0.25rem;
+        font-size: 0.75rem;
+        color: var(--cds-support-01);
     }
 </style>
