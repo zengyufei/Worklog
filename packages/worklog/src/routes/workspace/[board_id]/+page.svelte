@@ -9,8 +9,9 @@
         TabContent,
         Loading,
         InlineNotification,
+        Button,
     } from "carbon-components-svelte";
-    import { Dashboard, Table, ChartBarFloating } from "carbon-icons-svelte";
+    import { Dashboard, Table, ChartBarFloating, WarningHex, ArrowLeft } from "carbon-icons-svelte";
     import { getWorkspaceShellContext } from "$lib/hooks/workspace-shell-context";
     import { useTickets } from "$lib/hooks/tickets.svelte";
 
@@ -107,11 +108,16 @@
 {:else if !board}
     <main class="workspace-state">
         <article class="workspace-missing-board">
+            <div class="workspace-missing-board-icon">
+                <WarningHex size={48} />
+            </div>
             <h1>Board not found</h1>
-            <p>The selected board does not exist in this workspace.</p>
-            <button type="button" onclick={goToWorkspaceRoot}>
-                Back to workspace
-            </button>
+            <p>The selected board does not exist or has been deleted from this workspace.</p>
+            <div class="workspace-missing-board-actions">
+                <Button kind="primary" icon={ArrowLeft} onclick={goToWorkspaceRoot}>
+                    Back to workspace
+                </Button>
+            </div>
         </article>
     </main>
 {:else}
@@ -171,17 +177,38 @@
     .workspace-missing-board {
         margin: 0;
         max-width: 30rem;
-        display: grid;
-        gap: var(--cds-spacing-03, 0.5rem);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: var(--cds-spacing-05, 1rem);
+        padding: var(--cds-spacing-07, 2rem);
+        background: var(--cds-ui-01);
+        border: 1px solid var(--cds-ui-03);
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     }
 
-    .workspace-missing-board h1,
+    .workspace-missing-board-icon {
+        color: var(--cds-support-01, #fa4d56);
+        margin-bottom: var(--cds-spacing-03, 0.5rem);
+    }
+
+    .workspace-missing-board h1 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--cds-text-01);
+    }
+
     .workspace-missing-board p {
         margin: 0;
+        color: var(--cds-text-02);
+        line-height: 1.5;
     }
 
-    .workspace-missing-board button {
-        justify-self: start;
+    .workspace-missing-board-actions {
+        margin-top: var(--cds-spacing-05, 1rem);
     }
 
     .workspace-board-shell {
