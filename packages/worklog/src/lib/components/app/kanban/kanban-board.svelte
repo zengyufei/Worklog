@@ -172,10 +172,17 @@
 
     // ── Preview sheet state ───────────────────────────────────────────────────
     let previewOpen = $state(false);
-    let previewTicket = $state<Ticket | null>(null);
+    // Store only the ID so the sheet always reads the live ticket from the store
+    let previewTicketId = $state<string | null>(null);
+    const previewTicket = $derived(
+        previewTicketId
+            ? (ticketsHook.tickets.find((t) => t.id === previewTicketId) ??
+                  null)
+            : null,
+    );
 
     function openPreviewSheet(ticket: Ticket) {
-        previewTicket = ticket;
+        previewTicketId = ticket.id;
         previewOpen = true;
     }
 
