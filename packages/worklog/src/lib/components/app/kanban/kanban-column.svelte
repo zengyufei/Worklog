@@ -27,6 +27,7 @@
         onEditTicket,
         onDeleteTicket,
         onStatusChange,
+        onPreviewTicket,
     }: {
         label: string;
         status: TicketStatus;
@@ -41,6 +42,7 @@
         onEditTicket?: (ticket: Ticket) => void;
         onDeleteTicket?: (id: string) => void;
         onStatusChange?: (id: string, status: TicketStatus) => void;
+        onPreviewTicket?: (ticket: Ticket) => void;
     } = $props();
 
     let loadingMore = $state(false);
@@ -156,6 +158,7 @@
                         onEdit={onEditTicket}
                         onDelete={onDeleteTicket}
                         {onStatusChange}
+                        onPreview={onPreviewTicket}
                     />
                 </div>
             {/each}

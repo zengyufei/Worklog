@@ -9,6 +9,7 @@
     import KanbanColumn from "./kanban-column.svelte";
     import TicketAddEditModal from "./ticket-add-edit-modal.svelte";
     import TicketDeleteConfirm from "./ticket-delete-confirm.svelte";
+    import TicketPreviewSheet from "./ticket-preview-sheet.svelte";
     import { getWorkspaceShellContext } from "$lib/hooks/workspace-shell-context";
     import { useTickets } from "$lib/hooks/tickets.svelte";
     import { useTicketSort } from "$lib/hooks/ticket-sort.svelte";
@@ -168,6 +169,15 @@
     let modalOpen = $state(false);
     let editTicket = $state<Ticket | null>(null);
     let targetStatus = $state<TicketStatus>("todo");
+
+    // ── Preview sheet state ───────────────────────────────────────────────────
+    let previewOpen = $state(false);
+    let previewTicket = $state<Ticket | null>(null);
+
+    function openPreviewSheet(ticket: Ticket) {
+        previewTicket = ticket;
+        previewOpen = true;
+    }
 
     function openAddModal(status: TicketStatus) {
         editTicket = null;
@@ -346,7 +356,12 @@
     {/if}
 
     <!-- Columns -->
-    <div class="board-columns" role="main" aria-label="Kanban board">
+    <div
+        class="board-columns"
+        class:scroll-locked={previewOpen}
+        role="main"
+        aria-label="Kanban board"
+    >
         {#each filteredColumns as col (col.status)}
             {@const handlers = makeHandlers(col.status)}
             <KanbanColumn
@@ -363,6 +378,7 @@
                 onEditTicket={openEditModal}
                 onDeleteTicket={promptDeleteTicket}
                 onStatusChange={handleStatusChange}
+                onPreviewTicket={openPreviewSheet}
             />
         {/each}
     </div>
@@ -385,6 +401,21 @@
         onConfirm={confirmDeleteTicket}
     />
 {/if}
+
+<!-- ── Ticket Preview Sheet ──────────────────────────────────────────────────── -->
+<TicketPreviewSheet
+    bind:open={previewOpen}
+    ticket={previewTicket}
+    onEdit={(t) => {
+        previewOpen = false;
+        openEditModal(t);
+    }}
+    onDelete={(id) => {
+        previewOpen = false;
+        promptDeleteTicket(id);
+    }}
+    onStatusChange={handleStatusChange}
+/>
 
 <style>
     .board-shell {
@@ -419,6 +450,12 @@
     .board-columns::-webkit-scrollbar-thumb {
         background: var(--cds-ui-04);
         border-radius: 3px;
+    }
+
+    /* Hide scrollbar when preview sheet is open — Webkit renders native
+       scrollbars above position:fixed elements, so we must remove them. */
+    .board-columns.scroll-locked {
+        overflow: hidden;
     }
 
     /* Toolbar extras */

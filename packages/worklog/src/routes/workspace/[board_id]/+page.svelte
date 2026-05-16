@@ -3,7 +3,13 @@
     import KanbanBoard from "$lib/components/app/kanban/kanban-board.svelte";
     import TableView from "$lib/components/app/table/table-board.svelte";
     import GanttView from "$lib/components/app/gantt/gantt-board.svelte";
-    import { Tabs, Tab, TabContent, Loading, InlineNotification } from "carbon-components-svelte";
+    import {
+        Tabs,
+        Tab,
+        TabContent,
+        Loading,
+        InlineNotification,
+    } from "carbon-components-svelte";
     import { Dashboard, Table, ChartBarFloating } from "carbon-icons-svelte";
     import { getWorkspaceShellContext } from "$lib/hooks/workspace-shell-context";
     import { useTickets } from "$lib/hooks/tickets.svelte";
@@ -66,19 +72,30 @@
         if (!board) return;
 
         if (lastRestoredBoardId !== board.id) {
-            const saved = localStorage.getItem(`worklog:last_tab_index:${board.id}`);
+            const saved = localStorage.getItem(
+                `worklog:last_tab_index:${board.id}`,
+            );
             if (saved !== null) {
                 selectedTab = parseInt(saved, 10);
             } else {
                 // Global fallback or default to Kanban (0)
-                const globalSaved = localStorage.getItem("worklog:last_tab_index");
-                selectedTab = globalSaved !== null ? parseInt(globalSaved, 10) : 0;
+                const globalSaved = localStorage.getItem(
+                    "worklog:last_tab_index",
+                );
+                selectedTab =
+                    globalSaved !== null ? parseInt(globalSaved, 10) : 0;
             }
             lastRestoredBoardId = board.id;
         } else {
             // Save both board-specific and global preference
-            localStorage.setItem(`worklog:last_tab_index:${board.id}`, selectedTab.toString());
-            localStorage.setItem("worklog:last_tab_index", selectedTab.toString());
+            localStorage.setItem(
+                `worklog:last_tab_index:${board.id}`,
+                selectedTab.toString(),
+            );
+            localStorage.setItem(
+                "worklog:last_tab_index",
+                selectedTab.toString(),
+            );
         }
     });
 </script>
@@ -117,7 +134,10 @@
 
             {#if ticketsApi.loading}
                 <div class="workspace-board-loading">
-                    <Loading withOverlay={false} description="Loading board data..." />
+                    <Loading
+                        withOverlay={false}
+                        description="Loading board data..."
+                    />
                 </div>
             {/if}
             <Tabs autoWidth bind:selected={selectedTab}>

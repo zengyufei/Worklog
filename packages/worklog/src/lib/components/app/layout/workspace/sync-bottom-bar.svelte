@@ -7,11 +7,14 @@
         Cloud,
     } from "carbon-icons-svelte";
     import { Button } from "carbon-components-svelte";
+
     import { syncState } from "$lib/sync/sync-scheduler.svelte";
     import { useSyncConfig } from "$lib/sync/sync-config.svelte";
+
     import { useWorkspace } from "$lib/hooks/workspace.svelte";
     import { SyncEngine } from "$lib/sync/sync-engine";
     import { getDb } from "$lib/db";
+
     import { notifications } from "$lib/hooks/notifications.svelte";
 
     const syncConfig = useSyncConfig();

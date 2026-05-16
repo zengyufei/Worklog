@@ -47,11 +47,13 @@
         onEdit,
         onDelete,
         onStatusChange,
+        onPreview,
     }: {
         ticket: Ticket;
         onEdit?: (ticket: Ticket) => void;
         onDelete?: (id: string) => void;
         onStatusChange?: (id: string, status: TicketStatus) => void;
+        onPreview?: (ticket: Ticket) => void;
     } = $props();
 
     const context = getWorkspaceShellContext();
@@ -198,11 +200,23 @@
         <!-- Priority stripe -->
         <div class="priority-stripe priority-stripe--{ticket.priority}"></div>
 
-        <div class="ticket-body">
+    <div
+            class="ticket-body"
+            role="button"
+            tabindex="0"
+            aria-label="Preview {ticket.title}"
+            onclick={() => onPreview?.(ticket)}
+            onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') onPreview?.(ticket); }}
+        >
             <!-- Header row -->
             <div class="ticket-header">
                 <span class="ticket-id">#{ticket.id}</span>
-                <div class="ticket-actions">
+                <div
+                    class="ticket-actions"
+                    role="presentation"
+                    onclick={(e) => e.stopPropagation()}
+                    onkeydown={(e) => e.stopPropagation()}
+                >
                     <OverflowMenu size="sm" flipped>
                         <OverflowMenuItem
                             text="Edit"
@@ -339,6 +353,11 @@
         flex-direction: column;
         gap: 0.375rem;
         min-width: 0;
+        /* clickable for preview */
+        cursor: pointer;
+        background: none;
+        border: none;
+        text-align: left;
     }
 
     .ticket-header {

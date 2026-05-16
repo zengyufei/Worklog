@@ -49,3 +49,27 @@ body {
   scrollbar-color: rgba(136, 136, 136, 0.4) transparent;
 }
 
+/* ── Preview sheet open: hide all document scrollbars ───────────────────
+   WebKitGTK (Tauri/Linux) composites native scrollbars above position:fixed
+   overlays regardless of z-index. Stamping .preview-open on <html> lets us
+   suppress them globally while the sheet is visible.
+   The sheet's own .sheet-body scrollbar is restored via an explicit override.
+   ──────────────────────────────────────────────────────────────────────── */
+html.preview-open *::-webkit-scrollbar {
+  display: none !important;
+}
+
+html.preview-open * {
+  scrollbar-width: none !important;
+}
+
+/* Restore the sheet's own scroll indicator */
+html.preview-open .sheet-body {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(136, 136, 136, 0.4) transparent;
+}
+
+html.preview-open .sheet-body::-webkit-scrollbar {
+  display: block !important;
+  width: 5px;
+}
