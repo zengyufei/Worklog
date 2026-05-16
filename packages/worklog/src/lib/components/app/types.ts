@@ -15,18 +15,18 @@ export interface TicketTypeConfig {
 }
 
 export const TICKET_TYPE_CONFIG: Record<TicketType, TicketTypeConfig> = {
-    feature:     { label: "Feature",     tagColor: "teal" },
-    bug:         { label: "Bug",         tagColor: "red" },
-    chore:       { label: "Chore",       tagColor: "warm-gray" },
+    feature: { label: "Feature", tagColor: "teal" },
+    bug: { label: "Bug", tagColor: "red" },
+    chore: { label: "Chore", tagColor: "warm-gray" },
     improvement: { label: "Improvement", tagColor: "cyan" },
-    epic:        { label: "Epic",        tagColor: "purple" },
-    spike:       { label: "Spike",       tagColor: "magenta" },
-    story:       { label: "Story",       tagColor: "blue" },
-    task:        { label: "Task",        tagColor: "cool-gray" },
-    subtask:     { label: "Subtask",     tagColor: "cool-gray" },
-    incident:    { label: "Incident",    tagColor: "high-contrast" },
-    design:      { label: "Design",      tagColor: "magenta" },
-    documentation: { label: "Docs",      tagColor: "green" },
+    epic: { label: "Epic", tagColor: "purple" },
+    spike: { label: "Spike", tagColor: "magenta" },
+    story: { label: "Story", tagColor: "blue" },
+    task: { label: "Task", tagColor: "cool-gray" },
+    subtask: { label: "Subtask", tagColor: "cool-gray" },
+    incident: { label: "Incident", tagColor: "high-contrast" },
+    design: { label: "Design", tagColor: "magenta" },
+    documentation: { label: "Docs", tagColor: "green" },
 };
 
 export const TICKET_TYPE_OPTIONS: TicketType[] = ["feature", "bug", "chore", "improvement", "epic", "spike", "story", "task", "subtask", "incident", "design", "documentation"];
@@ -37,10 +37,10 @@ export interface TicketStatusConfig {
 }
 
 export const TICKET_STATUS_CONFIG: Record<TicketStatus, TicketStatusConfig> = {
-    backlog:     { label: "Backlog",     accentColor: "magenta" },
-    todo:        { label: "To Do",       accentColor: "teal" },
+    backlog: { label: "Backlog", accentColor: "magenta" },
+    todo: { label: "To Do", accentColor: "teal" },
     in_progress: { label: "In Progress", accentColor: "blue" },
-    done:        { label: "Done",        accentColor: "green" },
+    done: { label: "Done", accentColor: "green" },
 };
 
 export const TICKET_STATUS_ORDER: TicketStatus[] = ["backlog", "todo", "in_progress", "done"];
@@ -51,9 +51,9 @@ export interface TicketPriorityConfig {
 }
 
 export const TICKET_PRIORITY_CONFIG: Record<TicketPriority, TicketPriorityConfig> = {
-    p3: { label: "Low",    tagColor: "green" },
+    p3: { label: "Low", tagColor: "green" },
     p2: { label: "Medium", tagColor: "teal" },
-    p1: { label: "High",   tagColor: "red" },
+    p1: { label: "High", tagColor: "red" },
 };
 
 export interface Project {
@@ -102,6 +102,7 @@ export interface Board {
     id: string;
     name: string;
     description: string;
+    archived_at: string | null;
     created_at: string;
     updated_at: string;
 }

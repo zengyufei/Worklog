@@ -5,6 +5,7 @@
         Launch,
         TrashCan,
         Edit,
+        Archive,
     } from "carbon-icons-svelte";
 
     import {
@@ -28,6 +29,7 @@
 
     import { getWorkspaceShellContext } from "$lib/hooks/workspace-shell-context";
     import SyncBottomBar from "./sync-bottom-bar.svelte";
+    import ArchivedBoardsModal from "./archived-boards-modal.svelte";
 
     interface WorkspaceSidebarProps {
         onOpenSettings?: () => void;
@@ -292,6 +294,16 @@
         }
     }
 
+    let archivedModalOpen = $state(false);
+
+    async function promptArchiveBoard(id: string) {
+        try {
+            await boardsApi.archive(id);
+        } catch (error) {
+            console.error("Failed to archive board:", error);
+        }
+    }
+
     // Listen for create-board events from the command palette / shortcuts
     $effect(() => {
         const handler = () => openCreateBoardModal();
@@ -364,6 +376,12 @@
                         />
                         <ContextMenuDivider />
                         <ContextMenuOption
+                            labelText="Archive Board"
+                            icon={Archive}
+                            on:click={() => promptArchiveBoard(board.id)}
+                        />
+                        <ContextMenuDivider />
+                        <ContextMenuOption
                             kind="danger"
                             labelText="Delete Board"
                             icon={TrashCan}
@@ -384,7 +402,19 @@
         {/if}
     </SideNavItems>
 
-    <SyncBottomBar />
+    <div class="sidebar-bottom">
+        <SyncBottomBar />
+        <div class="archive-bar">
+            <Button
+                kind="ghost"
+                size="small"
+                icon={Archive}
+                onclick={() => (archivedModalOpen = true)}
+            >
+                Archived boards
+            </Button>
+        </div>
+    </div>
 
     <footer class="workspace-sidebar-footer">
         <Button kind="ghost" size="small" onclick={openSettings}>
@@ -393,6 +423,14 @@
         </Button>
     </footer>
 </SideNav>
+
+<ArchivedBoardsModal
+    bind:open={archivedModalOpen}
+    onOpenBoard={(id) => {
+        archivedModalOpen = false;
+        onOpenBoard(id);
+    }}
+/>
 
 <ComposedModal
     bind:open={createModalOpen}
@@ -657,5 +695,38 @@
         padding: 0.5rem;
         display: flex;
         justify-content: center;
+    }
+
+    /* ── Bottom area (sync + archive) ───────────────────────────────────────── */
+    .sidebar-bottom {
+        flex-shrink: 0;
+    }
+
+    .archive-bar {
+        padding: 0 var(--cds-spacing-03, 0.5rem);
+        border-top: 1px solid
+            color-mix(
+                in srgb,
+                var(--color-border-primary, #525252) 30%,
+                transparent
+            );
+    }
+
+    .archive-bar :global(.bx--btn) {
+        margin: 0;
+        width: 100%;
+        justify-content: flex-start;
+        gap: var(--cds-spacing-03, 0.5rem);
+        color: var(--cds-text-02) !important;
+        font-size: 0.8125rem;
+    }
+
+    .archive-bar :global(.bx--btn:hover) {
+        color: var(--cds-text-01) !important;
+        background: var(--cds-hover-ui) !important;
+    }
+
+    .archive-bar :global(.bx--btn svg) {
+        flex-shrink: 0;
     }
 </style>

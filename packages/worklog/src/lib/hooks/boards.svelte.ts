@@ -2,6 +2,7 @@ import type { Board, CreateBoardInput } from '$lib/components/app/types';
 import { getDb, BoardRepo } from '$lib/db';
 
 let _boards = $state<Board[]>([]);
+let _archivedBoards = $state<Board[]>([]);
 let _active = $state<Board | null>(null);
 let _loading = $state(false);
 
@@ -16,6 +17,7 @@ export function useBoards(getWorkspacePath: () => string | null) {
         const workspacePath = getWorkspacePath();
         if (!workspacePath) {
             _boards = [];
+            _archivedBoards = [];
             _active = null;
             return;
         }
@@ -23,8 +25,8 @@ export function useBoards(getWorkspacePath: () => string | null) {
         _loading = true;
         try {
             const db = await getDb(workspacePath);
-            // Load initial 50 boards
-            _boards = await BoardRepo.listBoards(db, { limit: 50 });
+            // Load active boards only
+            _boards = await BoardRepo.listBoards(db, { limit: 50, archived: false });
             // Auto-select first board if none active
             if (!_active && _boards.length > 0) {
                 _active = _boards[0];
@@ -39,12 +41,21 @@ export function useBoards(getWorkspacePath: () => string | null) {
         if (!workspacePath) return;
 
         const db = await getDb(workspacePath);
-        const batch = await BoardRepo.listBoards(db, { 
-            limit: 50, 
-            offset: _boards.length 
+        const batch = await BoardRepo.listBoards(db, {
+            limit: 50,
+            offset: _boards.length,
+            archived: false,
         });
 
         _boards = [..._boards, ...batch];
+    }
+
+    async function loadArchived() {
+        const workspacePath = getWorkspacePath();
+        if (!workspacePath) return;
+
+        const db = await getDb(workspacePath);
+        _archivedBoards = await BoardRepo.listBoards(db, { archived: true });
     }
 
     async function create(input: CreateBoardInput) {
@@ -61,10 +72,42 @@ export function useBoards(getWorkspacePath: () => string | null) {
         const db = await getDb(workspacePath);
         await BoardRepo.deleteBoard(db, id);
         _boards = _boards.filter(b => b.id !== id);
+        _archivedBoards = _archivedBoards.filter(b => b.id !== id);
         // If deleted board was active, fall back to first remaining
         if (_active?.id === id) {
             _active = _boards[0] ?? null;
         }
+    }
+
+    async function archive(id: string) {
+        const workspacePath = requireWorkspacePath();
+        const db = await getDb(workspacePath);
+        const updated = await BoardRepo.archiveBoard(db, id);
+        if (!updated) throw new Error('Board not found');
+
+        // Move from active list to archived list
+        _boards = _boards.filter(b => b.id !== id);
+        _archivedBoards = [..._archivedBoards, updated];
+
+        // If archived board was active, fall back to first remaining
+        if (_active?.id === id) {
+            _active = _boards[0] ?? null;
+        }
+
+        return updated;
+    }
+
+    async function unarchive(id: string) {
+        const workspacePath = requireWorkspacePath();
+        const db = await getDb(workspacePath);
+        const updated = await BoardRepo.unarchiveBoard(db, id);
+        if (!updated) throw new Error('Board not found');
+
+        // Move from archived list back to active list
+        _archivedBoards = _archivedBoards.filter(b => b.id !== id);
+        _boards = [..._boards, updated];
+
+        return updated;
     }
 
     async function rename(id: string, name: string, description: string) {
@@ -90,8 +133,9 @@ export function useBoards(getWorkspacePath: () => string | null) {
 
     return {
         get boards() { return _boards },
+        get archivedBoards() { return _archivedBoards },
         get active() { return _active },
         get loading() { return _loading },
-        load, loadMore, create, remove, rename, setActive
+        load, loadMore, loadArchived, create, remove, archive, unarchive, rename, setActive
     };
 }

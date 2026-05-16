@@ -417,6 +417,18 @@ async function migrate_v12(db: Database) {
 }
 
 
+/**
+ * Migration v13:
+ * Add archived_at column to boards for soft-delete / archiving support.
+ */
+async function migrate_v13(db: Database) {
+    try {
+        await db.execute(`ALTER TABLE boards ADD COLUMN archived_at TEXT`);
+    } catch {
+        // Column may already exist on fresh installations
+    }
+}
+
 export async function runMigrations(db: Database): Promise<void> {
     const rows = await db.select<{ schema_version: number }[]>(
         `SELECT schema_version FROM workspace_meta WHERE id = 1`
@@ -468,6 +480,10 @@ export async function runMigrations(db: Database): Promise<void> {
 
     if (current < 12) {
         await migrate_v12(db);
+    }
+
+    if (current < 13) {
+        await migrate_v13(db);
     }
 
     await db.execute(

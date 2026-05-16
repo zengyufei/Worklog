@@ -11,7 +11,13 @@
         InlineNotification,
         Button,
     } from "carbon-components-svelte";
-    import { Dashboard, Table, ChartBarFloating, WarningHex, ArrowLeft } from "carbon-icons-svelte";
+    import {
+        Dashboard,
+        Table,
+        ChartBarFloating,
+        WarningHex,
+        ArrowLeft,
+    } from "carbon-icons-svelte";
     import { getWorkspaceShellContext } from "$lib/hooks/workspace-shell-context";
     import { useTickets } from "$lib/hooks/tickets.svelte";
 
@@ -112,9 +118,16 @@
                 <WarningHex size={48} />
             </div>
             <h1>Board not found</h1>
-            <p>The selected board does not exist or has been deleted from this workspace.</p>
+            <p>
+                The selected board does not exist or has been deleted from this
+                workspace.
+            </p>
             <div class="workspace-missing-board-actions">
-                <Button kind="primary" icon={ArrowLeft} onclick={goToWorkspaceRoot}>
+                <Button
+                    kind="primary"
+                    icon={ArrowLeft}
+                    onclick={goToWorkspaceRoot}
+                >
                     Back to workspace
                 </Button>
             </div>

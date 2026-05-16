@@ -4,9 +4,14 @@ import { generateId } from '$lib/utils';
 
 export async function listBoards(
     db: Database,
-    options: { limit?: number; offset?: number } = {}
+    options: { limit?: number; offset?: number; archived?: boolean } = {}
 ): Promise<Board[]> {
-    let query = `SELECT * FROM boards ORDER BY created_at ASC`;
+    const archived = options.archived ?? false;
+    const whereClause = archived
+        ? `archived_at IS NOT NULL`
+        : `archived_at IS NULL`;
+
+    let query = `SELECT * FROM boards WHERE ${whereClause} ORDER BY created_at ASC`;
     const params: any[] = [];
 
     if (options.limit !== undefined) {
@@ -33,14 +38,15 @@ export async function createBoard(db: Database, input: CreateBoardInput): Promis
         id: generateId('BRD'),
         name: input.name,
         description: input.description ?? '',
+        archived_at: null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
     };
 
     await db.execute(
-        `INSERT INTO boards (id, name, description, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?)`,
-        [board.id, board.name, board.description, board.created_at, board.updated_at]
+        `INSERT INTO boards (id, name, description, archived_at, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?)`,
+        [board.id, board.name, board.description, board.archived_at, board.created_at, board.updated_at]
     );
 
     return board;
@@ -49,6 +55,24 @@ export async function createBoard(db: Database, input: CreateBoardInput): Promis
 export async function deleteBoard(db: Database, id: string): Promise<void> {
     // Tickets cascade-deleted automatically via FK
     await db.execute(`DELETE FROM boards WHERE id = ?`, [id]);
+}
+
+export async function archiveBoard(db: Database, id: string): Promise<Board | null> {
+    const archivedAt = new Date().toISOString();
+    await db.execute(
+        `UPDATE boards SET archived_at = ?, updated_at = ? WHERE id = ?`,
+        [archivedAt, archivedAt, id]
+    );
+    return getBoardById(db, id);
+}
+
+export async function unarchiveBoard(db: Database, id: string): Promise<Board | null> {
+    const updatedAt = new Date().toISOString();
+    await db.execute(
+        `UPDATE boards SET archived_at = NULL, updated_at = ? WHERE id = ?`,
+        [updatedAt, id]
+    );
+    return getBoardById(db, id);
 }
 
 export async function renameBoard(
