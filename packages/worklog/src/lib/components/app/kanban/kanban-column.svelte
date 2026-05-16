@@ -257,6 +257,13 @@
         padding: 0.75rem;
         min-height: 120px;
         overflow-y: auto;
+        /* Hide scrollbar */
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none;  /* IE and Edge */
+    }
+
+    .drop-zone::-webkit-scrollbar {
+        display: none; /* Chrome, Safari and Opera */
     }
 
     .ticket-wrapper {
