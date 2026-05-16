@@ -6,10 +6,16 @@
 - Hide scrollbar in kanban column drop zone across all browsers
 - Enhance board-not-found state with updated UI components and styling
 - Implement board archiving functionality including database schema update and management UI
+- Initialize CHANGELOG.md with historical version release notes
+- Add interactive comment section to ticket preview sheet with support for posting new comments
 
 ### 🐛 Bug Fixes
 
 - Derive preview ticket from ID to ensure synchronization with live store data
+
+### ⚙️ Miscellaneous Tasks
+
+- Bump project version to 1.3.3
 ## [app-v1.3.2] - 2026-05-15
 
 ### 🐛 Bug Fixes
