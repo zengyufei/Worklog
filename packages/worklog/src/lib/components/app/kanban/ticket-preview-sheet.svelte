@@ -29,6 +29,7 @@
         Time,
         Send,
     } from "carbon-icons-svelte";
+    import MarkdownViewer from "../common/markdown-viewer.svelte";
     import {
         type Ticket,
         type TicketStatus,
@@ -381,7 +382,9 @@
             {#if ticket.description}
                 <section class="sheet-section">
                     <h3 class="sheet-section-title">Description</h3>
-                    <p class="sheet-description">{ticket.description}</p>
+                    <div class="sheet-description-wrapper">
+                        <MarkdownViewer content={ticket.description} />
+                    </div>
                 </section>
             {/if}
 

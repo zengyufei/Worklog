@@ -6,8 +6,11 @@
         Dropdown,
         DatePicker,
         DatePickerInput,
+        ContentSwitcher,
+        Switch,
     } from "carbon-components-svelte";
     import TagManager from "../common/tag-manager.svelte";
+    import MarkdownViewer from "../common/markdown-viewer.svelte";
     import { untrack } from "svelte";
     import {
         type Ticket,
@@ -48,6 +51,7 @@
 
     let submitting = $state(false);
     let error = $state<string | null>(null);
+    let descriptionMode = $state(0); // 0 = Write, 1 = Preview
 
     let form = $state<{
         id?: string;
@@ -201,15 +205,32 @@
                     if (e.key === "Enter") e.stopPropagation();
                 }}
             />
-            <TextArea
-                labelText="Description"
-                placeholder="Describe the ticket…"
-                rows={6}
-                bind:value={form.description}
-                on:keydown={(e) => {
-                    if (e.key === "Enter") e.stopPropagation();
-                }}
-            />
+            <div class="description-section">
+                <div class="description-header">
+                    <span class="cds--label">Description</span>
+                    <ContentSwitcher bind:selectedIndex={descriptionMode} size="sm">
+                        <Switch text="Write" />
+                        <Switch text="Preview" />
+                    </ContentSwitcher>
+                </div>
+                
+                <div class="description-content">
+                    {#if descriptionMode === 0}
+                        <TextArea
+                            placeholder="Describe the ticket… (Markdown supported)"
+                            rows={6}
+                            bind:value={form.description}
+                            on:keydown={(e) => {
+                                if (e.key === "Enter") e.stopPropagation();
+                            }}
+                        />
+                    {:else}
+                        <div class="description-preview">
+                            <MarkdownViewer content={form.description} />
+                        </div>
+                    {/if}
+                </div>
+            </div>
         </div>
 
         <div class="form-attributes">
@@ -314,5 +335,31 @@
         padding: 0.75rem;
         background: color-mix(in srgb, var(--cds-support-01) 10%, transparent);
         border-radius: 4px;
+    }
+
+    .description-section {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .description-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .description-content {
+        min-height: 9.5rem; /* ~6 rows of text area */
+    }
+
+    .description-preview {
+        padding: 0.625rem 0.75rem;
+        background: var(--cds-ui-background);
+        border: 1px solid var(--cds-ui-04);
+        border-radius: 4px;
+        min-height: 9.5rem;
+        overflow-y: auto;
+        max-height: 300px;
     }
 </style>
