@@ -417,22 +417,18 @@
 </div>
 
 <!-- ── Add / Edit Modal ──────────────────────────────────────────────────────── -->
-{#if modalOpen}
-    <TicketAddEditModal
-        bind:open={modalOpen}
-        ticket={editTicket}
-        defaultStatus={targetStatus}
-        onSubmit={handleSubmit}
-    />
-{/if}
+<TicketAddEditModal
+    bind:open={modalOpen}
+    ticket={editTicket}
+    defaultStatus={targetStatus}
+    onSubmit={handleSubmit}
+/>
 
-{#if deleteTicketModalOpen}
-    <TicketDeleteConfirm
-        bind:open={deleteTicketModalOpen}
-        ticketTitle={deleteTicketTarget?.title ?? ""}
-        onConfirm={confirmDeleteTicket}
-    />
-{/if}
+<TicketDeleteConfirm
+    bind:open={deleteTicketModalOpen}
+    ticketTitle={deleteTicketTarget?.title ?? ""}
+    onConfirm={confirmDeleteTicket}
+/>
 
 <!-- ── Ticket Preview Sheet ──────────────────────────────────────────────────── -->
 <TicketPreviewSheet
