@@ -21,8 +21,8 @@
 <style>
     .markdown-body {
         font-family: var(--font-body);
-        font-size: 0.875rem;
-        line-height: 1.6;
+        font-size: 0.8125rem;
+        line-height: 1.55;
         color: var(--cds-text-01);
         word-wrap: break-word;
     }
@@ -40,17 +40,17 @@
     .markdown-body :global(h4),
     .markdown-body :global(h5),
     .markdown-body :global(h6) {
-        margin-top: 1.5em;
-        margin-bottom: 0.5em;
+        margin-top: 1em;
+        margin-bottom: 0.3em;
         font-weight: 600;
         line-height: 1.25;
         color: var(--cds-text-01);
     }
 
-    .markdown-body :global(h1) { font-size: 1.5em; border-bottom: 1px solid var(--cds-ui-03); padding-bottom: 0.3em; }
-    .markdown-body :global(h2) { font-size: 1.25em; border-bottom: 1px solid var(--cds-ui-03); padding-bottom: 0.3em; }
-    .markdown-body :global(h3) { font-size: 1.125em; }
-    .markdown-body :global(h4) { font-size: 1em; }
+    .markdown-body :global(h1) { font-size: 1.25em; border-bottom: 1px solid var(--cds-ui-03); padding-bottom: 0.25em; }
+    .markdown-body :global(h2) { font-size: 1.1em; border-bottom: 1px solid var(--cds-ui-03); padding-bottom: 0.2em; }
+    .markdown-body :global(h3) { font-size: 1em; }
+    .markdown-body :global(h4) { font-size: 0.9375em; }
 
     /* Paragraphs and general blocks */
     .markdown-body :global(p),
@@ -62,18 +62,18 @@
     .markdown-body :global(pre),
     .markdown-body :global(details) {
         margin-top: 0;
-        margin-bottom: 1em;
+        margin-bottom: 0.6em;
     }
 
     /* Lists */
     .markdown-body :global(ul),
     .markdown-body :global(ol) {
-        padding-left: 2em;
+        padding-left: 1.5em;
     }
 
     .markdown-body :global(ul) { list-style-type: disc; }
     .markdown-body :global(ol) { list-style-type: decimal; }
-    .markdown-body :global(li + li) { margin-top: 0.25em; }
+    .markdown-body :global(li + li) { margin-top: 0.15em; }
 
     /* Blockquotes */
     .markdown-body :global(blockquote) {

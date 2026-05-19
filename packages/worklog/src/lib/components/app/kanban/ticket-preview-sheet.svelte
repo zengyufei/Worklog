@@ -28,6 +28,8 @@
         CheckmarkFilled,
         Time,
         Send,
+        ChevronDown,
+        ChevronUp,
     } from "carbon-icons-svelte";
     import MarkdownViewer from "../common/markdown-viewer.svelte";
     import {
@@ -168,6 +170,14 @@
     let commentDraft = $state("");
     let submittingComment = $state(false);
     let commentError = $state<string | null>(null);
+
+    // ── Description collapsible state ─────────────────────────────────────────
+    let descriptionCollapsed = $state(false);
+
+    // Reset collapse when a different ticket is opened
+    $effect(() => {
+        if (ticket?.id) descriptionCollapsed = false;
+    });
 
     async function submitComment() {
         if (!ticket || !commentDraft.trim() || submittingComment) return;
@@ -328,67 +338,76 @@
 
             <!-- ── Details grid ───────────────────────────────────────────── -->
             <section class="sheet-section">
-                <h3 class="sheet-section-title">Details</h3>
-                <dl class="sheet-details">
-                    <!-- Status -->
-                    <dt>Status</dt>
-                    <dd>
-                        {#if statusConfig}
-                            <div class="detail-status-row">
-                                <StatusIcon size={14} />
-                                <span>{statusConfig.label}</span>
-                            </div>
-                        {/if}
-                    </dd>
+                <div class="sheet-details-grid">
+                    <!-- Status Item -->
+                    <div class="detail-grid-item detail-grid-item--full">
+                        <span class="detail-grid-label">Status</span>
+                        <div class="detail-grid-value">
+                            {#if statusConfig}
+                                <div class="detail-status-row">
+                                    <StatusIcon size={14} />
+                                    <span>{statusConfig.label}</span>
+                                </div>
+                            {/if}
+                        </div>
+                    </div>
 
-                    <!-- Start date -->
-                    <dt>Start date</dt>
-                    <dd>
-                        <span class="detail-date">
-                            <Time size={14} />
-                            {formatDate(ticket.start_date)}
-                        </span>
-                    </dd>
+                    <!-- Start Date Item -->
+                    <div class="detail-grid-item">
+                        <span class="detail-grid-label">Start Date</span>
+                        <div class="detail-grid-value">
+                            <span class="detail-date">
+                                <Time size={13} />
+                                {formatDate(ticket.start_date)}
+                            </span>
+                        </div>
+                    </div>
 
-                    <!-- Due date -->
-                    <dt>Due date</dt>
-                    <dd>
-                        <span
-                            class="detail-date"
-                            class:detail-date--overdue={isOverdue}
-                        >
-                            <Calendar size={14} />
-                            {formatDate(ticket.due_date)}
-                        </span>
-                    </dd>
+                    <!-- Due Date Item -->
+                    <div class="detail-grid-item">
+                        <span class="detail-grid-label">Due Date</span>
+                        <div class="detail-grid-value">
+                            <span
+                                class="detail-date"
+                                class:detail-date--overdue={isOverdue}
+                            >
+                                <Calendar size={13} />
+                                {formatDate(ticket.due_date)}
+                            </span>
+                        </div>
+                    </div>
 
-                    <!-- Created -->
-                    <dt>Created</dt>
-                    <dd>
-                        <span class="detail-date">
-                            <Calendar size={14} />
-                            {formatDate(ticket.created_at)}
-                        </span>
-                    </dd>
-
-                    <!-- Updated -->
-                    <dt>Updated</dt>
-                    <dd>
-                        <span class="detail-date">
-                            <Calendar size={14} />
-                            {formatDate(ticket.updated_at)}
-                        </span>
-                    </dd>
-                </dl>
+                    <!-- Created / Updated Row -->
+                    <div class="detail-grid-meta">
+                        <span>Created {formatDate(ticket.created_at)}</span>
+                        <span class="meta-separator">•</span>
+                        <span>Updated {formatDate(ticket.updated_at)}</span>
+                    </div>
+                </div>
             </section>
 
             <!-- ── Description ────────────────────────────────────────────── -->
             {#if ticket.description}
-                <section class="sheet-section">
-                    <h3 class="sheet-section-title">Description</h3>
-                    <div class="sheet-description-wrapper">
-                        <MarkdownViewer content={ticket.description} />
-                    </div>
+                <section class="sheet-section sheet-section--collapsible">
+                    <button
+                        class="sheet-section-toggle"
+                        onclick={() => (descriptionCollapsed = !descriptionCollapsed)}
+                        aria-expanded={!descriptionCollapsed}
+                    >
+                        <h3 class="sheet-section-title">Description</h3>
+                        <span class="sheet-section-chevron">
+                            {#if descriptionCollapsed}
+                                <ChevronDown size={14} />
+                            {:else}
+                                <ChevronUp size={14} />
+                            {/if}
+                        </span>
+                    </button>
+                    {#if !descriptionCollapsed}
+                        <div class="sheet-description-wrapper">
+                            <MarkdownViewer content={ticket.description} />
+                        </div>
+                    {/if}
                 </section>
             {/if}
 
@@ -698,24 +717,93 @@
         gap: 0.35rem;
     }
 
-    /* ── Details grid ────────────────────────────────────────────────────────── */
-    .sheet-details {
-        display: grid;
-        grid-template-columns: 6.5rem 1fr;
-        gap: 0.5rem 0.75rem;
-        margin: 0;
+    /* ── Collapsible section ─────────────────────────────────────────────────── */
+    .sheet-section--collapsible {
+        gap: 0.5rem;
     }
 
-    .sheet-details dt {
-        font-size: 0.75rem;
+    .sheet-section-toggle {
+        all: unset;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        box-sizing: border-box;
+        padding: 0.25rem 0.375rem;
+        margin: -0.25rem -0.375rem;
+        border-radius: 4px;
+        transition: background 0.15s ease;
+    }
+
+    .sheet-section-toggle:hover {
+        background: var(--cds-hover-ui);
+    }
+
+    .sheet-section-chevron {
         color: var(--cds-text-helper);
-        align-self: center;
+        display: flex;
+        align-items: center;
+        flex-shrink: 0;
+        opacity: 0.7;
     }
 
-    .sheet-details dd {
-        margin: 0;
-        font-size: 0.8125rem;
+    /* ── Details Grid ────────────────────────────────────────────────────────── */
+    .sheet-details-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem 1rem;
+        background: var(--cds-ui-02, #f4f4f4);
+        padding: 0.75rem 0.875rem;
+        border-radius: 4px;
+        border: 1px solid var(--cds-ui-03, #e0e0e0);
+    }
+
+    .detail-grid-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+        min-width: 0;
+    }
+
+    .detail-grid-item--full {
+        grid-column: 1 / -1;
+        border-bottom: 1px dashed var(--cds-ui-03, #e0e0e0);
+        padding-bottom: 0.5rem;
+        margin-bottom: 0.1rem;
+    }
+
+    .detail-grid-label {
+        font-size: 0.65rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--cds-text-helper);
+    }
+
+    .detail-grid-value {
+        font-size: 0.75rem;
         color: var(--cds-text-01);
+        display: flex;
+        align-items: center;
+        min-height: 1.25rem;
+    }
+
+    .detail-grid-meta {
+        grid-column: 1 / -1;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 0.5rem;
+        font-size: 0.65rem;
+        color: var(--cds-text-helper);
+        border-top: 1px solid var(--cds-ui-03, #e0e0e0);
+        padding-top: 0.5rem;
+        margin-top: 0.1rem;
+    }
+
+    .meta-separator {
+        opacity: 0.4;
     }
 
     .detail-status-row {
