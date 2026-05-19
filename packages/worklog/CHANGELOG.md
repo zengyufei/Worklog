@@ -1,4 +1,4 @@
-## [unreleased]
+## [app-v1.3.3] - 2026-05-16
 
 ### 🚀 Features
 
@@ -12,6 +12,10 @@
 ### 🐛 Bug Fixes
 
 - Derive preview ticket from ID to ensure synchronization with live store data
+
+### 📚 Documentation
+
+- Update changelog with version 1.3.3 release notes and new comment feature summary
 
 ### ⚙️ Miscellaneous Tasks
 

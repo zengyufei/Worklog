@@ -470,9 +470,8 @@
                     {/if}
                     <div class="comment-input-footer">
                         <span class="comment-hint">Ctrl+Enter to send</span>
-                        <button
-                            class="comment-send-btn"
-                            class:comment-send-btn--loading={submittingComment}
+                        <Button
+                            size="small"
                             onclick={submitComment}
                             disabled={!commentDraft.trim() || submittingComment}
                         >
@@ -482,7 +481,7 @@
                                 <Send size={14} />
                             {/if}
                             {submittingComment ? "Sending…" : "Send"}
-                        </button>
+                        </Button>
                     </div>
                 </div>
             </section>
@@ -915,30 +914,6 @@
     .comment-hint {
         font-size: 0.6875rem;
         color: var(--cds-text-helper);
-    }
-
-    .comment-send-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.375rem;
-        padding: 0.3125rem 0.75rem;
-        border-radius: 4px;
-        border: none;
-        background: var(--cds-interactive-01);
-        color: #fff;
-        font-size: 0.8125rem;
-        font-weight: 500;
-        cursor: pointer;
-        transition: background 0.15s ease, opacity 0.15s ease;
-    }
-
-    .comment-send-btn:hover:not(:disabled) {
-        background: var(--cds-interactive-02);
-    }
-
-    .comment-send-btn:disabled {
-        opacity: 0.45;
-        cursor: not-allowed;
     }
 
     .comment-send-spinner {

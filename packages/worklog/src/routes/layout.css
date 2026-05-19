@@ -73,3 +73,28 @@ html.preview-open .sheet-body::-webkit-scrollbar {
   display: block !important;
   width: 5px;
 }
+
+/* ── Carbon Button Overrides ───────────────────────────────────────────────
+   Make Carbon buttons match the custom comment button styling
+   ──────────────────────────────────────────────────────────────────────── */
+.bx--btn {
+  border-radius: 4px !important;
+  gap: 0.375rem !important;
+  font-weight: 500 !important;
+  transition: background 0.15s ease, opacity 0.15s ease, border-color 0.15s ease !important;
+}
+
+.bx--btn--sm, 
+.bx--btn--small,
+.bx--btn--primary,
+.bx--btn--secondary,
+.bx--btn--ghost,
+.bx--btn--danger {
+  /* Give all buttons the tighter border-radius */
+  border-radius: 4px !important;
+}
+
+.bx--btn:disabled {
+  opacity: 0.45 !important;
+  cursor: not-allowed !important;
+}
