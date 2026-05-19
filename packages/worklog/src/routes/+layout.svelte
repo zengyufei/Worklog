@@ -168,6 +168,24 @@
 
 	// ── Context menu prevention ────────────────────────────────────────────
 	const handleContextmenu = (event: MouseEvent) => {
+		const target = event.target as HTMLElement;
+		
+		// Allow context menu for inputs and text areas
+		if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+			return;
+		}
+
+		// Allow context menu if text is currently selected
+		const selection = window.getSelection();
+		if (selection && selection.toString().length > 0) {
+			return;
+		}
+
+		// Allow context menu anywhere inside the ticket sheet for easy copying/inspecting
+		if (target.closest('.ticket-sheet')) {
+			return;
+		}
+
 		event.preventDefault();
 	};
 

@@ -206,7 +206,11 @@
         if (diffMins < 60) return `${diffMins}m ago`;
         if (diffHours < 24) return `${diffHours}h ago`;
         if (diffDays < 7) return `${diffDays}d ago`;
-        return d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+        return d.toLocaleDateString(undefined, {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+        });
     }
 
     // Clear comment input when sheet closes
@@ -427,7 +431,9 @@
                     <ChatBot size={15} />
                     Comments
                     {#if ticket.comments?.length}
-                        <span class="comment-count">{ticket.comments.length}</span>
+                        <span class="comment-count"
+                            >{ticket.comments.length}</span
+                        >
                     {/if}
                 </h3>
 
@@ -441,12 +447,18 @@
                                 </div>
                                 <div class="comment-content">
                                     <div class="comment-meta">
-                                        <span class="comment-author">{comment.author}</span>
+                                        <span class="comment-author"
+                                            >{comment.author}</span
+                                        >
                                         <span
                                             class="comment-time"
-                                            title={new Date(comment.timestamp).toLocaleString()}
+                                            title={new Date(
+                                                comment.timestamp,
+                                            ).toLocaleString()}
                                         >
-                                            {formatCommentTimestamp(comment.timestamp)}
+                                            {formatCommentTimestamp(
+                                                comment.timestamp,
+                                            )}
                                         </span>
                                     </div>
                                     <p class="comment-body">{comment.body}</p>
@@ -455,7 +467,9 @@
                         {/each}
                     </ul>
                 {:else}
-                    <p class="comment-empty">No comments yet. Be the first to comment!</p>
+                    <p class="comment-empty">
+                        No comments yet. Be the first to comment!
+                    </p>
                 {/if}
 
                 <!-- Add comment input -->
@@ -507,7 +521,6 @@
         pointer-events: all;
     }
 
-    /* ── Sheet panel ─────────────────────────────────────────────────────────── */
     .ticket-sheet {
         position: fixed;
         top: 0;
@@ -520,6 +533,10 @@
         flex-direction: column;
         z-index: 9999;
         overflow: hidden;
+        -webkit-user-select: text;
+        -moz-user-select: text;
+        -ms-user-select: text;
+        user-select: text; /* Allow copying ticket details, description, comments, etc. */
 
         /* Slide-in transition */
         transform: translateX(100%);
@@ -930,7 +947,9 @@
     }
 
     @keyframes spin {
-        to { transform: rotate(360deg); }
+        to {
+            transform: rotate(360deg);
+        }
     }
 
     .comment-input-error {
