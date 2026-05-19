@@ -526,7 +526,7 @@
         top: 0;
         right: 0;
         height: 100dvh;
-        width: min(480px, 100vw);
+        width: min(640px, 100vw);
         background: var(--cds-ui-01);
         border-left: 1px solid var(--cds-ui-03);
         display: flex;
