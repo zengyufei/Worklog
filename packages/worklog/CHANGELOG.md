@@ -1,3 +1,24 @@
+## [app-v1.3.4] - 2026-05-19
+
+### 🚀 Features
+
+- Include archived_at timestamp when initializing new imported records
+- Add markdown preview support for ticket descriptions with a new viewer component
+- Add ticket preview functionality and comment handling in Gantt board
+- Add collapsible description to ticket preview and refine typography and details layout
+
+### 🚜 Refactor
+
+- Remove conditional rendering for Kanban modal components and update project version in changelog
+- Enable text selection in ticket sheet and refine context menu suppression rules
+
+### 🎨 Styling
+
+- Increase ticket preview sheet width to 640px
+
+### ⚙️ Miscellaneous Tasks
+
+- Bump project version to 1.3.4
 ## [app-v1.3.3] - 2026-05-16
 
 ### 🚀 Features
