@@ -2,8 +2,8 @@
     import { InlineNotification } from "carbon-components-svelte";
     import { useTickets } from "$lib/hooks/tickets.svelte";
     import { getWorkspaceShellContext } from "$lib/hooks/workspace-shell-context";
-    import type { Ticket } from "$lib/components/app/types";
-    
+    import type { Ticket, TicketStatus } from "$lib/components/app/types";
+    import { type Comment } from "$lib/components/app/types";
     // Extracted Components
     import GanttToolbar from "./gantt-toolbar.svelte";
     import GanttColHeaders from "./gantt-col-headers.svelte";
@@ -11,16 +11,20 @@
     import GanttCanvas from "./gantt-canvas.svelte";
     import GanttTooltip from "./gantt-tooltip.svelte";
     import { GanttState, setGanttState } from "./gantt-state.svelte";
-    
+
     // Modals
     import TicketAddEditModal from "../kanban/ticket-add-edit-modal.svelte";
     import TicketDeleteConfirm from "../kanban/ticket-delete-confirm.svelte";
+    import TicketPreviewSheet from "../kanban/ticket-preview-sheet.svelte";
+    import { getDb, SettingsRepo } from "$lib/db";
 
     const shell = getWorkspaceShellContext();
     const { ticketTypesApi } = shell;
     const getWorkspacePath = () => shell.workspace.path;
     const getBoardId = () => shell.boardsApi.active?.id ?? null;
     const ticketsHook = useTickets(getWorkspacePath, getBoardId);
+
+    let actionError = $state<string | null>(null);
 
     // Initialize State Context
     const gantt = new GanttState(ticketsHook, ticketTypesApi);
@@ -41,8 +45,12 @@
             }
             hasScrolledToToday = true;
             const viewportWidth = gantt.canvasRef.clientWidth;
-            gantt.canvasRef.scrollLeft = Math.max(0, _offset - viewportWidth / 3);
-            if (gantt.rightPanelRef) gantt.rightPanelRef.scrollLeft = gantt.canvasRef.scrollLeft;
+            gantt.canvasRef.scrollLeft = Math.max(
+                0,
+                _offset - viewportWidth / 3,
+            );
+            if (gantt.rightPanelRef)
+                gantt.rightPanelRef.scrollLeft = gantt.canvasRef.scrollLeft;
         };
 
         requestAnimationFrame(tryScroll);
@@ -55,8 +63,8 @@
     let deleteTarget = $state<Ticket | null>(null);
 
     function handleBarClick(ticket: Ticket) {
-        editTicket = ticket;
-        editModalOpen = true;
+        previewTicketId = ticket.id;
+        previewOpen = true;
     }
 
     async function submitTicket(data: any) {
@@ -93,6 +101,69 @@
             deleteTarget = null;
         }
     }
+
+    // ── Preview sheet state ───────────────────────────────────────────────────
+    let previewOpen = $state(false);
+    // Store only the ID so the sheet always reads the live ticket from the store
+    let previewTicketId = $state<string | null>(null);
+    const previewTicket = $derived(
+        previewTicketId
+            ? (ticketsHook.tickets.find((t) => t.id === previewTicketId) ??
+                  null)
+            : null,
+    );
+
+    function openPreviewSheet(ticket: Ticket) {
+        previewTicketId = ticket.id;
+        previewOpen = true;
+    }
+
+    async function handleStatusChange(id: string, status: TicketStatus) {
+        try {
+            actionError = null;
+            await ticketsHook.update(id, { status });
+        } catch (error) {
+            actionError = String(error);
+        }
+    }
+
+    function openEditModal(ticket: Ticket) {
+        editTicket = ticket;
+        actionError = null;
+        editModalOpen = true;
+    }
+    let deleteTicketTarget = $state<Ticket | null>(null);
+
+    function promptDeleteTicket(id: string) {
+        const t = ticketsHook.tickets.find((t) => t.id === id);
+        if (t) {
+            deleteTicketTarget = t;
+            deleteModalOpen = true;
+        }
+    }
+
+    async function handleAddComment(ticketId: string, body: string) {
+        const workspacePath = shell.workspace.path;
+        if (!workspacePath) return;
+
+        // Resolve the author name from settings; fall back to "Anonymous"
+        let author = "Anonymous";
+        try {
+            const db = await getDb(workspacePath);
+            const settings = await SettingsRepo.getSettings(db);
+            author = settings.author_name?.trim() || "Anonymous";
+        } catch {
+            // Silently use fallback
+        }
+
+        const comment: Comment = {
+            author,
+            body,
+            timestamp: new Date().toISOString(),
+        };
+
+        await ticketsHook.addComment(ticketId, comment);
+    }
 </script>
 
 <div class="gantt-shell">
@@ -114,7 +185,7 @@
             <div class="gantt-corner">
                 <span>Ticket</span>
             </div>
-            
+
             <GanttColHeaders />
             <GanttLabels />
             <GanttCanvas onTicketClick={handleBarClick} />
@@ -135,6 +206,21 @@
     bind:open={deleteModalOpen}
     ticketTitle={deleteTarget?.title ?? ""}
     onConfirm={confirmDelete}
+/>
+
+<TicketPreviewSheet
+    bind:open={previewOpen}
+    ticket={previewTicket}
+    onEdit={(t) => {
+        previewOpen = false;
+        openEditModal(t);
+    }}
+    onDelete={(id) => {
+        previewOpen = false;
+        promptDeleteTicket(id);
+    }}
+    onStatusChange={handleStatusChange}
+    onAddComment={handleAddComment}
 />
 
 <style>
