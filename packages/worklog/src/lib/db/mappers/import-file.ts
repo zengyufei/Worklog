@@ -71,6 +71,7 @@ export async function importFromFile(
                             description: '',
                             created_at: new Date().toISOString(),
                             updated_at: new Date().toISOString(),
+                            archived_at: new Date().toISOString()
                         },
                         tickets: [],
                     });
