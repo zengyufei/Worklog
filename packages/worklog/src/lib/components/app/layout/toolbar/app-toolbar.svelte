@@ -19,8 +19,8 @@
         SkipToContent,
     } from "carbon-components-svelte";
 
-    import { Theme } from "carbon-components-svelte";
     import { syncState } from "$lib/sync/sync-scheduler.svelte";
+    import { useAppAppearance } from "$lib/hooks/app-appearance.svelte";
 
     type WindowControlAction = "minimize" | "toggle-maximize" | "close";
 
@@ -38,6 +38,7 @@
         onOpenPalette = noop,
     }: AppToolbarProps = $props();
 
+    const appAppearance = useAppAppearance();
     let isMaximized = $state(false);
 
     const runWindowControl = async (action: WindowControlAction) => {
@@ -100,18 +101,17 @@
         };
     });
 
-    type ThemeName = "g10" | "g100";
-    let theme = $state<ThemeName>("g10");
     function toggleTheme() {
-        if (theme == "g100") {
-            theme = "g10";
+        if (appAppearance.theme === "dark") {
+            appAppearance.theme = "light";
             return;
         }
-        theme = "g100";
+        appAppearance.theme = "dark";
     }
 
     let logo = $derived(
-        theme === "g100" ? "/logo-white.png" : "/logo-black.png",
+        appAppearance.theme === "dark" || (appAppearance.theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches) 
+        ? "/logo-white.png" : "/logo-black.png",
     );
 
     // Listen for theme toggle events from the command palette / shortcuts
@@ -135,8 +135,6 @@
         return `Next sync in ${m}m ${s}s`;
     });
 </script>
-
-<Theme bind:theme persist persistKey="__carbon-theme" />
 
 <Header companyName="" platformName="" isSideNavOpen>
     <svelte:fragment slot="skipToContent"><SkipToContent /></svelte:fragment>
@@ -181,7 +179,7 @@
         </Button>
 
         <Button onclick={toggleTheme} kind="ghost" aria-label="Toggle theme">
-            {#if theme == "g100"}
+            {#if appAppearance.theme === "dark"}
                 <LightFilled />
             {:else}
                 <Asleep />

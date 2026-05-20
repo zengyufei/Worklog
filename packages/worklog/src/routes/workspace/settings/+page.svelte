@@ -16,6 +16,9 @@
         PasswordInput,
         InlineLoading,
         Tag,
+        ContentSwitcher,
+        Switch,
+        InlineNotification,
     } from "carbon-components-svelte";
     import { useWorkspace } from "$lib/hooks/workspace.svelte";
     import { getDb } from "$lib/db";
@@ -35,6 +38,7 @@
     import { SyncEngine } from "$lib/sync/sync-engine";
     import type { SyncStatus } from "$lib/sync/types";
     import { useAppZoom } from "$lib/hooks/app-zoom.svelte";
+    import { useAppAppearance, type ThemeMode } from "$lib/hooks/app-appearance.svelte";
     import ZoomControls from "$lib/components/app/layout/workspace/zoom-controls.svelte";
     import {
         Settings,
@@ -54,6 +58,14 @@
         Checkmark,
         Close,
         CheckmarkOutline,
+        Moon,
+        Sun,
+        Screen,
+        Document,
+        Table,
+        Folder,
+        Download,
+        Upload,
     } from "carbon-icons-svelte";
     import { getWorkspaceShellContext } from "$lib/hooks/workspace-shell-context";
     import { seedDatabase, seedLazyLoadingTest } from "$lib/db/seed";
@@ -83,6 +95,7 @@
     const { ticketTypesApi } = getWorkspaceShellContext();
     const syncConfig = useSyncConfig();
     const appZoom = useAppZoom();
+    const appAppearance = useAppAppearance();
 
     const workspaceName = $derived(workspace.meta?.name ?? "Workspace");
     const workspacePath = $derived(workspace.path ?? "Not available");
@@ -511,38 +524,40 @@
                     {#if matchesSearch("Workspace Information Database schema version Worklog version")}
                         <section class="settings-section">
                             <h2>Workspace Information</h2>
-                            <div class="settings-grid">
-                                <TextInput
-                                    id="workspace-name"
-                                    labelText="Workspace name"
-                                    value={workspaceName}
-                                    readonly
-                                />
-                                <TextInput
-                                    id="workspace-status"
-                                    labelText="Workspace status"
-                                    value={workspaceStatus}
-                                    readonly
-                                />
-                                <TextInput
-                                    id="workspace-schema"
-                                    labelText="Database schema version"
-                                    value={schemaVersion}
-                                    readonly
-                                />
-                                <TextArea
-                                    id="workspace-path"
-                                    labelText="Workspace path"
-                                    value={workspacePath}
-                                    rows={3}
-                                    readonly
-                                />
-                                <TextInput
-                                    id="app-version"
-                                    labelText="Worklog version"
-                                    value={version}
-                                    readonly
-                                />
+                            <div class="settings-card">
+                                <div class="settings-grid">
+                                    <TextInput
+                                        id="workspace-name"
+                                        labelText="Workspace name"
+                                        value={workspaceName}
+                                        readonly
+                                    />
+                                    <TextInput
+                                        id="workspace-status"
+                                        labelText="Workspace status"
+                                        value={workspaceStatus}
+                                        readonly
+                                    />
+                                    <TextInput
+                                        id="workspace-schema"
+                                        labelText="Database schema version"
+                                        value={schemaVersion}
+                                        readonly
+                                    />
+                                    <TextArea
+                                        id="workspace-path"
+                                        labelText="Workspace path"
+                                        value={workspacePath}
+                                        rows={3}
+                                        readonly
+                                    />
+                                    <TextInput
+                                        id="app-version"
+                                        labelText="Worklog version"
+                                        value={version}
+                                        readonly
+                                    />
+                                </div>
                             </div>
                         </section>
                     {/if}
@@ -555,7 +570,7 @@
                                 completes.
                             </p>
 
-                            <div class="updater-card">
+                            <div class="settings-card updater-card">
                                 {#if updateState.status === "idle"}
                                     <!-- Idle: show check button -->
                                     <div class="updater-idle">
@@ -748,6 +763,106 @@
             <!-- ── Appearance Category ────────────────────────────────── -->
             {#if activeCategory === "appearance"}
                 <div class="category-view">
+                    {#if matchesSearch("Theme Dark Light System Mode")}
+                        <section class="settings-section">
+                            <h2>Theme</h2>
+                            <p class="section-desc">
+                                Choose the visual theme for the application.
+                            </p>
+                            <div class="settings-card">
+                                <div class="theme-selector">
+                                    <button
+                                        class="theme-card"
+                                        class:selected={appAppearance.theme === "light"}
+                                        onclick={() => appAppearance.theme = "light"}
+                                    >
+                                        <Sun size={24} />
+                                        <span>Light</span>
+                                    </button>
+                                    <button
+                                        class="theme-card"
+                                        class:selected={appAppearance.theme === "dark"}
+                                        onclick={() => appAppearance.theme = "dark"}
+                                    >
+                                        <Moon size={24} />
+                                        <span>Dark</span>
+                                    </button>
+                                    <button
+                                        class="theme-card"
+                                        class:selected={appAppearance.theme === "system"}
+                                        onclick={() => appAppearance.theme = "system"}
+                                    >
+                                        <Screen size={24} />
+                                        <span>System</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </section>
+                    {/if}
+
+                    {#if matchesSearch("Accent Color Customization Interactive")}
+                        <section class="settings-section">
+                            <h2>Accent Color</h2>
+                            <p class="section-desc">
+                                Select a primary color for interactive elements and active states.
+                            </p>
+                            <div class="settings-card">
+                                <div class="accent-palette">
+                                    {#each [
+                                        "#0f62fe", /* Carbon Blue */
+                                        "#0072c3", /* Teal/Cyan */
+                                        "#198038", /* Green */
+                                        "#a56eff", /* Purple */
+                                        "#fa4d56", /* Red */
+                                        "#ff832b", /* Orange */
+                                        "#f1c21b"  /* Yellow */
+                                    ] as color}
+                                        <button
+                                            class="color-swatch"
+                                            class:selected={appAppearance.accent === color}
+                                            style="background-color: {color};"
+                                            onclick={() => appAppearance.accent = color}
+                                            title={color}
+                                        >
+                                            {#if appAppearance.accent === color}
+                                                <Checkmark size={16} class="color-swatch-check" />
+                                            {/if}
+                                        </button>
+                                    {/each}
+                                    <div class="color-swatch-custom">
+                                        <input
+                                            type="color"
+                                            bind:value={appAppearance.accent}
+                                            class="color-input-sm"
+                                            title="Custom color"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    {/if}
+
+                    {#if matchesSearch("Font Size Typography Scale")}
+                        <section class="settings-section">
+                            <h2>Typography</h2>
+                            <p class="section-desc">
+                                Adjust the base font size for the application.
+                            </p>
+                            <div class="settings-card">
+                                <ContentSwitcher selectedIndex={appAppearance.fontSize === 'small' ? 0 : appAppearance.fontSize === 'large' ? 2 : 1} on:change={(e) => {
+                                    const index = e.detail;
+                                    if (index === 0) appAppearance.fontSize = 'small';
+                                    else if (index === 2) appAppearance.fontSize = 'large';
+                                    else appAppearance.fontSize = 'default';
+                                }}>
+                                    <Switch text="Small" />
+                                    <Switch text="Default" />
+                                    <Switch text="Large" />
+                                </ContentSwitcher>
+                            </div>
+                        </section>
+                    {/if}
+
                     {#if matchesSearch("Application Zoom global scale")}
                         <section class="settings-section">
                             <div class="header-with-tag">
@@ -760,8 +875,10 @@
                                 <kbd>+</kbd> and <kbd>Ctrl</kbd> + <kbd>-</kbd>
                                 anywhere.
                             </p>
-                            <div class="control-box">
-                                <ZoomControls />
+                            <div class="settings-card">
+                                <div class="control-box">
+                                    <ZoomControls />
+                                </div>
                             </div>
                         </section>
                     {/if}
@@ -779,8 +896,8 @@
                                 workspace. Each type can have its own color and
                                 icon.
                             </p>
-
-                            <div class="type-management-list">
+                            <div class="settings-card">
+                                <div class="type-management-list">
                                 {#each ticketTypesApi.types as type}
                                     <div
                                         class="type-item"
@@ -901,6 +1018,7 @@
                                     </Button>
                                 </div>
                             </div>
+                            </div>
                         </section>
                     {/if}
                 </div>
@@ -911,54 +1029,97 @@
                 <div class="category-view">
                     {#if matchesSearch("Export Import Data Management JSON CSV")}
                         <section class="settings-section">
-                            <h2>Export / Import</h2>
+                            <h2>Export Workspace Data</h2>
                             <p class="section-desc">
-                                Export or import your workspace data as JSON or
-                                CSV.
+                                Download a copy of your boards and tickets.
                             </p>
-
-                            <div class="data-controls">
-                                <div class="data-control-group">
-                                    <RadioButtonGroup
-                                        legendText="Format"
-                                        bind:selected={exportFormat}
+                            
+                            <div class="settings-card">
+                                <h3>Format</h3>
+                                <div class="theme-selector">
+                                    <button
+                                        class="export-card"
+                                        class:selected={exportFormat === "json"}
+                                        onclick={() => exportFormat = "json"}
                                     >
-                                        <RadioButton
-                                            labelText="JSON"
-                                            value="json"
-                                        />
-                                        <RadioButton
-                                            labelText="CSV"
-                                            value="csv"
-                                        />
-                                    </RadioButtonGroup>
+                                        <Document size={24} />
+                                        <div class="export-card-text">
+                                            <span>JSON</span>
+                                            <small>Machine-readable, preserves full fidelity (recommended)</small>
+                                        </div>
+                                    </button>
+                                    <button
+                                        class="export-card"
+                                        class:selected={exportFormat === "csv"}
+                                        onclick={() => exportFormat = "csv"}
+                                    >
+                                        <Table size={24} />
+                                        <div class="export-card-text">
+                                            <span>CSV</span>
+                                            <small>Spreadsheet-compatible, boards and tickets only</small>
+                                        </div>
+                                    </button>
                                 </div>
 
-                                <div class="data-control-group">
-                                    <RadioButtonGroup
-                                        legendText="Mode"
-                                        bind:selected={exportMode}
+                                <h3>Mode</h3>
+                                <div class="theme-selector">
+                                    <button
+                                        class="export-card"
+                                        class:selected={exportMode === "single-file"}
+                                        onclick={() => exportMode = "single-file"}
                                     >
-                                        <RadioButton
-                                            labelText="Single file"
-                                            value="single-file"
-                                        />
-                                        <RadioButton
-                                            labelText="Per-board folder"
-                                            value="folder"
-                                        />
-                                    </RadioButtonGroup>
+                                        <Document size={24} />
+                                        <div class="export-card-text">
+                                            <span>Single file</span>
+                                            <small>All boards combined into one file</small>
+                                        </div>
+                                    </button>
+                                    <button
+                                        class="export-card"
+                                        class:selected={exportMode === "folder"}
+                                        onclick={() => exportMode = "folder"}
+                                    >
+                                        <Folder size={24} />
+                                        <div class="export-card-text">
+                                            <span>Per-board folder</span>
+                                            <small>A separate file for each board</small>
+                                        </div>
+                                    </button>
                                 </div>
+
+                                <div class="export-preview">
+                                    <strong>📦 You are about to export:</strong> {exportFormat.toUpperCase()} &middot; {exportMode === "single-file" ? "Single file" : "Per-board folder"}<br/>
+                                    <span class="preview-muted">
+                                        {#if exportMode === "single-file"}
+                                            This will download one `worklog-export.{exportFormat}` file with all boards and tickets.
+                                        {:else}
+                                            This will create a folder containing separate `.{exportFormat}` files for each board.
+                                        {/if}
+                                    </span>
+                                </div>
+
+                                <Button kind="primary" icon={Download} onclick={handleExport}>
+                                    Export Data
+                                </Button>
                             </div>
+                        </section>
 
-                            <ButtonSet>
-                                <Button kind="primary" onclick={handleExport}>
-                                    Export
+                        <section class="settings-section">
+                            <h2>Import Workspace Data</h2>
+                            <p class="section-desc">
+                                Import boards and tickets from a previous export.
+                            </p>
+                            <div class="settings-card">
+                                <InlineNotification
+                                    kind="warning"
+                                    title="Warning:"
+                                    subtitle="Importing merges data. Existing tickets with the same ID will be overwritten."
+                                    hideCloseButton
+                                />
+                                <Button kind="danger-tertiary" icon={Upload} onclick={handleImport}>
+                                    Import Data
                                 </Button>
-                                <Button kind="tertiary" onclick={handleImport}>
-                                    Import
-                                </Button>
-                            </ButtonSet>
+                            </div>
                         </section>
                     {/if}
                 </div>
@@ -983,8 +1144,8 @@
                                 Sync your workspace to a private GitHub
                                 repository using a Personal Access Token.
                             </p>
-
-                            {#if gitAvailable === false}
+                            <div class="settings-card">
+                                {#if gitAvailable === false}
                                 <aside class="git-warning" role="alert">
                                     <strong>Git not found.</strong>
                                     <span>
@@ -1133,6 +1294,7 @@
                                     </div>
                                 {/if}
                             </div>
+                            </div>
                         </section>
                     {/if}
                 </div>
@@ -1151,8 +1313,8 @@
                                 Tools to test application performance with large
                                 datasets.
                             </p>
-
-                            <div class="debug-card">
+                            <div class="settings-card">
+                                <div class="debug-card">
                                 <h3>Seed Large Board</h3>
                                 <p>
                                     Create a new board named "Performance Test
@@ -1196,6 +1358,7 @@
                                     </li>
                                 </ul>
                             </div>
+                            </div>
                         </section>
                     {/if}
                 </div>
@@ -1211,7 +1374,8 @@
                                 Advanced tools for troubleshooting and database
                                 diagnostics.
                             </p>
-                            <div class="advanced-grid">
+                            <div class="settings-card">
+                                <div class="advanced-grid">
                                 <Button
                                     kind="ghost"
                                     onclick={refreshWorkspaceState}
@@ -1222,6 +1386,7 @@
                                     Re-scans the workspace directory and reloads
                                     all board metadata.
                                 </p>
+                            </div>
                             </div>
                         </section>
                     {/if}
@@ -1289,9 +1454,22 @@
     }
 
     .nav-item.active {
-        background: var(--cds-interactive-01);
-        color: white;
-        font-weight: 500;
+        background: color-mix(in srgb, var(--cds-interactive-01) 10%, transparent);
+        color: var(--cds-interactive-01);
+        font-weight: 600;
+        border-radius: 0 4px 4px 0;
+        position: relative;
+    }
+
+    .nav-item.active::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 3px;
+        background-color: var(--cds-interactive-01);
+        border-radius: 0 2px 2px 0;
     }
 
     .sidebar-footer {
@@ -1346,10 +1524,17 @@
     }
 
     .breadcrumbs {
+        display: inline-flex;
+        align-items: center;
+        background: var(--cds-ui-02);
+        padding: 0.25rem 0.75rem;
+        border-radius: 1rem;
         font-size: 0.75rem;
-        color: var(--cds-text-helper);
+        color: var(--cds-text-secondary);
+        font-weight: 500;
         text-transform: uppercase;
         letter-spacing: 0.05em;
+        width: fit-content;
     }
 
     .content-body {
@@ -1373,8 +1558,9 @@
     }
 
     .settings-section h2 {
-        font-size: 1.25rem;
-        font-weight: 400;
+        font-size: 1.5rem;
+        font-weight: 500;
+        color: var(--cds-text-primary);
         margin: 0;
     }
 
@@ -1382,6 +1568,17 @@
         font-size: 0.875rem;
         font-weight: 600;
         margin: 0;
+    }
+
+    .settings-card {
+        background: var(--cds-ui-01);
+        border: 1px solid var(--cds-ui-03);
+        border-radius: 8px;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.02);
     }
 
     .section-desc {
@@ -1404,6 +1601,94 @@
         border: 1px solid var(--cds-ui-03);
     }
 
+    /* ── Appearance Styles ────────────────────────────────────────────────── */
+    .theme-selector {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 1rem;
+    }
+
+    .theme-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        padding: 1.5rem;
+        background: var(--cds-ui-02);
+        border: 2px solid transparent;
+        border-radius: 8px;
+        cursor: pointer;
+        color: var(--cds-text-secondary);
+        transition: all 0.2s ease;
+    }
+
+    .theme-card:hover {
+        background: var(--cds-ui-03);
+        color: var(--cds-text-primary);
+    }
+
+    .theme-card.selected {
+        border-color: var(--cds-interactive-01);
+        background: color-mix(in srgb, var(--cds-interactive-01) 5%, var(--cds-ui-01));
+        color: var(--cds-interactive-01);
+    }
+
+    .theme-card span {
+        font-weight: 500;
+        font-size: 0.875rem;
+    }
+
+    .accent-palette {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        align-items: center;
+    }
+
+    .color-swatch {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 50%;
+        border: 2px solid transparent;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.1s ease;
+    }
+
+    .color-swatch:hover {
+        transform: scale(1.1);
+    }
+
+    .color-swatch.selected {
+        outline: 2px solid var(--cds-text-primary);
+        outline-offset: 2px;
+    }
+
+    .color-swatch-check {
+        fill: #fff;
+    }
+
+    .color-swatch-custom {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 50%;
+        overflow: hidden;
+        border: 1px solid var(--cds-ui-04);
+        margin-left: 0.5rem;
+    }
+
+    .color-swatch-custom .color-input-sm {
+        width: 150%;
+        height: 150%;
+        margin: -25%;
+        padding: 0;
+        border: none;
+        cursor: pointer;
+    }
+
     .header-with-tag,
     .header-with-status {
         display: flex;
@@ -1415,12 +1700,64 @@
         justify-content: space-between;
     }
 
-    .data-controls {
+    .export-card {
         display: flex;
-        gap: 3rem;
-        padding: 1rem;
+        align-items: center;
+        gap: 1rem;
+        padding: 1.25rem;
         background: var(--cds-ui-02);
+        border: 2px solid transparent;
+        border-radius: 8px;
+        cursor: pointer;
+        color: var(--cds-text-secondary);
+        transition: all 0.2s ease;
+        text-align: left;
+    }
+
+    .export-card:hover {
+        background: var(--cds-ui-03);
+        color: var(--cds-text-primary);
+    }
+
+    .export-card.selected {
+        border-color: var(--cds-interactive-01);
+        background: color-mix(in srgb, var(--cds-interactive-01) 5%, var(--cds-ui-01));
+        color: var(--cds-interactive-01);
+    }
+
+    .export-card-text {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .export-card-text span {
+        font-weight: 600;
+        font-size: 0.875rem;
+        color: var(--cds-text-primary);
+    }
+
+    .export-card.selected .export-card-text span {
+        color: var(--cds-interactive-01);
+    }
+
+    .export-card-text small {
+        font-size: 0.75rem;
+        color: var(--cds-text-secondary);
+        line-height: 1.2;
+    }
+
+    .export-preview {
+        background: var(--cds-ui-02);
+        padding: 1rem;
         border-radius: 4px;
+        font-size: 0.875rem;
+        line-height: 1.5;
+        border-left: 4px solid var(--cds-interactive-01);
+    }
+
+    .preview-muted {
+        color: var(--cds-text-secondary);
     }
 
     .sync-form {
