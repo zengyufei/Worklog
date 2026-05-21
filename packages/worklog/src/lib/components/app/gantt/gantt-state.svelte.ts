@@ -44,8 +44,8 @@ export class GanttState {
     #ticketsHook: any;
     #ticketTypesApi: any;
     #sortHook = useTicketSort();
+    #getSearchQuery: () => string;
 
-    searchQuery = $state("");
     zoomLevel = $state<"day" | "week" | "month">("day");
 
     hoveredTicketId = $state<string | null>(null);
@@ -58,17 +58,19 @@ export class GanttState {
 
     dragTicketId = $state<string | null>(null);
 
-    constructor(ticketsHook: any, ticketTypesApi: any) {
+    constructor(ticketsHook: any, ticketTypesApi: any, getSearchQuery: () => string = () => "") {
         this.#ticketsHook = ticketsHook;
         this.#ticketTypesApi = ticketTypesApi;
+        this.#getSearchQuery = getSearchQuery;
     }
 
     get filteredTickets(): Ticket[] {
-        const tickets = this.searchQuery.trim()
+        const q = this.#getSearchQuery();
+        const tickets = q.trim()
             ? this.#ticketsHook.tickets.filter(
                 (t: Ticket) =>
-                    t.title.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-                    t.description?.toLowerCase().includes(this.searchQuery.toLowerCase())
+                    t.title.toLowerCase().includes(q.toLowerCase()) ||
+                    t.description?.toLowerCase().includes(q.toLowerCase())
             )
             : this.#ticketsHook.tickets;
 

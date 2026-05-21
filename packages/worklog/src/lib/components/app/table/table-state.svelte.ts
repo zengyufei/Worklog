@@ -70,21 +70,22 @@ const statusAccentMap: Record<TicketStatus, string> = {
 export class TableState {
     #ticketsHook: any;
     #sortHook = useTicketSort();
+    #getSearchQuery: () => string;
 
-    searchQuery = $state("");
-
-    constructor(ticketsHook: any) {
+    constructor(ticketsHook: any, getSearchQuery: () => string = () => "") {
         this.#ticketsHook = ticketsHook;
+        this.#getSearchQuery = getSearchQuery;
     }
 
     get filteredTickets(): Ticket[] {
-        const tickets = this.searchQuery.trim()
+        const q = this.#getSearchQuery();
+        const tickets = q.trim()
             ? this.#ticketsHook.tickets.filter(
                 (t: Ticket) =>
-                    t.title.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-                    t.description?.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+                    t.title.toLowerCase().includes(q.toLowerCase()) ||
+                    t.description?.toLowerCase().includes(q.toLowerCase()) ||
                     t.labels?.some((tag: string) =>
-                        tag.toLowerCase().includes(this.searchQuery.toLowerCase()),
+                        tag.toLowerCase().includes(q.toLowerCase()),
                     ),
             )
             : this.#ticketsHook.tickets;

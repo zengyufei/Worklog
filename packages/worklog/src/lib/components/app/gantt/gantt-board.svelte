@@ -18,6 +18,8 @@
     import TicketPreviewSheet from "../kanban/ticket-preview-sheet.svelte";
     import { getDb, SettingsRepo } from "$lib/db";
 
+    let { searchQuery = "" }: { searchQuery?: string } = $props();
+
     const shell = getWorkspaceShellContext();
     const { ticketTypesApi } = shell;
     const getWorkspacePath = () => shell.workspace.path;
@@ -26,8 +28,8 @@
 
     let actionError = $state<string | null>(null);
 
-    // Initialize State Context
-    const gantt = new GanttState(ticketsHook, ticketTypesApi);
+    // Initialize State Context — pass searchQuery getter so parent drives filtering
+    const gantt = new GanttState(ticketsHook, ticketTypesApi, () => searchQuery);
     setGanttState(gantt);
 
     // Auto-scroll to today on mount
@@ -174,8 +176,8 @@
             <InlineNotification
                 kind="info"
                 title="No tickets"
-                subtitle={gantt.searchQuery
-                    ? `No tickets match '${gantt.searchQuery}'.`
+                subtitle={searchQuery
+                    ? `No tickets match '${searchQuery}'.`
                     : "Create tickets to see the timeline."}
                 hideCloseButton
             />

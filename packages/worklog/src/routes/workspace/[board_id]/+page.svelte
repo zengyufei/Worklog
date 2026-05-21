@@ -4,12 +4,10 @@
     import TableView from "$lib/components/app/table/table-board.svelte";
     import GanttView from "$lib/components/app/gantt/gantt-board.svelte";
     import {
-        Tabs,
-        Tab,
-        TabContent,
         Loading,
         InlineNotification,
         Button,
+        Dropdown,
     } from "carbon-components-svelte";
     import {
         Dashboard,
@@ -17,7 +15,11 @@
         ChartBarFloating,
         WarningHex,
         ArrowLeft,
+        Search,
+        SortAscending,
+        SortDescending,
     } from "carbon-icons-svelte";
+    import { useTicketSort } from "$lib/hooks/ticket-sort.svelte";
     import { getWorkspaceShellContext } from "$lib/hooks/workspace-shell-context";
     import { useTickets } from "$lib/hooks/tickets.svelte";
 
@@ -43,6 +45,33 @@
 
     let selectedTab = $state(0);
     let lastRestoredBoardId = $state<string | null>(null);
+
+    // ── Search & Sort (shared across all views) ────────────────────────────────
+    let searchQuery = $state("");
+    const sortHook = useTicketSort();
+    const sortItems = [
+        { id: "position", text: "Manual Order" },
+        { id: "priority", text: "Priority" },
+        { id: "due_date", text: "Due Date" },
+        { id: "created_at", text: "Date Created" },
+        { id: "title", text: "Title" },
+        { id: "ticket_type", text: "Ticket Type" },
+    ];
+
+    // ── Tab indicator ──────────────────────────────────────────────────────────────────────
+    let tabBtn0 = $state<HTMLButtonElement | null>(null);
+    let tabBtn1 = $state<HTMLButtonElement | null>(null);
+    let tabBtn2 = $state<HTMLButtonElement | null>(null);
+    let indicatorEl = $state<HTMLElement | null>(null);
+
+    $effect(() => {
+        const btns = [tabBtn0, tabBtn1, tabBtn2];
+        const btn = btns[selectedTab];
+        const el = indicatorEl;
+        if (!btn || !el) return;
+        el.style.setProperty("--tab-x", `${btn.offsetLeft}px`);
+        el.style.setProperty("--tab-w", `${btn.offsetWidth}px`);
+    });
 
     $effect(() => {
         if (!board) {
@@ -136,7 +165,12 @@
 {:else}
     <main class="workspace-board-shell">
         <header class="workspace-board-header">
-            <h1>{board.name}</h1>
+            <div class="board-title-group">
+                <h1>{board.name}</h1>
+                {#if board.description}
+                    <p class="board-description">{board.description}</p>
+                {/if}
+            </div>
         </header>
 
         <section class="workspace-board-content" aria-label="Board content">
@@ -159,22 +193,97 @@
                     />
                 </div>
             {/if}
-            <Tabs autoWidth bind:selected={selectedTab}>
-                <Tab label="Board" icon={Dashboard} />
-                <Tab label="Table" icon={Table} />
-                <Tab label="Timeline" icon={ChartBarFloating} />
-                <svelte:fragment slot="content">
-                    <TabContent>
-                        <KanbanBoard />
-                    </TabContent>
-                    <TabContent>
-                        <TableView />
-                    </TabContent>
-                    <TabContent>
-                        <GanttView />
-                    </TabContent>
-                </svelte:fragment>
-            </Tabs>
+            <!-- ── Controls Bar: tabs left, search+sort right ─────────────────── -->
+            <div class="board-controls-bar">
+                <!-- Tab buttons -->
+                <div class="board-tabs" role="tablist" aria-label="Board views">
+                    <button
+                        bind:this={tabBtn0}
+                        role="tab"
+                        aria-selected={selectedTab === 0}
+                        class="view-tab"
+                        class:view-tab--active={selectedTab === 0}
+                        onclick={() => (selectedTab = 0)}
+                    >
+                        <Dashboard size={16} />
+                        <span>Board</span>
+                    </button>
+                    <button
+                        bind:this={tabBtn1}
+                        role="tab"
+                        aria-selected={selectedTab === 1}
+                        class="view-tab"
+                        class:view-tab--active={selectedTab === 1}
+                        onclick={() => (selectedTab = 1)}
+                    >
+                        <Table size={16} />
+                        <span>Table</span>
+                    </button>
+                    <button
+                        bind:this={tabBtn2}
+                        role="tab"
+                        aria-selected={selectedTab === 2}
+                        class="view-tab"
+                        class:view-tab--active={selectedTab === 2}
+                        onclick={() => (selectedTab = 2)}
+                    >
+                        <ChartBarFloating size={16} />
+                        <span>Timeline</span>
+                    </button>
+                    <span
+                        bind:this={indicatorEl}
+                        class="tab-indicator"
+                        aria-hidden="true"
+                    ></span>
+                </div>
+
+                <!-- Search + Sort controls -->
+                <div class="board-controls-right">
+                    <div class="search-wrap">
+                        <Search size={14} class="search-icon" />
+                        <input
+                            type="search"
+                            class="search-input"
+                            placeholder="Search tickets..."
+                            bind:value={searchQuery}
+                            aria-label="Search tickets"
+                        />
+                    </div>
+                    <div class="sort-wrap">
+                        <Dropdown
+                            size="sm"
+                            hideLabel
+                            items={sortItems}
+                            bind:selectedId={sortHook.sortBy}
+                        />
+                        <Button
+                            kind="ghost"
+                            size="small"
+                            iconDescription={sortHook.sortOrder === "asc"
+                                ? "Sort Ascending"
+                                : "Sort Descending"}
+                            onclick={() => sortHook.toggleOrder()}
+                        >
+                            {#if sortHook.sortOrder === "asc"}
+                                <SortAscending />
+                            {:else}
+                                <SortDescending />
+                            {/if}
+                        </Button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Tab Content ─────────────────────────────────────────────────── -->
+            <div class="view-tab-content">
+                {#if selectedTab === 0}
+                    <KanbanBoard {searchQuery} />
+                {:else if selectedTab === 1}
+                    <TableView {searchQuery} />
+                {:else if selectedTab === 2}
+                    <GanttView {searchQuery} />
+                {/if}
+            </div>
         </section>
     </main>
 {/if}
@@ -273,16 +382,172 @@
         }
     }
 
-    /* Make Tabs container take full height */
-    :global(.workspace-board-content > .bx--tabs) {
+    /* ── Board Title Group ─────────────────────────────────────────────────────────── */
+    .board-title-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.1875rem;
+        min-width: 0;
+    }
+
+    .board-description {
+        margin: 0;
+        font-size: 0.8125rem;
+        color: var(--cds-text-02);
+        opacity: 0.85;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 72ch;
+        line-height: 1.4;
+    }
+
+    /* ── Controls Bar (tabs left · search+sort right) ─────────────────────────────── */
+    .board-controls-bar {
+        display: flex;
+        align-items: stretch;
+        border-bottom: 1px solid var(--cds-ui-03);
+        flex-shrink: 0;
+        background: var(--cds-ui-background);
+    }
+
+    /* Left section: tab buttons + sliding indicator */
+    .board-tabs {
+        position: relative;
+        display: flex;
+        align-items: stretch;
+    }
+
+    .view-tab {
+        all: unset;
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+        padding: 0.625rem 1rem;
+        font-size: 0.875rem;
+        color: var(--cds-text-02);
+        cursor: pointer;
+        transition:
+            color 0.15s ease,
+            background 0.15s ease;
+        white-space: nowrap;
+        box-sizing: border-box;
+    }
+
+    .view-tab:hover {
+        color: var(--cds-text-01);
+        background: var(--cds-hover-ui);
+    }
+
+    .view-tab--active {
+        color: var(--cds-text-01);
+        font-weight: 500;
+    }
+
+    .tab-indicator {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        height: 2px;
+        background: var(--cds-interactive-01, #0f62fe);
+        border-radius: 1px 1px 0 0;
+        pointer-events: none;
+        transform: translateX(var(--tab-x, 0px));
+        width: var(--tab-w, 0px);
+        transition:
+            transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+            width 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Right section: search + sort */
+    .board-controls-right {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0 0.5rem;
         flex-shrink: 0;
     }
 
-    :global(.workspace-board-content > .bx--tab-content) {
+    .search-wrap {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .search-wrap :global(.search-icon) {
+        position: absolute;
+        left: 0.5rem;
+        color: var(--cds-text-02);
+        pointer-events: none;
+        flex-shrink: 0;
+    }
+
+    .search-input {
+        all: unset;
+        height: 2rem;
+        padding: 0 0.625rem 0 1.875rem;
+        font-size: 0.8125rem;
+        color: var(--cds-text-01);
+        background: var(--cds-field-01);
+        border: 1px solid var(--cds-ui-03);
+        border-radius: 4px;
+        width: 13rem;
+        box-sizing: border-box;
+        transition:
+            border-color 0.15s ease,
+            width 0.2s ease;
+    }
+
+    .search-input::placeholder {
+        color: var(--cds-text-03);
+    }
+
+    .search-input:focus {
+        outline: 2px solid var(--cds-focus, #0f62fe);
+        outline-offset: -2px;
+        border-color: transparent;
+        width: 18rem;
+    }
+
+    /* Hide the browser's native search cancel button */
+    .search-input::-webkit-search-cancel-button {
+        display: none;
+    }
+
+    .sort-wrap {
+        display: flex;
+        align-items: center;
+        gap: 0;
+    }
+
+    :global(.sort-wrap .bx--dropdown) {
+        width: auto;
+        min-width: 130px;
+        border-bottom: none;
+        height: 2rem;
+    }
+
+    :global(.sort-wrap .bx--dropdown-text) {
+        font-size: 0.8125rem;
+    }
+
+    :global(.sort-wrap .bx--list-box__menu-icon) {
+        height: 2rem;
+        width: 2rem;
+    }
+
+    :global(.sort-wrap .bx--btn--ghost.bx--btn--sm) {
+        height: 2rem;
+        padding: 0 0.5rem;
+    }
+
+    .view-tab-content {
         flex: 1;
         min-height: 0;
-        padding: 0 !important;
         overflow: hidden;
+        display: flex;
+        flex-direction: column;
     }
 
     .workspace-board-error {

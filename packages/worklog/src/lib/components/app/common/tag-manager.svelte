@@ -121,11 +121,11 @@
         background-color: var(--cds-field-01, #f4f4f4);
         border: 1px solid var(--cds-ui-04, #8d8d8d);
         border-radius: 2px;
-        min-height: 2.5rem;
+        min-height: 2rem;
         display: flex;
         flex-wrap: wrap;
         align-items: center;
-        padding: 0.25rem 0.5rem;
+        padding: 0.125rem 0.5rem;
         transition: all 70ms cubic-bezier(0.2, 0, 0.38, 0.9);
     }
 
@@ -152,9 +152,9 @@
         background: transparent;
         outline: none;
         flex: 1;
-        min-width: 80px;
-        height: 2rem;
-        font-size: 0.875rem;
+        min-width: 60px;
+        height: 1.625rem;
+        font-size: 0.8125rem;
         color: var(--cds-text-primary, #161616);
     }
 
@@ -198,5 +198,8 @@
 
     :global(.tag-input-container .bx--tag) {
         margin: 0;
+        height: 1.25rem;
+        font-size: 0.6875rem;
+        padding-inline: 0.375rem;
     }
 </style>
