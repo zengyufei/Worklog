@@ -4,9 +4,6 @@
     import TableView from "$lib/components/app/table/table-board.svelte";
     import GanttView from "$lib/components/app/gantt/gantt-board.svelte";
     import {
-        Tabs,
-        Tab,
-        TabContent,
         Loading,
         InlineNotification,
         Button,
@@ -43,6 +40,21 @@
 
     let selectedTab = $state(0);
     let lastRestoredBoardId = $state<string | null>(null);
+
+    // ── Tab indicator ──────────────────────────────────────────────────────────────────────
+    let tabBtn0 = $state<HTMLButtonElement | null>(null);
+    let tabBtn1 = $state<HTMLButtonElement | null>(null);
+    let tabBtn2 = $state<HTMLButtonElement | null>(null);
+    let indicatorEl = $state<HTMLElement | null>(null);
+
+    $effect(() => {
+        const btns = [tabBtn0, tabBtn1, tabBtn2];
+        const btn = btns[selectedTab];
+        const el = indicatorEl;
+        if (!btn || !el) return;
+        el.style.setProperty("--tab-x", `${btn.offsetLeft}px`);
+        el.style.setProperty("--tab-w", `${btn.offsetWidth}px`);
+    });
 
     $effect(() => {
         if (!board) {
@@ -136,7 +148,12 @@
 {:else}
     <main class="workspace-board-shell">
         <header class="workspace-board-header">
-            <h1>{board.name}</h1>
+            <div class="board-title-group">
+                <h1>{board.name}</h1>
+                {#if board.description}
+                    <p class="board-description">{board.description}</p>
+                {/if}
+            </div>
         </header>
 
         <section class="workspace-board-content" aria-label="Board content">
@@ -159,22 +176,58 @@
                     />
                 </div>
             {/if}
-            <Tabs autoWidth bind:selected={selectedTab}>
-                <Tab label="Board" icon={Dashboard} />
-                <Tab label="Table" icon={Table} />
-                <Tab label="Timeline" icon={ChartBarFloating} />
-                <svelte:fragment slot="content">
-                    <TabContent>
-                        <KanbanBoard />
-                    </TabContent>
-                    <TabContent>
-                        <TableView />
-                    </TabContent>
-                    <TabContent>
-                        <GanttView />
-                    </TabContent>
-                </svelte:fragment>
-            </Tabs>
+            <!-- ── Custom View Tab Switcher ────────────────────────────────────────── -->
+            <div class="view-tabs" role="tablist" aria-label="Board views">
+                <button
+                    bind:this={tabBtn0}
+                    role="tab"
+                    aria-selected={selectedTab === 0}
+                    class="view-tab"
+                    class:view-tab--active={selectedTab === 0}
+                    onclick={() => (selectedTab = 0)}
+                >
+                    <Dashboard size={16} />
+                    <span>Board</span>
+                </button>
+                <button
+                    bind:this={tabBtn1}
+                    role="tab"
+                    aria-selected={selectedTab === 1}
+                    class="view-tab"
+                    class:view-tab--active={selectedTab === 1}
+                    onclick={() => (selectedTab = 1)}
+                >
+                    <Table size={16} />
+                    <span>Table</span>
+                </button>
+                <button
+                    bind:this={tabBtn2}
+                    role="tab"
+                    aria-selected={selectedTab === 2}
+                    class="view-tab"
+                    class:view-tab--active={selectedTab === 2}
+                    onclick={() => (selectedTab = 2)}
+                >
+                    <ChartBarFloating size={16} />
+                    <span>Timeline</span>
+                </button>
+                <span
+                    bind:this={indicatorEl}
+                    class="tab-indicator"
+                    aria-hidden="true"
+                ></span>
+            </div>
+
+            <!-- ── Tab Content ─────────────────────────────────────────────────── -->
+            <div class="view-tab-content">
+                {#if selectedTab === 0}
+                    <KanbanBoard />
+                {:else if selectedTab === 1}
+                    <TableView />
+                {:else if selectedTab === 2}
+                    <GanttView />
+                {/if}
+            </div>
         </section>
     </main>
 {/if}
@@ -273,16 +326,83 @@
         }
     }
 
-    /* Make Tabs container take full height */
-    :global(.workspace-board-content > .bx--tabs) {
-        flex-shrink: 0;
+    /* ── Board Title Group ─────────────────────────────────────────────────────────── */
+    .board-title-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.1875rem;
+        min-width: 0;
     }
 
-    :global(.workspace-board-content > .bx--tab-content) {
+    .board-description {
+        margin: 0;
+        font-size: 0.8125rem;
+        color: var(--cds-text-02);
+        opacity: 0.85;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 72ch;
+        line-height: 1.4;
+    }
+
+    /* ── Custom View Tab Switcher ─────────────────────────────────────────────────── */
+    .view-tabs {
+        position: relative;
+        display: flex;
+        align-items: stretch;
+        border-bottom: 1px solid var(--cds-ui-03);
+        flex-shrink: 0;
+        background: var(--cds-ui-background);
+    }
+
+    .view-tab {
+        all: unset;
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+        padding: 0.625rem 1rem;
+        font-size: 0.875rem;
+        color: var(--cds-text-02);
+        cursor: pointer;
+        transition:
+            color 0.15s ease,
+            background 0.15s ease;
+        white-space: nowrap;
+        box-sizing: border-box;
+    }
+
+    .view-tab:hover {
+        color: var(--cds-text-01);
+        background: var(--cds-hover-ui);
+    }
+
+    .view-tab--active {
+        color: var(--cds-text-01);
+        font-weight: 500;
+    }
+
+    .tab-indicator {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        height: 2px;
+        background: var(--cds-interactive-01, #0f62fe);
+        border-radius: 1px 1px 0 0;
+        pointer-events: none;
+        transform: translateX(var(--tab-x, 0px));
+        width: var(--tab-w, 0px);
+        transition:
+            transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+            width 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .view-tab-content {
         flex: 1;
         min-height: 0;
-        padding: 0 !important;
         overflow: hidden;
+        display: flex;
+        flex-direction: column;
     }
 
     .workspace-board-error {
