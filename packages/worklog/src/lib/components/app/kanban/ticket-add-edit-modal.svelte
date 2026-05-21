@@ -581,7 +581,7 @@
                         <TextArea
                             bind:ref={textareaRef}
                             placeholder="Describe the ticket… (Markdown supported)"
-                            rows={5}
+                            rows={16}
                             bind:value={form.description}
                             on:keydown={handleTextAreaKeyDown}
                         />
@@ -594,10 +594,11 @@
             </div>
         </div>
 
-        <div class="form-attributes">
-            <div class="attribute-row">
+        <div class="attributes-strip">
+            <div class="attr-field">
                 <Dropdown
                     labelText="Priority"
+                    size="sm"
                     bind:selectedId={form.priority}
                     items={[
                         { id: "p3", text: "Low" },
@@ -605,8 +606,11 @@
                         { id: "p1", text: "High" },
                     ]}
                 />
+            </div>
+            <div class="attr-field attr-field--grow">
                 <Dropdown
                     labelText="Type"
+                    size="sm"
                     bind:selectedId={form.ticketType}
                     items={ticketTypesApi.types.map((t) => ({
                         id: t.id,
@@ -614,7 +618,7 @@
                     }))}
                 />
             </div>
-            <div class="attribute-row">
+            <div class="attr-field">
                 <DatePicker
                     bind:value={form.startDate}
                     datePickerType="single"
@@ -623,8 +627,11 @@
                     <DatePickerInput
                         labelText="Start Date"
                         placeholder="yyyy-mm-dd"
+                        size="sm"
                     />
                 </DatePicker>
+            </div>
+            <div class="attr-field">
                 <DatePicker
                     bind:value={form.dueDate}
                     datePickerType="single"
@@ -633,10 +640,11 @@
                     <DatePickerInput
                         labelText="Due Date"
                         placeholder="yyyy-mm-dd"
+                        size="sm"
                     />
                 </DatePicker>
             </div>
-            <div class="attribute-full">
+            <div class="attr-field attr-field--tags">
                 <TagManager
                     label="Tags"
                     availableTags={TAG_OPTIONS}
@@ -673,20 +681,49 @@
         gap: 1rem;
     }
 
-    .form-attributes {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 1rem;
-        padding-top: 1rem;
+    /* ── Compact Attributes Strip ──────────────────────────────────────────── */
+    .attributes-strip {
+        display: flex;
+        align-items: flex-end;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        padding-top: 0.75rem;
         border-top: 1px solid var(--cds-ui-03);
     }
 
-    .attribute-row {
-        display: contents;
+    .attr-field {
+        display: flex;
+        flex-direction: column;
+        min-width: 7rem;
+        flex-shrink: 0;
     }
 
-    .attribute-full {
-        grid-column: 1 / -1;
+    .attr-field--grow {
+        min-width: 9rem;
+        flex: 1;
+    }
+
+    .attr-field--tags {
+        flex: 2;
+        min-width: 12rem;
+    }
+
+    /* Force sm Dropdown to not grow full width */
+    .attr-field :global(.bx--dropdown) {
+        width: 100%;
+    }
+
+    /* Align DatePicker to strip — prevent it from overflowing */
+    .attr-field :global(.bx--date-picker) {
+        width: 100%;
+    }
+
+    .attr-field :global(.bx--date-picker-input__wrapper) {
+        width: 100%;
+    }
+
+    .attr-field :global(.bx--date-picker--single .bx--date-picker__input) {
+        width: 100%;
     }
 
     .modal-error {
@@ -702,6 +739,8 @@
         display: flex;
         flex-direction: column;
         gap: 0.375rem;
+        /* Single source of truth for editor height */
+        --editor-h: 20rem;
     }
 
     .description-header {
@@ -731,9 +770,9 @@
         background: var(--cds-ui-background);
         border: 1px solid var(--cds-ui-04);
         border-radius: 4px;
-        min-height: 7.5rem;
+        min-height: var(--editor-h);
+        height: var(--editor-h);
         overflow-y: auto;
-        max-height: 250px;
     }
 
     /* ── Markdown Editor Styles ────────────────────────────────────────────── */
@@ -842,6 +881,9 @@
         border-top: none !important;
         border-top-left-radius: 0 !important;
         border-top-right-radius: 0 !important;
+        min-height: var(--editor-h) !important;
+        height: var(--editor-h) !important;
+        resize: vertical;
     }
 
     @keyframes slideDown {
