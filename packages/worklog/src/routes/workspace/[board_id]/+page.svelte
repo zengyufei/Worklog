@@ -7,6 +7,7 @@
         Loading,
         InlineNotification,
         Button,
+        Dropdown,
     } from "carbon-components-svelte";
     import {
         Dashboard,
@@ -14,7 +15,11 @@
         ChartBarFloating,
         WarningHex,
         ArrowLeft,
+        Search,
+        SortAscending,
+        SortDescending,
     } from "carbon-icons-svelte";
+    import { useTicketSort } from "$lib/hooks/ticket-sort.svelte";
     import { getWorkspaceShellContext } from "$lib/hooks/workspace-shell-context";
     import { useTickets } from "$lib/hooks/tickets.svelte";
 
@@ -40,6 +45,18 @@
 
     let selectedTab = $state(0);
     let lastRestoredBoardId = $state<string | null>(null);
+
+    // ── Search & Sort (shared across all views) ────────────────────────────────
+    let searchQuery = $state("");
+    const sortHook = useTicketSort();
+    const sortItems = [
+        { id: "position", text: "Manual Order" },
+        { id: "priority", text: "Priority" },
+        { id: "due_date", text: "Due Date" },
+        { id: "created_at", text: "Date Created" },
+        { id: "title", text: "Title" },
+        { id: "ticket_type", text: "Ticket Type" },
+    ];
 
     // ── Tab indicator ──────────────────────────────────────────────────────────────────────
     let tabBtn0 = $state<HTMLButtonElement | null>(null);
@@ -176,56 +193,95 @@
                     />
                 </div>
             {/if}
-            <!-- ── Custom View Tab Switcher ────────────────────────────────────────── -->
-            <div class="view-tabs" role="tablist" aria-label="Board views">
-                <button
-                    bind:this={tabBtn0}
-                    role="tab"
-                    aria-selected={selectedTab === 0}
-                    class="view-tab"
-                    class:view-tab--active={selectedTab === 0}
-                    onclick={() => (selectedTab = 0)}
-                >
-                    <Dashboard size={16} />
-                    <span>Board</span>
-                </button>
-                <button
-                    bind:this={tabBtn1}
-                    role="tab"
-                    aria-selected={selectedTab === 1}
-                    class="view-tab"
-                    class:view-tab--active={selectedTab === 1}
-                    onclick={() => (selectedTab = 1)}
-                >
-                    <Table size={16} />
-                    <span>Table</span>
-                </button>
-                <button
-                    bind:this={tabBtn2}
-                    role="tab"
-                    aria-selected={selectedTab === 2}
-                    class="view-tab"
-                    class:view-tab--active={selectedTab === 2}
-                    onclick={() => (selectedTab = 2)}
-                >
-                    <ChartBarFloating size={16} />
-                    <span>Timeline</span>
-                </button>
-                <span
-                    bind:this={indicatorEl}
-                    class="tab-indicator"
-                    aria-hidden="true"
-                ></span>
+            <!-- ── Controls Bar: tabs left, search+sort right ─────────────────── -->
+            <div class="board-controls-bar">
+                <!-- Tab buttons -->
+                <div class="board-tabs" role="tablist" aria-label="Board views">
+                    <button
+                        bind:this={tabBtn0}
+                        role="tab"
+                        aria-selected={selectedTab === 0}
+                        class="view-tab"
+                        class:view-tab--active={selectedTab === 0}
+                        onclick={() => (selectedTab = 0)}
+                    >
+                        <Dashboard size={16} />
+                        <span>Board</span>
+                    </button>
+                    <button
+                        bind:this={tabBtn1}
+                        role="tab"
+                        aria-selected={selectedTab === 1}
+                        class="view-tab"
+                        class:view-tab--active={selectedTab === 1}
+                        onclick={() => (selectedTab = 1)}
+                    >
+                        <Table size={16} />
+                        <span>Table</span>
+                    </button>
+                    <button
+                        bind:this={tabBtn2}
+                        role="tab"
+                        aria-selected={selectedTab === 2}
+                        class="view-tab"
+                        class:view-tab--active={selectedTab === 2}
+                        onclick={() => (selectedTab = 2)}
+                    >
+                        <ChartBarFloating size={16} />
+                        <span>Timeline</span>
+                    </button>
+                    <span
+                        bind:this={indicatorEl}
+                        class="tab-indicator"
+                        aria-hidden="true"
+                    ></span>
+                </div>
+
+                <!-- Search + Sort controls -->
+                <div class="board-controls-right">
+                    <div class="search-wrap">
+                        <Search size={14} class="search-icon" />
+                        <input
+                            type="search"
+                            class="search-input"
+                            placeholder="Search tickets..."
+                            bind:value={searchQuery}
+                            aria-label="Search tickets"
+                        />
+                    </div>
+                    <div class="sort-wrap">
+                        <Dropdown
+                            size="sm"
+                            hideLabel
+                            items={sortItems}
+                            bind:selectedId={sortHook.sortBy}
+                        />
+                        <Button
+                            kind="ghost"
+                            size="small"
+                            iconDescription={sortHook.sortOrder === "asc"
+                                ? "Sort Ascending"
+                                : "Sort Descending"}
+                            onclick={() => sortHook.toggleOrder()}
+                        >
+                            {#if sortHook.sortOrder === "asc"}
+                                <SortAscending />
+                            {:else}
+                                <SortDescending />
+                            {/if}
+                        </Button>
+                    </div>
+                </div>
             </div>
 
             <!-- ── Tab Content ─────────────────────────────────────────────────── -->
             <div class="view-tab-content">
                 {#if selectedTab === 0}
-                    <KanbanBoard />
+                    <KanbanBoard {searchQuery} />
                 {:else if selectedTab === 1}
-                    <TableView />
+                    <TableView {searchQuery} />
                 {:else if selectedTab === 2}
-                    <GanttView />
+                    <GanttView {searchQuery} />
                 {/if}
             </div>
         </section>
@@ -346,14 +402,20 @@
         line-height: 1.4;
     }
 
-    /* ── Custom View Tab Switcher ─────────────────────────────────────────────────── */
-    .view-tabs {
-        position: relative;
+    /* ── Controls Bar (tabs left · search+sort right) ─────────────────────────────── */
+    .board-controls-bar {
         display: flex;
         align-items: stretch;
         border-bottom: 1px solid var(--cds-ui-03);
         flex-shrink: 0;
         background: var(--cds-ui-background);
+    }
+
+    /* Left section: tab buttons + sliding indicator */
+    .board-tabs {
+        position: relative;
+        display: flex;
+        align-items: stretch;
     }
 
     .view-tab {
@@ -395,6 +457,89 @@
         transition:
             transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
             width 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Right section: search + sort */
+    .board-controls-right {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0 0.5rem;
+        flex-shrink: 0;
+    }
+
+    .search-wrap {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .search-wrap :global(.search-icon) {
+        position: absolute;
+        left: 0.5rem;
+        color: var(--cds-text-02);
+        pointer-events: none;
+        flex-shrink: 0;
+    }
+
+    .search-input {
+        all: unset;
+        height: 2rem;
+        padding: 0 0.625rem 0 1.875rem;
+        font-size: 0.8125rem;
+        color: var(--cds-text-01);
+        background: var(--cds-field-01);
+        border: 1px solid var(--cds-ui-03);
+        border-radius: 4px;
+        width: 13rem;
+        box-sizing: border-box;
+        transition:
+            border-color 0.15s ease,
+            width 0.2s ease;
+    }
+
+    .search-input::placeholder {
+        color: var(--cds-text-03);
+    }
+
+    .search-input:focus {
+        outline: 2px solid var(--cds-focus, #0f62fe);
+        outline-offset: -2px;
+        border-color: transparent;
+        width: 18rem;
+    }
+
+    /* Hide the browser's native search cancel button */
+    .search-input::-webkit-search-cancel-button {
+        display: none;
+    }
+
+    .sort-wrap {
+        display: flex;
+        align-items: center;
+        gap: 0;
+    }
+
+    :global(.sort-wrap .bx--dropdown) {
+        width: auto;
+        min-width: 130px;
+        border-bottom: none;
+        height: 2rem;
+    }
+
+    :global(.sort-wrap .bx--dropdown-text) {
+        font-size: 0.8125rem;
+    }
+
+    :global(.sort-wrap .bx--list-box__menu-icon) {
+        height: 2rem;
+        width: 2rem;
+    }
+
+    :global(.sort-wrap .bx--btn--ghost.bx--btn--sm) {
+        height: 2rem;
+        padding: 0 0.5rem;
     }
 
     .view-tab-content {

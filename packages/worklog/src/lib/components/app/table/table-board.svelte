@@ -6,12 +6,13 @@
     
     // Extracted Components
     import { TableState, setTableState } from "./table-state.svelte";
-    import TableToolbar from "./table-toolbar.svelte";
     import TableGroup from "./table-group.svelte";
     
     // Modals
     import TicketAddEditModal from "../kanban/ticket-add-edit-modal.svelte";
     import TicketDeleteConfirm from "../kanban/ticket-delete-confirm.svelte";
+
+    let { searchQuery = "" }: { searchQuery?: string } = $props();
 
     const shell = getWorkspaceShellContext();
     const getWorkspacePath = () => shell.workspace.path;
@@ -19,8 +20,8 @@
 
     const ticketsHook = useTickets(getWorkspacePath, getBoardId);
 
-    // Initialize State Context
-    const tableState = new TableState(ticketsHook);
+    // Initialize State Context — pass searchQuery getter so parent drives filtering
+    const tableState = new TableState(ticketsHook, () => searchQuery);
     setTableState(tableState);
 
     // Actions
@@ -82,15 +83,14 @@
 </script>
 
 <div class="table-view-shell">
-    <TableToolbar />
 
     <!-- Empty State -->
-    {#if tableState.totalCount === 0 && tableState.searchQuery.trim()}
+    {#if tableState.totalCount === 0 && searchQuery.trim()}
         <div class="table-empty-state">
             <InlineNotification
                 kind="info"
                 title="No results"
-                subtitle="No tickets match '{tableState.searchQuery}'."
+                subtitle="No tickets match '{searchQuery}'."
                 hideCloseButton
             />
         </div>

@@ -1,11 +1,6 @@
 <!-- src/lib/components/app/kanban/kanban-board.svelte -->
 <script lang="ts">
-    import {
-        InlineNotification,
-        Toolbar,
-        ToolbarContent,
-        ToolbarSearch,
-    } from "carbon-components-svelte";
+    import { InlineNotification } from "carbon-components-svelte";
     import KanbanColumn from "./kanban-column.svelte";
     import TicketAddEditModal from "./ticket-add-edit-modal.svelte";
     import TicketDeleteConfirm from "./ticket-delete-confirm.svelte";
@@ -13,11 +8,6 @@
     import { getWorkspaceShellContext } from "$lib/hooks/workspace-shell-context";
     import { useTickets } from "$lib/hooks/tickets.svelte";
     import { useTicketSort } from "$lib/hooks/ticket-sort.svelte";
-    import {
-        Dropdown,
-        SelectItem,
-        Button as CarbonButton,
-    } from "carbon-components-svelte";
     import { SortAscending, SortDescending } from "carbon-icons-svelte";
     import {
         type Ticket,
@@ -34,6 +24,8 @@
         accentColor: string;
         tickets: Ticket[];
     };
+
+    let { searchQuery = "" }: { searchQuery?: string } = $props();
 
     const shell = getWorkspaceShellContext();
     const getWorkspacePath = () => shell.workspace.path;
@@ -75,8 +67,7 @@
         }),
     );
 
-    // ── Search / filter ────────────────────────────────────────────────────────
-    let searchQuery = $state("");
+
 
     const filteredColumns = $derived(
         columns.map((col) => ({
@@ -313,52 +304,16 @@
 
 <!-- ── Board Shell ─────────────────────────────────────────────────────────── -->
 <div class="board-shell">
-    <!-- Toolbar -->
-    <Toolbar>
-        <ToolbarContent>
-            <ToolbarSearch
-                value={searchQuery}
-                oninput={(e: any) => (searchQuery = e.currentTarget.value)}
-                placeholder="Search tickets…"
-                persistent
-            />
-            <div class="toolbar-sort">
-                <Dropdown
-                    size="sm"
-                    hideLabel
-                    items={sortItems}
-                    bind:selectedId={sortHook.sortBy}
-                />
-                <CarbonButton
-                    kind="ghost"
-                    size="small"
-                    iconDescription={sortHook.sortOrder === "asc"
-                        ? "Sort Ascending"
-                        : "Sort Descending"}
-                    onclick={() => sortHook.toggleOrder()}
-                >
-                    {#if sortHook.sortOrder === "asc"}
-                        <SortAscending />
-                    {:else}
-                        <SortDescending />
-                    {/if}
-                </CarbonButton>
-            </div>
-            <div class="toolbar-stats">
-                <span class="stats-text"
-                    >{doneCount} / {activeTickets} done</span
-                >
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width: {progress}%"></div>
-                </div>
-                {#if totalTickets !== activeTickets}
-                    <span class="stats-text stats-backlog"
-                        >+{totalTickets - activeTickets} backlog</span
-                    >
-                {/if}
-            </div>
-        </ToolbarContent>
-    </Toolbar>
+    <!-- Stats strip -->
+    <div class="board-stats-strip">
+        <span class="stats-text">{doneCount} / {activeTickets} done</span>
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: {progress}%"></div>
+        </div>
+        {#if totalTickets !== activeTickets}
+            <span class="stats-text stats-backlog">+{totalTickets - activeTickets} backlog</span>
+        {/if}
+    </div>
 
     {#if searchQuery && filteredColumns.every((c) => c.tickets.length === 0)}
         <InlineNotification
@@ -487,30 +442,18 @@
         overflow: hidden;
     }
 
-    /* Toolbar extras */
-    .toolbar-sort {
-        display: flex;
-        align-items: center;
-        gap: 0.25rem;
-        padding-left: 0.5rem;
-    }
-
-    :global(.toolbar-sort .bx--dropdown) {
-        width: auto;
-        min-width: 140px;
-        border-bottom: none;
-    }
-
-    :global(.toolbar-sort .bx--dropdown-text) {
-        font-size: 0.875rem;
-    }
-
-    .toolbar-stats {
+    /* Stats strip */
+    .board-stats-strip {
         display: flex;
         align-items: center;
         gap: 0.75rem;
-        padding: 0 1rem;
+        padding: 0.375rem 1rem;
+        border-bottom: 1px solid var(--cds-ui-03);
+        flex-shrink: 0;
+        background: var(--cds-ui-background);
     }
+
+
 
     .stats-text {
         font-size: 0.75rem;
