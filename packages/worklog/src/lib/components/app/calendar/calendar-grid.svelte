@@ -16,6 +16,7 @@
     const isWeekView = $derived(state.viewMode === "week");
     const days = $derived(state.activeDays);
     const headers = $derived(state.weekdayHeaders);
+    const rowCount = $derived(state.rowCount);
 </script>
 
 <div class="cal-grid-wrap">
@@ -27,7 +28,11 @@
     </div>
 
     <!-- Day cells -->
-    <div class="cal-grid" class:week-view={isWeekView}>
+    <div
+        class="cal-grid"
+        class:week-view={isWeekView}
+        style="--cal-rows: {rowCount};"
+    >
         {#each days as day (day.dateKey)}
             <CalendarDayCell
                 {day}
@@ -75,25 +80,11 @@
         min-height: 0;
         display: grid;
         grid-template-columns: repeat(7, 1fr);
-        grid-auto-rows: 1fr;
-        overflow-y: auto;
-        scrollbar-width: thin;
-        scrollbar-color: var(--cds-ui-04) transparent;
+        grid-template-rows: repeat(var(--cal-rows, 5), 1fr);
+        overflow: hidden;
     }
 
     .cal-grid.week-view {
-        grid-auto-rows: minmax(14rem, 1fr);
-        overflow-y: auto;
-    }
-
-    .cal-grid::-webkit-scrollbar {
-        width: 4px;
-    }
-    .cal-grid::-webkit-scrollbar-thumb {
-        background: var(--cds-ui-04);
-        border-radius: 2px;
-    }
-    .cal-grid::-webkit-scrollbar-track {
-        background: transparent;
+        grid-template-rows: 1fr;
     }
 </style>

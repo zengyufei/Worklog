@@ -3,7 +3,7 @@
     import { TICKET_STATUS_CONFIG } from "$lib/components/app/types";
     import type { CalendarDay } from "./calendar-state.svelte";
 
-    const MAX_VISIBLE = 3;
+    const MAX_DOTS = 6;
 
     let {
         day,
@@ -17,9 +17,8 @@
         onDateClick: (date: Date) => void;
     } = $props();
 
-    const visibleTickets = $derived(day.tickets.slice(0, MAX_VISIBLE));
-    const overflowCount = $derived(Math.max(0, day.tickets.length - MAX_VISIBLE));
-    const overflowTickets = $derived(day.tickets.slice(MAX_VISIBLE));
+    const visibleDots = $derived(day.tickets.slice(0, MAX_DOTS));
+    const overflowCount = $derived(Math.max(0, day.tickets.length - MAX_DOTS));
 
     let showPopover = $state(false);
 
@@ -28,8 +27,15 @@
     }
 
     function handleCellClick(e: MouseEvent) {
-        if ((e.target as HTMLElement).closest(".ticket-chip, .overflow-btn, .overflow-popover")) return;
+        if ((e.target as HTMLElement).closest(".ticket-chip, .indicator-area, .overflow-popover")) return;
         onDateClick(day.date);
+    }
+
+    function handleIndicatorClick(e: MouseEvent) {
+        e.stopPropagation();
+        if (day.tickets.length > 0) {
+            showPopover = !showPopover;
+        }
     }
 
     function handlePopoverKeydown(e: KeyboardEvent) {
@@ -60,31 +66,42 @@
         <span class="day-number" class:today-badge={day.isToday}>
             {day.date.getDate()}
         </span>
-        {#if day.tickets.length > 0 && !isWeekView}
-            <span class="ticket-count-dot"></span>
-        {/if}
     </div>
 
-    <div class="tickets-list">
-        {#each (isWeekView ? day.tickets : visibleTickets) as ticket (ticket.id)}
-            <button
-                class="ticket-chip"
-                style="--status-color: {getStatusColor(ticket)}"
-                onclick={(e) => { e.stopPropagation(); onTicketClick(ticket); }}
-                title={ticket.title}
-            >
-                <span class="chip-dot"></span>
-                <span class="chip-title">{ticket.title}</span>
-            </button>
-        {/each}
-
-        {#if !isWeekView && overflowCount > 0}
-            <div class="overflow-wrap" use:popoverAction>
+    {#if isWeekView}
+        <!-- Week view: full chip-style tickets -->
+        <div class="tickets-list">
+            {#each day.tickets as ticket (ticket.id)}
                 <button
-                    class="overflow-btn"
-                    onclick={(e) => { e.stopPropagation(); showPopover = !showPopover; }}
+                    class="ticket-chip"
+                    style="--status-color: {getStatusColor(ticket)}"
+                    onclick={(e) => { e.stopPropagation(); onTicketClick(ticket); }}
+                    title={ticket.title}
                 >
-                    +{overflowCount} more
+                    <span class="chip-dot"></span>
+                    <span class="chip-title">{ticket.title}</span>
+                </button>
+            {/each}
+        </div>
+    {:else}
+        <!-- Month view: compact dot indicators -->
+        {#if day.tickets.length > 0}
+            <div class="indicator-area" use:popoverAction>
+                <button
+                    class="dot-row"
+                    onclick={handleIndicatorClick}
+                    title="{day.tickets.length} ticket{day.tickets.length !== 1 ? 's' : ''}"
+                >
+                    {#each visibleDots as ticket (ticket.id)}
+                        <span
+                            class="status-dot"
+                            style="background: {getStatusColor(ticket)};"
+                        ></span>
+                    {/each}
+                    {#if overflowCount > 0}
+                        <span class="dot-overflow">+{overflowCount}</span>
+                    {/if}
+                    <span class="dot-count">{day.tickets.length}</span>
                 </button>
 
                 {#if showPopover}
@@ -97,6 +114,7 @@
                     >
                         <div class="popover-header">
                             {day.date.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                            <span class="popover-count">{day.tickets.length} ticket{day.tickets.length !== 1 ? 's' : ''}</span>
                         </div>
                         {#each day.tickets as ticket (ticket.id)}
                             <button
@@ -112,12 +130,13 @@
                 {/if}
             </div>
         {/if}
-    </div>
+    {/if}
 </div>
 
 <style>
+    /* ── Day Cell ────────────────────────────────────────────────────────── */
     .day-cell {
-        min-height: 6.5rem;
+        height: 100%;
         padding: 0.375rem;
         border-right: 1px solid var(--cds-ui-03);
         border-bottom: 1px solid var(--cds-ui-03);
@@ -127,14 +146,12 @@
         gap: 0.2rem;
         transition: background 0.1s ease;
         position: relative;
+        overflow: hidden;
+        box-sizing: border-box;
     }
 
     .day-cell:hover {
         background: color-mix(in srgb, var(--cds-hover-ui) 60%, transparent);
-    }
-
-    .day-cell.week-view {
-        min-height: 12rem;
     }
 
     .day-cell.today {
@@ -149,11 +166,12 @@
         opacity: 0.4;
     }
 
+    /* ── Day Number ─────────────────────────────────────────────────────── */
     .day-number-row {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        margin-bottom: 0.125rem;
+        flex-shrink: 0;
     }
 
     .day-number {
@@ -175,22 +193,71 @@
         font-weight: 700;
     }
 
-    .ticket-count-dot {
-        width: 5px;
-        height: 5px;
-        border-radius: 50%;
-        background: var(--cds-interactive-01, #0f62fe);
-        opacity: 0.5;
-        display: none; /* shown via JS if needed */
+    /* ── Month View: Dot Indicators ─────────────────────────────────────── */
+    .indicator-area {
+        margin-top: auto;
+        position: relative;
     }
 
+    .dot-row {
+        all: unset;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        flex-wrap: wrap;
+        cursor: pointer;
+        padding: 0.1875rem 0.125rem;
+        border-radius: 4px;
+        transition: background 0.12s ease;
+    }
+
+    .dot-row:hover {
+        background: color-mix(in srgb, var(--cds-hover-ui) 80%, transparent);
+    }
+
+    .status-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .dot-overflow {
+        font-size: 0.625rem;
+        color: var(--cds-text-02);
+        font-weight: 500;
+        line-height: 1;
+    }
+
+    .dot-count {
+        font-size: 0.6875rem;
+        font-weight: 600;
+        color: var(--cds-text-02);
+        margin-left: auto;
+        line-height: 1;
+        background: color-mix(in srgb, var(--cds-ui-03) 60%, transparent);
+        padding: 0.125rem 0.3rem;
+        border-radius: 3px;
+    }
+
+    /* ── Week View: Chip Tickets ────────────────────────────────────────── */
     .tickets-list {
         display: flex;
         flex-direction: column;
         gap: 0.1875rem;
         flex: 1;
         min-height: 0;
-        overflow: hidden;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: var(--cds-ui-04) transparent;
+    }
+
+    .tickets-list::-webkit-scrollbar {
+        width: 3px;
+    }
+    .tickets-list::-webkit-scrollbar-thumb {
+        background: var(--cds-ui-04);
+        border-radius: 2px;
     }
 
     .ticket-chip {
@@ -229,26 +296,7 @@
         min-width: 0;
     }
 
-    /* Overflow */
-    .overflow-wrap {
-        position: relative;
-    }
-
-    .overflow-btn {
-        all: unset;
-        font-size: 0.7rem;
-        color: var(--cds-link-01, #0f62fe);
-        cursor: pointer;
-        padding: 0.125rem 0.25rem;
-        border-radius: 3px;
-        transition: background 0.12s ease;
-        white-space: nowrap;
-    }
-
-    .overflow-btn:hover {
-        background: var(--cds-hover-ui);
-    }
-
+    /* ── Popover (shared) ───────────────────────────────────────────────── */
     .overflow-popover {
         position: absolute;
         bottom: calc(100% + 4px);
@@ -260,6 +308,8 @@
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
         min-width: 14rem;
         max-width: 18rem;
+        max-height: 16rem;
+        overflow-y: auto;
         padding: 0.375rem;
         display: flex;
         flex-direction: column;
@@ -273,6 +323,16 @@
         text-transform: uppercase;
         letter-spacing: 0.05em;
         padding: 0.25rem 0.375rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .popover-count {
+        font-weight: 400;
+        text-transform: none;
+        letter-spacing: normal;
+        color: var(--cds-text-03);
     }
 
     .popover-ticket {

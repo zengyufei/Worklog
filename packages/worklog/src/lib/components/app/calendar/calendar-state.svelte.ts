@@ -102,6 +102,12 @@ export class CalendarState {
         return this.viewMode === "month" ? this.calendarDays : this.weekDays;
     }
 
+    /** Number of rows in the current month grid (4–6). Week view is always 1. */
+    get rowCount(): number {
+        if (this.viewMode === "week") return 1;
+        return this.calendarDays.length / 7;
+    }
+
     get displayTitle(): string {
         if (this.viewMode === "month") {
             return this.currentDate.toLocaleDateString("en-US", { month: "long", year: "numeric" });
