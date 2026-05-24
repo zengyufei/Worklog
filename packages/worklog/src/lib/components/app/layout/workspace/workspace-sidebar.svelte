@@ -7,7 +7,9 @@
         Edit,
         Archive,
         Calendar,
+        Dashboard,
     } from "carbon-icons-svelte";
+    import { page } from "$app/stores";
 
     import {
         Button,
@@ -318,11 +320,20 @@
     <SideNavItems>
         <div class="workspace-global-nav">
             <Button
+                href="/workspace/overview"
+                kind="ghost"
+                size="default"
+                icon={Dashboard}
+                class="workspace-global-btn {$page.url.pathname === '/workspace/overview' ? 'active' : ''}"
+            >
+                Overview
+            </Button>
+            <Button
                 href="/workspace/calendar"
                 kind="ghost"
-                size="small"
+                size="default"
                 icon={Calendar}
-                class="global-calendar-btn"
+                class="workspace-global-btn {$page.url.pathname === '/workspace/calendar' ? 'active' : ''}"
             >
                 Global Calendar
             </Button>
@@ -622,7 +633,10 @@
     }
 
     .workspace-global-nav {
-        padding: var(--cds-spacing-03, 0.5rem);
+        padding: var(--cds-spacing-04, 0.75rem) var(--cds-spacing-03, 0.5rem);
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
         border-bottom: 1px solid
             color-mix(
                 in srgb,
@@ -631,15 +645,36 @@
             );
     }
 
-    .workspace-global-nav :global(.bx--btn) {
+    :global(.workspace-global-btn.bx--btn) {
         margin: 0;
         width: 100%;
         justify-content: flex-start;
-        gap: var(--cds-spacing-03, 0.5rem);
+        gap: var(--cds-spacing-04, 0.75rem);
+        border-radius: 8px;
+        color: var(--cds-text-02) !important;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        padding-top: 0.875rem;
+        padding-bottom: 0.875rem;
+        font-size: 0.95rem;
+    }
+    
+    :global(.workspace-global-btn.bx--btn:hover) {
+        background: var(--cds-hover-ui) !important;
+        color: var(--cds-text-01) !important;
     }
 
-    .workspace-global-nav :global(.bx--btn svg) {
+    :global(.workspace-global-btn.bx--btn.active) {
+        background: color-mix(in srgb, var(--cds-interactive-01, #0f62fe) 15%, transparent) !important;
+        color: var(--cds-interactive-01, #0f62fe) !important;
+        font-weight: 600;
+    }
+
+    :global(.workspace-global-btn.bx--btn svg) {
         flex-shrink: 0;
+        fill: currentColor;
+        width: 1.125rem;
+        height: 1.125rem;
     }
 
     .workspace-sidebar-header {
