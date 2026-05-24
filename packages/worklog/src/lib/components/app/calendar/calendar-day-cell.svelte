@@ -3,7 +3,7 @@
     import { TICKET_STATUS_CONFIG } from "$lib/components/app/types";
     import type { CalendarDay } from "./calendar-state.svelte";
 
-    const MAX_DOTS = 6;
+    const MAX_VISIBLE_TICKETS = 3;
 
     let {
         day,
@@ -17,8 +17,8 @@
         onDateClick: (date: Date) => void;
     } = $props();
 
-    const visibleDots = $derived(day.tickets.slice(0, MAX_DOTS));
-    const overflowCount = $derived(Math.max(0, day.tickets.length - MAX_DOTS));
+    const visibleTickets = $derived(day.tickets.slice(0, MAX_VISIBLE_TICKETS));
+    const overflowCount = $derived(Math.max(0, day.tickets.length - MAX_VISIBLE_TICKETS));
 
     let showPopover = $state(false);
 
@@ -84,25 +84,29 @@
             {/each}
         </div>
     {:else}
-        <!-- Month view: compact dot indicators -->
+        <!-- Month view: chip tickets with overflow -->
         {#if day.tickets.length > 0}
             <div class="indicator-area" use:popoverAction>
-                <button
-                    class="dot-row"
-                    onclick={handleIndicatorClick}
-                    title="{day.tickets.length} ticket{day.tickets.length !== 1 ? 's' : ''}"
-                >
-                    {#each visibleDots as ticket (ticket.id)}
-                        <span
-                            class="status-dot"
-                            style="background: {getStatusColor(ticket)};"
-                        ></span>
-                    {/each}
-                    {#if overflowCount > 0}
-                        <span class="dot-overflow">+{overflowCount}</span>
-                    {/if}
-                    <span class="dot-count">{day.tickets.length}</span>
-                </button>
+                {#each visibleTickets as ticket (ticket.id)}
+                    <button
+                        class="ticket-chip month-chip"
+                        style="--status-color: {getStatusColor(ticket)}"
+                        onclick={(e) => { e.stopPropagation(); onTicketClick(ticket); }}
+                        title={ticket.title}
+                    >
+                        <span class="chip-dot"></span>
+                        <span class="chip-title">{ticket.title}</span>
+                    </button>
+                {/each}
+                {#if overflowCount > 0}
+                    <button
+                        class="overflow-btn"
+                        onclick={handleIndicatorClick}
+                        title="{overflowCount} more ticket{overflowCount !== 1 ? 's' : ''}"
+                    >
+                        +{overflowCount} more
+                    </button>
+                {/if}
 
                 {#if showPopover}
                     <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
@@ -120,10 +124,10 @@
                             <button
                                 class="popover-ticket"
                                 style="--status-color: {getStatusColor(ticket)}"
-                                onclick={() => { showPopover = false; onTicketClick(ticket); }}
+                                onclick={(e) => { e.stopPropagation(); showPopover = false; onTicketClick(ticket); }}
                             >
                                 <span class="chip-dot"></span>
-                                <span>{ticket.title}</span>
+                                <span class="chip-title">{ticket.title}</span>
                             </button>
                         {/each}
                     </div>
@@ -193,51 +197,31 @@
         font-weight: 700;
     }
 
-    /* ── Month View: Dot Indicators ─────────────────────────────────────── */
+    /* ── Month View: Chip Indicators ────────────────────────────────────── */
     .indicator-area {
         margin-top: auto;
         position: relative;
-    }
-
-    .dot-row {
-        all: unset;
         display: flex;
-        align-items: center;
-        gap: 0.25rem;
-        flex-wrap: wrap;
-        cursor: pointer;
-        padding: 0.1875rem 0.125rem;
-        border-radius: 4px;
-        transition: background 0.12s ease;
+        flex-direction: column;
+        gap: 0.1875rem;
     }
 
-    .dot-row:hover {
-        background: color-mix(in srgb, var(--cds-hover-ui) 80%, transparent);
-    }
-
-    .status-dot {
-        width: 7px;
-        height: 7px;
-        border-radius: 50%;
-        flex-shrink: 0;
-    }
-
-    .dot-overflow {
-        font-size: 0.625rem;
-        color: var(--cds-text-02);
-        font-weight: 500;
-        line-height: 1;
-    }
-
-    .dot-count {
+    .overflow-btn {
+        all: unset;
         font-size: 0.6875rem;
         font-weight: 600;
         color: var(--cds-text-02);
-        margin-left: auto;
-        line-height: 1;
-        background: color-mix(in srgb, var(--cds-ui-03) 60%, transparent);
-        padding: 0.125rem 0.3rem;
+        cursor: pointer;
+        padding: 0.125rem 0.375rem;
         border-radius: 3px;
+        transition: background 0.12s ease;
+        text-align: left;
+        margin-top: 0.125rem;
+    }
+
+    .overflow-btn:hover {
+        background: color-mix(in srgb, var(--cds-hover-ui) 80%, transparent);
+        color: var(--cds-text-01);
     }
 
     /* ── Week View: Chip Tickets ────────────────────────────────────────── */
