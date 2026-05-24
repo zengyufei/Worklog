@@ -6,6 +6,7 @@
         TrashCan,
         Edit,
         Archive,
+        Calendar,
     } from "carbon-icons-svelte";
 
     import {
@@ -315,6 +316,18 @@
 
 <SideNav class="workspace-sidebar" isOpen>
     <SideNavItems>
+        <div class="workspace-global-nav">
+            <Button
+                href="/workspace/calendar"
+                kind="ghost"
+                size="small"
+                icon={Calendar}
+                class="global-calendar-btn"
+            >
+                Global Calendar
+            </Button>
+        </div>
+
         <header class="workspace-sidebar-header">
             <small>Boards</small>
             <Button kind="ghost" size="small" onclick={openCreateBoardModal}>
@@ -606,6 +619,27 @@
     :global(.workspace-sidebar .bx--side-nav__items) {
         flex: 1 1 auto;
         overflow-y: auto;
+    }
+
+    .workspace-global-nav {
+        padding: var(--cds-spacing-03, 0.5rem);
+        border-bottom: 1px solid
+            color-mix(
+                in srgb,
+                var(--color-border-primary, #525252) 30%,
+                transparent
+            );
+    }
+
+    .workspace-global-nav :global(.bx--btn) {
+        margin: 0;
+        width: 100%;
+        justify-content: flex-start;
+        gap: var(--cds-spacing-03, 0.5rem);
+    }
+
+    .workspace-global-nav :global(.bx--btn svg) {
+        flex-shrink: 0;
     }
 
     .workspace-sidebar-header {
