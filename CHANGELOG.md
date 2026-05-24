@@ -1,3 +1,38 @@
+## [unreleased]
+
+### 🚀 Features
+
+- Add calendar view component with date-based ticket visualization and management
+- Enhance calendar grid with dynamic row count and improved ticket display
+- Update month view to display ticket chips with overflow count instead of dots
+- Implement global calendar view with ticket management and display
+- Add workspace overview component with metrics and status breakdown
+- Bump version to 1.3.6 across package.json, Cargo.toml, Cargo.lock, and tauri.conf.json
+## [app-v1.3.5] - 2026-05-21
+
+### 🚀 Features
+
+- Implement markdown formatting toolbar and keyboard shortcuts in ticket edit modal
+
+### 🚜 Refactor
+
+- Update TagManager UI for density and redesign ticket modal attributes into a compact strip
+- Replace Carbon Tabs with custom animated tab switcher and add board description header
+- Move global search and sort controls to the workspace page shell
+- Remove redundant table-toolbar component in favor of unified controls bar
+
+### 📚 Documentation
+
+- Update changelog with version history and release notes through v1.3.4
+
+### 🎨 Styling
+
+- Update layout styles for improved responsiveness and spacing
+
+### ⚙️ Miscellaneous Tasks
+
+- Update changelogs to reflect v1.3.4 release and consolidate historical version history
+- Bump project version to 1.3.5
 ## [app-v1.3.4] - 2026-05-19
 
 ### 🚀 Features
