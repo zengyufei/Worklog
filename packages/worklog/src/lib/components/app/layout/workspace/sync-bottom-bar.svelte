@@ -231,11 +231,11 @@
         color: var(--cds-text-02);
     }
 
-    .cloud-icon {
+    :global(.cloud-icon) {
         color: var(--cds-interactive-01);
     }
 
-    .cloud-icon.disabled {
+    :global(.cloud-icon.disabled) {
         color: var(--cds-text-03);
         opacity: 0.5;
     }

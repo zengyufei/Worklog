@@ -43,6 +43,14 @@ export async function listTickets(
     return rows.map(deserialize);
 }
 
+export async function listAllTickets(
+    db: Database
+): Promise<Ticket[]> {
+    const query = `SELECT * FROM tickets ORDER BY created_at ASC`;
+    const rows = await db.select<any[]>(query);
+    return rows.map(deserialize);
+}
+
 export async function countTicketsByStatus(
     db: Database,
     board_id: string,

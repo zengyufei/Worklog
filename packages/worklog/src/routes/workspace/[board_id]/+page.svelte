@@ -3,6 +3,7 @@
     import KanbanBoard from "$lib/components/app/kanban/kanban-board.svelte";
     import TableView from "$lib/components/app/table/table-board.svelte";
     import GanttView from "$lib/components/app/gantt/gantt-board.svelte";
+    import CalendarView from "$lib/components/app/calendar/calendar-board.svelte";
     import {
         Loading,
         InlineNotification,
@@ -13,6 +14,7 @@
         Dashboard,
         Table,
         ChartBarFloating,
+        Calendar,
         WarningHex,
         ArrowLeft,
         Search,
@@ -62,10 +64,11 @@
     let tabBtn0 = $state<HTMLButtonElement | null>(null);
     let tabBtn1 = $state<HTMLButtonElement | null>(null);
     let tabBtn2 = $state<HTMLButtonElement | null>(null);
+    let tabBtn3 = $state<HTMLButtonElement | null>(null);
     let indicatorEl = $state<HTMLElement | null>(null);
 
     $effect(() => {
-        const btns = [tabBtn0, tabBtn1, tabBtn2];
+        const btns = [tabBtn0, tabBtn1, tabBtn2, tabBtn3];
         const btn = btns[selectedTab];
         const el = indicatorEl;
         if (!btn || !el) return;
@@ -230,6 +233,17 @@
                         <ChartBarFloating size={16} />
                         <span>Timeline</span>
                     </button>
+                    <button
+                        bind:this={tabBtn3}
+                        role="tab"
+                        aria-selected={selectedTab === 3}
+                        class="view-tab"
+                        class:view-tab--active={selectedTab === 3}
+                        onclick={() => (selectedTab = 3)}
+                    >
+                        <Calendar size={16} />
+                        <span>Calendar</span>
+                    </button>
                     <span
                         bind:this={indicatorEl}
                         class="tab-indicator"
@@ -282,6 +296,8 @@
                     <TableView {searchQuery} />
                 {:else if selectedTab === 2}
                     <GanttView {searchQuery} />
+                {:else if selectedTab === 3}
+                    <CalendarView {searchQuery} />
                 {/if}
             </div>
         </section>
