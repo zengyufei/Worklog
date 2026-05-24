@@ -17,13 +17,18 @@
 
     const totalBoards = $derived(activeBoards.length);
     const totalTickets = $derived(allTickets.length);
-    const doneTickets = $derived(allTickets.filter((t) => t.status === "done").length);
-    const completionRate = $derived(totalTickets > 0 ? Math.round((doneTickets / totalTickets) * 100) : 0);
+    const doneTickets = $derived(
+        allTickets.filter((t) => t.status === "done").length,
+    );
+    const completionRate = $derived(
+        totalTickets > 0 ? Math.round((doneTickets / totalTickets) * 100) : 0,
+    );
 
     const statusCounts = $derived({
         backlog: allTickets.filter((t) => t.status === "backlog").length,
         todo: allTickets.filter((t) => t.status === "todo").length,
-        in_progress: allTickets.filter((t) => t.status === "in_progress").length,
+        in_progress: allTickets.filter((t) => t.status === "in_progress")
+            .length,
         done: doneTickets,
     });
 
@@ -73,7 +78,11 @@
                     </div>
                 </div>
                 <div class="progress-wrap">
-                    <ProgressBar value={completionRate} max={100} label="Overall Progress" />
+                    <ProgressBar
+                        value={completionRate}
+                        max={100}
+                        aria-label="Overall Progress"
+                    />
                 </div>
             </Tile>
 
@@ -85,12 +94,32 @@
                         <div class="status-row">
                             <span class="status-label">{config.label}</span>
                             <div class="status-track">
-                                <div 
+                                <div
                                     class="status-fill"
-                                    style="width: {totalTickets > 0 ? ((statusCounts as Record<string, number>)[statusKey] / totalTickets) * 100 : 0}%; background-color: var(--cds-support-{config.accentColor === 'magenta' ? '04' : config.accentColor === 'teal' ? '03' : config.accentColor === 'blue' ? '01' : '02'})"
+                                    style="width: {totalTickets > 0
+                                        ? ((
+                                              statusCounts as Record<
+                                                  string,
+                                                  number
+                                              >
+                                          )[statusKey] /
+                                              totalTickets) *
+                                          100
+                                        : 0}%; background-color: var(--cds-support-{config.accentColor ===
+                                    'magenta'
+                                        ? '04'
+                                        : config.accentColor === 'teal'
+                                          ? '03'
+                                          : config.accentColor === 'blue'
+                                            ? '01'
+                                            : '02'})"
                                 ></div>
                             </div>
-                            <span class="status-count">{(statusCounts as Record<string, number>)[statusKey]}</span>
+                            <span class="status-count"
+                                >{(statusCounts as Record<string, number>)[
+                                    statusKey
+                                ]}</span
+                            >
                         </div>
                     {/each}
                 </div>
@@ -104,7 +133,9 @@
                         {#each busiestBoards() as { board, count }}
                             <div class="board-item">
                                 <span class="board-name">{board?.name}</span>
-                                <span class="board-count">{count} open tickets</span>
+                                <span class="board-count"
+                                    >{count} open tickets</span
+                                >
                             </div>
                         {/each}
                     </div>

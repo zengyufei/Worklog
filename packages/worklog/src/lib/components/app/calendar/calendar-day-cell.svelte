@@ -60,6 +60,7 @@
     class:week-view={isWeekView}
     onclick={handleCellClick}
     role="gridcell"
+    tabindex="-1"
     aria-label={day.date.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
 >
     <div class="day-number-row">
@@ -113,6 +114,7 @@
                     <div
                         class="overflow-popover"
                         role="dialog"
+                        tabindex="-1"
                         aria-label="All tickets for this day"
                         onkeydown={handlePopoverKeydown}
                     >
