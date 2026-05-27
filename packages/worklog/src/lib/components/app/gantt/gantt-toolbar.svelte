@@ -1,6 +1,7 @@
 <script lang="ts">
     import { Button } from "carbon-components-svelte";
     import { getGanttState } from "./gantt-state.svelte";
+    import * as m from "$lib/paraglide/messages.js";
 
     const state = getGanttState();
 </script>
@@ -10,17 +11,17 @@
     <Button
         kind={state.zoomLevel === "day" ? "primary" : "ghost"}
         size="small"
-        on:click={() => (state.zoomLevel = "day")}>Day</Button
+        on:click={() => (state.zoomLevel = "day")}>{m.gantt_zoom_day()}</Button
     >
     <Button
         kind={state.zoomLevel === "week" ? "primary" : "ghost"}
         size="small"
-        on:click={() => (state.zoomLevel = "week")}>Week</Button
+        on:click={() => (state.zoomLevel = "week")}>{m.gantt_zoom_week()}</Button
     >
     <Button
         kind={state.zoomLevel === "month" ? "primary" : "ghost"}
         size="small"
-        on:click={() => (state.zoomLevel = "month")}>Month</Button
+        on:click={() => (state.zoomLevel = "month")}>{m.gantt_zoom_month()}</Button
     >
 </div>
 
