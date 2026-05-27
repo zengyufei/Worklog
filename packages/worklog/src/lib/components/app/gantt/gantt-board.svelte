@@ -17,6 +17,7 @@
     import TicketDeleteConfirm from "../kanban/ticket-delete-confirm.svelte";
     import TicketPreviewSheet from "../kanban/ticket-preview-sheet.svelte";
     import { getDb, SettingsRepo } from "$lib/db";
+    import * as m from "$lib/paraglide/messages.js";
 
     let { searchQuery = "" }: { searchQuery?: string } = $props();
 
@@ -175,17 +176,17 @@
         <div class="gantt-empty">
             <InlineNotification
                 kind="info"
-                title="No tickets"
+                title={m.gantt_no_tickets()}
                 subtitle={searchQuery
-                    ? `No tickets match '${searchQuery}'.`
-                    : "Create tickets to see the timeline."}
+                    ? m.kanban_no_results_subtitle({ query: searchQuery })
+                    : m.gantt_create_tickets()}
                 hideCloseButton
             />
         </div>
     {:else}
         <div class="gantt-grid">
             <div class="gantt-corner">
-                <span>Ticket</span>
+                <span>{m.gantt_corner_ticket()}</span>
             </div>
 
             <GanttColHeaders />

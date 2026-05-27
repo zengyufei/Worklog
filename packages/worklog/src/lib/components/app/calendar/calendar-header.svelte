@@ -1,6 +1,7 @@
 <script lang="ts">
     import { ChevronLeft, ChevronRight } from "carbon-icons-svelte";
     import { getCalendarState } from "./calendar-state.svelte";
+    import * as m from "$lib/paraglide/messages.js";
 
     const state = getCalendarState();
 </script>
@@ -14,7 +15,7 @@
         <button class="nav-btn" onclick={() => state.nextPeriod()} aria-label="Next period">
             <ChevronRight size={16} />
         </button>
-        <button class="today-btn" onclick={() => state.goToToday()}>Today</button>
+        <button class="today-btn" onclick={() => state.goToToday()}>{m.calendar_today()}</button>
     </div>
 
     <div class="view-toggle" role="group" aria-label="Calendar view">
@@ -22,12 +23,12 @@
             class="toggle-btn"
             class:active={state.viewMode === "month"}
             onclick={() => (state.viewMode = "month")}
-        >Month</button>
+        >{m.calendar_month()}</button>
         <button
             class="toggle-btn"
             class:active={state.viewMode === "week"}
             onclick={() => (state.viewMode = "week")}
-        >Week</button>
+        >{m.calendar_week()}</button>
     </div>
 </div>
 

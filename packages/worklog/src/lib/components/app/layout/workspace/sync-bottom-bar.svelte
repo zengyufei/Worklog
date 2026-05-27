@@ -240,10 +240,6 @@
         opacity: 0.5;
     }
 
-    .error-icon {
-        color: var(--cds-support-01);
-    }
-
     .status-text {
         display: flex;
         flex-direction: column;

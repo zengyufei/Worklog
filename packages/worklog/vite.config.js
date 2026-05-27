@@ -1,13 +1,21 @@
 import { defineConfig } from "vite";
 import { sveltekit } from "@sveltejs/kit/vite";
 import { optimizeCss } from "carbon-preprocess-svelte";
+import { paraglideVitePlugin } from "@inlang/paraglide-js";
 import pkg from './package.json';
 // @ts-expect-error process is a nodejs global
 const host = process.env.TAURI_DEV_HOST;
 
 // https://vite.dev/config/
 export default defineConfig(async () => ({
-  plugins: [sveltekit(), optimizeCss()],
+  plugins: [
+    paraglideVitePlugin({
+      project: "./project.inlang",
+      outdir: "./src/lib/paraglide"
+    }),
+    sveltekit(), 
+    optimizeCss()
+  ],
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
   //
   // 1. prevent Vite from obscuring rust errors

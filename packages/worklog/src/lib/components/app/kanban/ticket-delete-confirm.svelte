@@ -1,5 +1,6 @@
 <script lang="ts">
     import { Modal } from "carbon-components-svelte";
+    import * as m from "$lib/paraglide/messages.js";
 
     let {
         open = $bindable(false),
@@ -29,9 +30,9 @@
 <Modal
     danger
     bind:open
-    modalHeading="Delete Ticket"
-    primaryButtonText="Delete"
-    secondaryButtonText="Cancel"
+    modalHeading={m.delete_ticket_heading()}
+    primaryButtonText={m.delete_ticket_btn()}
+    secondaryButtonText={m.delete_ticket_cancel()}
     size="xs"
     primaryButtonDisabled={deleting}
     on:click:button--secondary={() => (open = false)}
@@ -39,11 +40,11 @@
 >
     <p class="delete-msg">
         {#if ticketTitle}
-            Are you sure you want to delete <strong>"{ticketTitle}"</strong>?
+            {@html m.delete_ticket_msg_title({ title: `<strong>${ticketTitle}</strong>` })}
         {:else}
-            Are you sure you want to delete this ticket?
+            {m.delete_ticket_msg()}
         {/if}
-        This action cannot be undone.
+        {m.delete_ticket_warning()}
     </p>
 </Modal>
 

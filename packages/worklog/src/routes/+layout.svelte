@@ -1,5 +1,20 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
+	// @ts-ignore
+	import { setLocale } from "$lib/paraglide/runtime.js";
+
+	// Initialize language
+	if (typeof localStorage !== "undefined") {
+		const savedLang = localStorage.getItem("app_lang");
+		if (savedLang === "fr" || savedLang === "en") {
+			setLocale(savedLang);
+		} else {
+			const browserLang = navigator.language.split("-")[0];
+			const initLang = browserLang === "fr" ? "fr" : "en";
+			setLocale(initLang);
+			localStorage.setItem("app_lang", initLang);
+		}
+	}
 
 	import "carbon-components-svelte/css/all.css";
 	import { Loading, NotificationQueue } from "carbon-components-svelte";
@@ -92,7 +107,7 @@
 		if (workspace.status !== "ready" || !workspace.path) return;
 		try {
 			const db = await getDb(workspace.path);
-			const result = await importFromFile(db, 'merge');
+			const result = await importFromFile(db, "merge");
 			if (result) {
 				notifications.add({
 					kind: "success",
@@ -169,9 +184,13 @@
 	// ── Context menu prevention ────────────────────────────────────────────
 	const handleContextmenu = (event: MouseEvent) => {
 		const target = event.target as HTMLElement;
-		
+
 		// Allow context menu for inputs and text areas
-		if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+		if (
+			target.tagName === "INPUT" ||
+			target.tagName === "TEXTAREA" ||
+			target.isContentEditable
+		) {
 			return;
 		}
 
@@ -182,7 +201,7 @@
 		}
 
 		// Allow context menu anywhere inside the ticket sheet for easy copying/inspecting
-		if (target.closest('.ticket-sheet')) {
+		if (target.closest(".ticket-sheet")) {
 			return;
 		}
 

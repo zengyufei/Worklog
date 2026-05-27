@@ -17,6 +17,7 @@
         type TicketPriority,
         type TicketType,
     } from "$lib/components/app/types";
+    import * as m from "$lib/paraglide/messages.js";
 
     const context = getWorkspaceShellContext();
     const ticketTypesApi = context?.ticketTypesApi;
@@ -28,12 +29,12 @@
     export let onDelete: (id: string) => void;
 
     const headers: any = [
-        { key: "title", value: "Title" },
-        { key: "priority", value: "Priority" },
-        { key: "type", value: "Type" },
-        { key: "labels", value: "Labels" },
-        { key: "dueDate", value: "Due Date" },
-        { key: "created", value: "Created" },
+        { key: "title", value: m.table_title() },
+        { key: "priority", value: m.table_priority() },
+        { key: "type", value: m.table_type() },
+        { key: "labels", value: m.table_labels() },
+        { key: "dueDate", value: m.table_due_date() },
+        { key: "created", value: m.table_created() },
         { key: "actions", empty: true },
     ];
 
@@ -156,16 +157,16 @@
                             <div class="cell-actions">
                                 <OverflowMenu flipped size="sm">
                                     <OverflowMenuItem
-                                        text="Copy ID"
+                                        text={m.table_copy_id()}
                                         on:click={() => copyId(row.id)}
                                     />
                                     <OverflowMenuItem
-                                        text="Edit ticket"
+                                        text={m.table_edit_ticket()}
                                         on:click={() => onEdit(row.id)}
                                     />
                                     <OverflowMenuItem
                                         danger
-                                        text="Delete"
+                                        text={m.table_delete()}
                                         on:click={() => onDelete(row.id)}
                                     />
                                 </OverflowMenu>
@@ -178,7 +179,7 @@
             </div>
         {:else}
             <div class="group-empty">
-                <span>No tickets</span>
+                <span>{m.kanban_column_empty()}</span>
             </div>
         {/if}
     </details>

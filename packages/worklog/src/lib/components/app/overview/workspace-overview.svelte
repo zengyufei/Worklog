@@ -3,6 +3,7 @@
     import { useAllTickets } from "$lib/hooks/all-tickets.svelte";
     import { ProgressBar, Tile } from "carbon-components-svelte";
     import { TICKET_STATUS_CONFIG } from "$lib/components/app/types";
+    import * as m from "$lib/paraglide/messages.js";
 
     const shell = getWorkspaceShellContext();
     const getWorkspacePath = () => shell.workspace.path;
@@ -52,43 +53,43 @@
 
 <div class="overview-layout">
     <header class="overview-header">
-        <h1>Workspace Overview</h1>
-        <p>A high-level view of your active boards and tickets.</p>
+        <h1>{m.overview_title()}</h1>
+        <p>{m.overview_description()}</p>
     </header>
 
     {#if ticketsHook.loading && totalTickets === 0}
-        <div class="loading-state">Loading workspace data...</div>
+        <div class="loading-state">{m.overview_loading()}</div>
     {:else}
         <div class="dashboard-grid">
             <!-- Metrics Widget -->
             <Tile class="widget metrics-widget">
-                <h3>Metrics</h3>
+                <h3>{m.overview_metrics()}</h3>
                 <div class="metrics-grid">
                     <div class="metric">
                         <span class="metric-val">{totalBoards}</span>
-                        <span class="metric-label">Active Boards</span>
+                        <span class="metric-label">{m.overview_active_boards()}</span>
                     </div>
                     <div class="metric">
                         <span class="metric-val">{totalTickets}</span>
-                        <span class="metric-label">Total Tickets</span>
+                        <span class="metric-label">{m.overview_total_tickets()}</span>
                     </div>
                     <div class="metric">
                         <span class="metric-val">{completionRate}%</span>
-                        <span class="metric-label">Completion</span>
+                        <span class="metric-label">{m.overview_completion()}</span>
                     </div>
                 </div>
                 <div class="progress-wrap">
                     <ProgressBar
                         value={completionRate}
                         max={100}
-                        aria-label="Overall Progress"
+                        aria-label={m.overview_overall_progress()}
                     />
                 </div>
             </Tile>
 
             <!-- Status Breakdown -->
             <Tile class="widget status-widget">
-                <h3>Status Breakdown</h3>
+                <h3>{m.overview_status_breakdown()}</h3>
                 <div class="status-bars">
                     {#each Object.entries(TICKET_STATUS_CONFIG) as [statusKey, config]}
                         <div class="status-row">
@@ -127,20 +128,20 @@
 
             <!-- Busiest Boards -->
             <Tile class="widget boards-widget">
-                <h3>Busiest Boards</h3>
+                <h3>{m.overview_busiest_boards()}</h3>
                 {#if busiestBoards().length > 0}
                     <div class="boards-list">
                         {#each busiestBoards() as { board, count }}
                             <div class="board-item">
                                 <span class="board-name">{board?.name}</span>
                                 <span class="board-count"
-                                    >{count} open tickets</span
+                                    >{m.overview_open_tickets({ count })}</span
                                 >
                             </div>
                         {/each}
                     </div>
                 {:else}
-                    <p class="empty-text">No active tickets.</p>
+                    <p class="empty-text">{m.overview_no_active_tickets()}</p>
                 {/if}
             </Tile>
         </div>
@@ -183,7 +184,7 @@
         min-height: 200px;
     }
 
-    .widget h3 {
+    :global(.widget.bx--tile) h3 {
         font-size: 1rem;
         font-weight: 600;
         margin: 0;

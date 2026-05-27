@@ -1,5 +1,7 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
+    import { getLocale, setLocale } from "$lib/paraglide/runtime.js";
+    import * as m from "$lib/paraglide/messages.js";
     import {
         Button,
         TextArea,
@@ -81,13 +83,13 @@
     let activeCategory = $state<SettingsCategory>("general");
 
     const categories = [
-        { id: "general", label: "General", icon: Settings },
-        { id: "appearance", label: "Appearance", icon: View },
-        { id: "customization", label: "Customization", icon: MagicWand },
-        { id: "data", label: "Data Management", icon: DataBase },
-        { id: "sync", label: "Synchronization", icon: Cloud },
+        { id: "general", label: m.settings_category_general(), icon: Settings },
+        { id: "appearance", label: m.settings_category_appearance(), icon: View },
+        { id: "customization", label: m.settings_category_customization(), icon: MagicWand },
+        { id: "data", label: m.settings_category_data(), icon: DataBase },
+        { id: "sync", label: m.settings_category_sync(), icon: Cloud },
         // { id: "debug", label: "Debug", icon: Code },
-        { id: "advanced", label: "Advanced", icon: Settings },
+        { id: "advanced", label: m.settings_category_advanced(), icon: Settings },
     ] as const;
     let searchQuery = $state("");
 
@@ -523,7 +525,7 @@
                 <div class="category-view">
                     {#if matchesSearch("Workspace Information Database schema version Worklog version")}
                         <section class="settings-section">
-                            <h2>Workspace Information</h2>
+                            <h2>{m.settings_workspace_info()}</h2>
                             <div class="settings-card">
                                 <div class="settings-grid">
                                     <TextInput
@@ -564,7 +566,7 @@
 
                     {#if matchesSearch("Updates Check for updates Application")}
                         <section class="settings-section">
-                            <h2>Application Updates</h2>
+                            <h2>{m.settings_app_updates()}</h2>
                             <p class="section-desc">
                                 Check for updates and relaunch after the install
                                 completes.
@@ -763,9 +765,32 @@
             <!-- ── Appearance Category ────────────────────────────────── -->
             {#if activeCategory === "appearance"}
                 <div class="category-view">
+                    {#if matchesSearch("Language Locale English French")}
+                        <section class="settings-section">
+                            <h2>{m.settings_language()}</h2>
+                            <p class="section-desc">
+                                {m.settings_language_desc()}
+                            </p>
+                            <div class="settings-card">
+                                <ContentSwitcher 
+                                    selectedIndex={getLocale() === 'fr' ? 1 : 0} 
+                                    on:change={(e) => {
+                                        const index = e.detail;
+                                        const newLang = index === 1 ? 'fr' : 'en';
+                                        setLocale(newLang);
+                                        localStorage.setItem("app_lang", newLang);
+                                    }}
+                                >
+                                    <Switch text="English" />
+                                    <Switch text="Français" />
+                                </ContentSwitcher>
+                            </div>
+                        </section>
+                    {/if}
+
                     {#if matchesSearch("Theme Dark Light System Mode")}
                         <section class="settings-section">
-                            <h2>Theme</h2>
+                            <h2>{m.settings_theme()}</h2>
                             <p class="section-desc">
                                 Choose the visual theme for the application.
                             </p>
@@ -802,7 +827,7 @@
 
                     {#if matchesSearch("Accent Color Customization Interactive")}
                         <section class="settings-section">
-                            <h2>Accent Color</h2>
+                            <h2>{m.settings_accent_color()}</h2>
                             <p class="section-desc">
                                 Select a primary color for interactive elements and active states.
                             </p>
@@ -844,7 +869,7 @@
 
                     {#if matchesSearch("Font Size Typography Scale")}
                         <section class="settings-section">
-                            <h2>Typography</h2>
+                            <h2>{m.settings_typography()}</h2>
                             <p class="section-desc">
                                 Adjust the base font size for the application.
                             </p>
@@ -866,7 +891,7 @@
                     {#if matchesSearch("Application Zoom global scale")}
                         <section class="settings-section">
                             <div class="header-with-tag">
-                                <h2>Application Zoom</h2>
+                                <h2>{m.settings_app_zoom()}</h2>
                                 <Tag type="teal" size="sm">Experimental</Tag>
                             </div>
                             <p class="section-desc">
@@ -890,7 +915,7 @@
                 <div class="category-view">
                     {#if matchesSearch("Ticket Types Customization Colors Icons")}
                         <section class="settings-section">
-                            <h2>Ticket Types</h2>
+                            <h2>{m.settings_ticket_types()}</h2>
                             <p class="section-desc">
                                 Manage the types of tickets available in your
                                 workspace. Each type can have its own color and
@@ -1029,7 +1054,7 @@
                 <div class="category-view">
                     {#if matchesSearch("Export Import Data Management JSON CSV")}
                         <section class="settings-section">
-                            <h2>Export Workspace Data</h2>
+                            <h2>{m.settings_export_data()}</h2>
                             <p class="section-desc">
                                 Download a copy of your boards and tickets.
                             </p>
@@ -1105,7 +1130,7 @@
                         </section>
 
                         <section class="settings-section">
-                            <h2>Import Workspace Data</h2>
+                            <h2>{m.settings_import_data()}</h2>
                             <p class="section-desc">
                                 Import boards and tickets from a previous export.
                             </p>
@@ -1132,7 +1157,7 @@
                         <section class="settings-section">
                             <div class="header-with-status">
                                 <div class="header-with-tag">
-                                    <h2>Git Synchronization</h2>
+                                    <h2>{m.settings_git_sync()}</h2>
                                     <Tag type="teal" size="sm">Experimental</Tag
                                     >
                                 </div>
@@ -1306,7 +1331,7 @@
                     {#if matchesSearch("Performance Testing Seeding Lazy Loading")}
                         <section class="settings-section">
                             <div class="header-with-tag">
-                                <h2>Performance Testing</h2>
+                                <h2>{m.settings_performance_testing()}</h2>
                                 <Tag type="magenta" size="sm">Debug Only</Tag>
                             </div>
                             <p class="section-desc">
@@ -1369,7 +1394,7 @@
                 <div class="category-view">
                     {#if matchesSearch("Developer Tools Experimental Advanced Diagnostics")}
                         <section class="settings-section">
-                            <h2>Developer Tools</h2>
+                            <h2>{m.settings_developer_tools()}</h2>
                             <p class="section-desc">
                                 Advanced tools for troubleshooting and database
                                 diagnostics.
@@ -1667,10 +1692,6 @@
         outline-offset: 2px;
     }
 
-    .color-swatch-check {
-        fill: #fff;
-    }
-
     .color-swatch-custom {
         width: 2.5rem;
         height: 2.5rem;
@@ -1922,77 +1943,6 @@
         cursor: pointer;
     }
 
-    /* ── Updater Card ──────────────────────────────────────────────────── */
-    .updater-card {
-        background: var(--cds-ui-02);
-        border: 1px solid var(--cds-ui-03);
-        border-radius: 6px;
-        padding: 1.5rem;
-        transition: border-color 0.15s ease;
-    }
-
-    .updater-idle {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 1.5rem;
-    }
-
-    .updater-current {
-        display: flex;
-        flex-direction: column;
-        gap: 0.25rem;
-    }
-
-    .updater-label {
-        font-size: 0.75rem;
-        color: var(--cds-text-helper);
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-    }
-
-    .updater-version {
-        font-size: 1.125rem;
-        font-weight: 600;
-        color: var(--cds-text-primary);
-        font-family: var(--cds-code-01-font-family);
-    }
-
-    .updater-status-row {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-    }
-
-    .updater-status-text {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        gap: 0.125rem;
-    }
-
-    .updater-status-text strong {
-        font-size: 0.875rem;
-        color: var(--cds-text-primary);
-    }
-
-    .updater-status-text span {
-        font-size: 0.8125rem;
-        color: var(--cds-text-secondary);
-    }
-
-    .updater-success {
-        color: var(--cds-support-success, #24a148);
-    }
-
-    .updater-ready {
-        color: var(--cds-support-success, #24a148);
-    }
-
-    .updater-error {
-        color: var(--cds-support-error, #da1e28);
-    }
-
     .updater-available {
         display: flex;
         flex-direction: column;
@@ -2052,23 +2002,6 @@
         display: flex;
         align-items: center;
         gap: 0.75rem;
-    }
-
-    .updater-downloading {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-    }
-
-    .updater-download-header {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        color: var(--cds-interactive-01);
-    }
-
-    .updater-download-header strong {
-        font-size: 0.875rem;
     }
 
     .updater-install-failed {

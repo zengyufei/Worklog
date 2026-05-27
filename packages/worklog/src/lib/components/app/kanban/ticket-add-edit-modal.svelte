@@ -34,6 +34,7 @@
     } from "$lib/components/app/types";
 
     import { getWorkspaceShellContext } from "$lib/hooks/workspace-shell-context";
+    import * as m from "$lib/paraglide/messages.js";
 
     let {
         open = $bindable(false),
@@ -405,9 +406,9 @@
 
 <Modal
     bind:open
-    modalHeading={isEditing ? "Edit Ticket" : "New Ticket"}
-    primaryButtonText={isEditing ? "Save Changes" : "Create Ticket"}
-    secondaryButtonText="Cancel"
+    modalHeading={isEditing ? m.modal_edit_ticket() : m.modal_new_ticket()}
+    primaryButtonText={isEditing ? m.modal_save_changes() : m.modal_create_ticket()}
+    secondaryButtonText={m.modal_cancel()}
     on:click:button--primary={handleSubmit}
     on:click:button--secondary={handleRequestClose}
     on:open
@@ -430,8 +431,8 @@
 
         <div class="form-main">
             <TextInput
-                labelText="Title *"
-                placeholder="e.g. Implement login screen"
+                labelText={m.modal_title_label()}
+                placeholder={m.modal_title_placeholder()}
                 bind:value={form.title}
                 on:keydown={(e) => {
                     if (e.key === "Enter") e.stopPropagation();
@@ -439,13 +440,13 @@
             />
             <div class="description-section">
                 <div class="description-header">
-                    <span class="cds--label">Description</span>
+                    <span class="cds--label">{m.modal_description_label()}</span>
                     <ContentSwitcher
                         bind:selectedIndex={descriptionMode}
                         size="sm"
                     >
-                        <Switch text="Write" />
-                        <Switch text="Preview" />
+                        <Switch text={m.modal_write()} />
+                        <Switch text={m.modal_preview()} />
                     </ContentSwitcher>
                 </div>
 
@@ -580,7 +581,7 @@
 
                         <TextArea
                             bind:ref={textareaRef}
-                            placeholder="Describe the ticket… (Markdown supported)"
+                            placeholder={m.modal_description_placeholder()}
                             rows={16}
                             bind:value={form.description}
                             on:keydown={handleTextAreaKeyDown}
@@ -597,19 +598,19 @@
         <div class="attributes-strip">
             <div class="attr-field">
                 <Dropdown
-                    labelText="Priority"
+                    labelText={m.modal_priority()}
                     size="sm"
                     bind:selectedId={form.priority}
                     items={[
-                        { id: "p3", text: "Low" },
-                        { id: "p2", text: "Medium" },
-                        { id: "p1", text: "High" },
+                        { id: "p3", text: m.modal_priority_low() },
+                        { id: "p2", text: m.modal_priority_medium() },
+                        { id: "p1", text: m.modal_priority_high() },
                     ]}
                 />
             </div>
             <div class="attr-field attr-field--grow">
                 <Dropdown
-                    labelText="Type"
+                    labelText={m.modal_type()}
                     size="sm"
                     bind:selectedId={form.ticketType}
                     items={ticketTypesApi.types.map((t) => ({
@@ -625,7 +626,7 @@
                     dateFormat="Y-m-d"
                 >
                     <DatePickerInput
-                        labelText="Start Date"
+                        labelText={m.modal_start_date()}
                         placeholder="yyyy-mm-dd"
                         size="sm"
                     />
@@ -638,7 +639,7 @@
                     dateFormat="Y-m-d"
                 >
                     <DatePickerInput
-                        labelText="Due Date"
+                        labelText={m.modal_due_date()}
                         placeholder="yyyy-mm-dd"
                         size="sm"
                     />
@@ -646,7 +647,7 @@
             </div>
             <div class="attr-field attr-field--tags">
                 <TagManager
-                    label="Tags"
+                    label={m.modal_tags()}
                     availableTags={TAG_OPTIONS}
                     bind:selectedTags={form.tags}
                 />
@@ -658,13 +659,13 @@
 <Modal
     danger
     bind:open={showExitConfirm}
-    modalHeading="Unsaved Changes"
-    primaryButtonText="Discard Changes"
-    secondaryButtonText="Continue Editing"
+    modalHeading={m.modal_unsaved_heading()}
+    primaryButtonText={m.modal_discard_changes()}
+    secondaryButtonText={m.modal_continue_editing()}
     on:click:button--primary={confirmExit}
     on:click:button--secondary={() => (showExitConfirm = false)}
 >
-    <p>You have unsaved changes. Are you sure you want to discard them?</p>
+    <p>{m.modal_unsaved_msg()}</p>
 </Modal>
 
 <style>
