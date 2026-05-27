@@ -385,30 +385,30 @@
                             : []}
                     >
                         <ContextMenuOption
-                            labelText="Open Board"
+                            labelText={m.board_ctx_open()}
                             icon={Launch}
                             on:click={() => openBoard(board.id)}
                         />
                         <ContextMenuOption
-                            labelText="Edit Board"
+                            labelText={m.board_ctx_edit()}
                             icon={Edit}
                             on:click={() => promptEditBoard(board)}
                         />
                         <ContextMenuOption
-                            labelText="Copy Board ID"
+                            labelText={m.board_ctx_copy_id()}
                             icon={CopyFile}
                             on:click={() => copyToClipboard(board.id)}
                         />
                         <ContextMenuDivider />
                         <ContextMenuOption
-                            labelText="Archive Board"
+                            labelText={m.board_ctx_archive()}
                             icon={Archive}
                             on:click={() => promptArchiveBoard(board.id)}
                         />
                         <ContextMenuDivider />
                         <ContextMenuOption
                             kind="danger"
-                            labelText="Delete Board"
+                            labelText={m.board_ctx_delete()}
                             icon={TrashCan}
                             on:click={() => promptDeleteBoard(board.id)}
                         />
@@ -468,23 +468,23 @@
         }
     }}
 >
-    <ModalHeader title="Create board" />
+    <ModalHeader title={m.modal_create_board_title()} />
 
     <ModalBody hasForm>
         <TextInput
-            labelText="Name"
-            placeholder="Board name"
+            labelText={m.modal_board_name()}
+            placeholder={m.modal_board_name_placeholder()}
             bind:value={draftName}
             on:input={handleNameInput}
             maxlength={40}
             invalid={Boolean(createError && !draftName.trim())}
-            invalidText="Board name is required."
+            invalidText={m.modal_board_name_required()}
             data-modal-primary-focus
         />
 
         <TextArea
-            labelText="Description"
-            placeholder="Short board description"
+            labelText={m.modal_board_desc()}
+            placeholder={m.modal_board_desc_placeholder()}
             bind:value={draftDescription}
             on:input={handleDescriptionInput}
             on:keydown={(e) => {
@@ -505,10 +505,10 @@
             onclick={() => closeCreateBoardModal()}
             disabled={creatingBoard}
         >
-            Cancel
+            {m.modal_cancel()}
         </Button>
         <Button onclick={createBoard} disabled={!canCreateBoard}>
-            {creatingBoard ? "Creating..." : "Create board"}
+            {creatingBoard ? m.modal_board_creating() : m.modal_create_board_btn()}
         </Button>
     </ModalFooter>
 </ComposedModal>
@@ -524,16 +524,16 @@
         }
     }}
 >
-    <ModalHeader title="Edit board" />
+    <ModalHeader title={m.modal_edit_board_title()} />
 
     <ModalBody hasForm>
         <TextInput
-            labelText="Name"
-            placeholder="Board name"
+            labelText={m.modal_board_name()}
+            placeholder={m.modal_board_name_placeholder()}
             bind:value={editDraftName}
             maxlength={40}
             invalid={Boolean(editError && !editDraftName.trim())}
-            invalidText="Board name is required."
+            invalidText={m.modal_board_name_required()}
             data-modal-primary-focus
             on:keydown={(e) => {
                 if (e.key === "Enter") e.stopPropagation();
@@ -541,8 +541,8 @@
         />
 
         <TextArea
-            labelText="Description"
-            placeholder="Short board description"
+            labelText={m.modal_board_desc()}
+            placeholder={m.modal_board_desc_placeholder()}
             bind:value={editDraftDescription}
             on:keydown={(e) => {
                 if (e.key === "Enter") e.stopPropagation();
@@ -562,13 +562,13 @@
             onclick={closeEditBoardModal}
             disabled={editingBoard}
         >
-            Cancel
+            {m.modal_cancel()}
         </Button>
         <Button
             on:click={confirmEditBoard}
             disabled={!editDraftName.trim() || editingBoard}
         >
-            {editingBoard ? "Saving..." : "Save changes"}
+            {editingBoard ? m.modal_board_saving() : m.modal_save_changes()}
         </Button>
     </ModalFooter>
 </ComposedModal>
@@ -577,48 +577,45 @@
     danger
     size="xs"
     bind:open={deleteModalOpen}
-    modalHeading="Delete board"
-    primaryButtonText="Delete"
-    secondaryButtonText="Cancel"
+    modalHeading={m.modal_delete_board_title()}
+    primaryButtonText={m.delete_ticket_btn()}
+    secondaryButtonText={m.modal_cancel()}
     on:click:button--secondary={() => (deleteModalOpen = false)}
     on:click:button--primary={confirmDeleteBoard}
 >
     <p>
-        Are you sure you want to delete this board? This action cannot be
-        undone.
+        {m.modal_delete_board_msg()}
     </p>
 </Modal>
 
 <ComposedModal danger bind:open={showCreateDiscard} size="sm">
-    <ModalHeader title="Discard unsaved changes?" />
+    <ModalHeader title={m.modal_discard_board_title()} />
     <ModalBody>
         <p>
-            You have unsaved changes in your new board draft. Are you sure you
-            want to discard them?
+            {m.modal_discard_board_msg1()}
         </p>
     </ModalBody>
     <ModalFooter>
         <Button kind="secondary" onclick={() => (showCreateDiscard = false)}
-            >Continue editing</Button
+            >{m.modal_continue_editing()}</Button
         >
-        <Button kind="danger" onclick={forceCloseCreate}>Discard changes</Button
+        <Button kind="danger" onclick={forceCloseCreate}>{m.modal_discard_changes()}</Button
         >
     </ModalFooter>
 </ComposedModal>
 
 <ComposedModal danger bind:open={showEditDiscard} size="sm">
-    <ModalHeader title="Discard unsaved changes?" />
+    <ModalHeader title={m.modal_discard_board_title()} />
     <ModalBody>
         <p>
-            You have unsaved changes in your board info. Are you sure you want
-            to discard them?
+            {m.modal_discard_board_msg2()}
         </p>
     </ModalBody>
     <ModalFooter>
         <Button kind="secondary" onclick={() => (showEditDiscard = false)}
-            >Continue editing</Button
+            >{m.modal_continue_editing()}</Button
         >
-        <Button kind="danger" onclick={forceCloseEdit}>Discard changes</Button>
+        <Button kind="danger" onclick={forceCloseEdit}>{m.modal_discard_changes()}</Button>
     </ModalFooter>
 </ComposedModal>
 

@@ -41,6 +41,7 @@
     } from "$lib/components/app/types";
 
     import { getWorkspaceShellContext } from "$lib/hooks/workspace-shell-context";
+    import * as m from "$lib/paraglide/messages.js";
 
     let {
         ticket,
@@ -150,43 +151,43 @@
     {#if isVisible}
         <ContextMenu target={cardElement ? [cardElement] : []}>
             <ContextMenuOption
-                labelText="Copy Ticket ID"
+                labelText={m.ticket_ctx_copy_id()}
                 icon={CopyFile}
                 on:click={() => copyToClipboard(ticket.id)}
             />
             <ContextMenuOption
-                labelText="Copy Title"
+                labelText={m.ticket_ctx_copy_title()}
                 icon={CopyFile}
                 on:click={() => copyToClipboard(ticket.title)}
             />
             <ContextMenuDivider />
-            <ContextMenuOption labelText="Move to..." icon={ArrowRight}>
+            <ContextMenuOption labelText={m.ticket_ctx_move_to()} icon={ArrowRight}>
                 <ContextMenuOption
-                    labelText="Backlog"
+                    labelText={m.status_backlog()}
                     on:click={() => onStatusChange?.(ticket.id, "backlog")}
                 />
                 <ContextMenuOption
-                    labelText="Todo"
+                    labelText={m.status_todo()}
                     on:click={() => onStatusChange?.(ticket.id, "todo")}
                 />
                 <ContextMenuOption
-                    labelText="In Progress"
+                    labelText={m.status_in_progress()}
                     on:click={() => onStatusChange?.(ticket.id, "in_progress")}
                 />
                 <ContextMenuOption
-                    labelText="Done"
+                    labelText={m.status_done()}
                     on:click={() => onStatusChange?.(ticket.id, "done")}
                 />
             </ContextMenuOption>
             <ContextMenuDivider />
             <ContextMenuOption
-                labelText="Edit Ticket"
+                labelText={m.ticket_ctx_edit()}
                 icon={Edit}
                 on:click={() => onEdit?.(ticket)}
             />
             <ContextMenuOption
                 kind="danger"
-                labelText="Delete Ticket"
+                labelText={m.ticket_ctx_delete()}
                 icon={TrashCan}
                 on:click={() => onDelete?.(ticket.id)}
             />
@@ -219,11 +220,11 @@
                 >
                     <OverflowMenu size="sm" flipped>
                         <OverflowMenuItem
-                            text="Edit"
+                            text={m.ticket_ctx_edit()}
                             on:click={() => onEdit?.(ticket)}
                         />
                         <OverflowMenuItem
-                            text="Delete"
+                            text={m.ticket_ctx_delete()}
                             danger
                             on:click={() => onDelete?.(ticket.id)}
                         />
