@@ -24,6 +24,7 @@
     import { useTicketSort } from "$lib/hooks/ticket-sort.svelte";
     import { getWorkspaceShellContext } from "$lib/hooks/workspace-shell-context";
     import { useTickets } from "$lib/hooks/tickets.svelte";
+    import * as m from "$lib/paraglide/messages.js";
 
     import type { PageProps } from "./$types";
 
@@ -51,14 +52,14 @@
     // ── Search & Sort (shared across all views) ────────────────────────────────
     let searchQuery = $state("");
     const sortHook = useTicketSort();
-    const sortItems = [
-        { id: "position", text: "Manual Order" },
-        { id: "priority", text: "Priority" },
-        { id: "due_date", text: "Due Date" },
-        { id: "created_at", text: "Date Created" },
-        { id: "title", text: "Title" },
-        { id: "ticket_type", text: "Ticket Type" },
-    ];
+    const sortItems = $derived([
+        { id: "position", text: m.board_sort_manual() },
+        { id: "priority", text: m.board_sort_priority() },
+        { id: "due_date", text: m.board_sort_due_date() },
+        { id: "created_at", text: m.board_sort_created() },
+        { id: "title", text: m.board_sort_title() },
+        { id: "ticket_type", text: m.board_sort_type() },
+    ]);
 
     // ── Tab indicator ──────────────────────────────────────────────────────────────────────
     let tabBtn0 = $state<HTMLButtonElement | null>(null);
@@ -141,7 +142,7 @@
 
 {#if boardsApi.loading}
     <main class="workspace-state">
-        <article aria-busy="true">Loading board...</article>
+        <article aria-busy="true">{m.board_loading()}</article>
     </main>
 {:else if !board}
     <main class="workspace-state">
@@ -149,10 +150,9 @@
             <div class="workspace-missing-board-icon">
                 <WarningHex size={48} />
             </div>
-            <h1>Board not found</h1>
+            <h1>{m.board_not_found()}</h1>
             <p>
-                The selected board does not exist or has been deleted from this
-                workspace.
+                {m.board_not_found_desc()}
             </p>
             <div class="workspace-missing-board-actions">
                 <Button
@@ -160,7 +160,7 @@
                     icon={ArrowLeft}
                     onclick={goToWorkspaceRoot}
                 >
-                    Back to workspace
+                    {m.board_back_to_workspace()}
                 </Button>
             </div>
         </article>
@@ -181,7 +181,7 @@
                 <div class="workspace-board-error">
                     <InlineNotification
                         kind="error"
-                        title="Failed to load board data"
+                        title={m.board_load_error()}
                         subtitle={loadError}
                         hideCloseButton
                     />
@@ -192,7 +192,7 @@
                 <div class="workspace-board-loading">
                     <Loading
                         withOverlay={false}
-                        description="Loading board data..."
+                        description={m.board_loading_data()}
                     />
                 </div>
             {/if}
@@ -209,7 +209,7 @@
                         onclick={() => (selectedTab = 0)}
                     >
                         <Dashboard size={16} />
-                        <span>Board</span>
+                        <span>{m.board_tab_board()}</span>
                     </button>
                     <button
                         bind:this={tabBtn1}
@@ -220,7 +220,7 @@
                         onclick={() => (selectedTab = 1)}
                     >
                         <Table size={16} />
-                        <span>Table</span>
+                        <span>{m.board_tab_table()}</span>
                     </button>
                     <button
                         bind:this={tabBtn2}
@@ -231,7 +231,7 @@
                         onclick={() => (selectedTab = 2)}
                     >
                         <ChartBarFloating size={16} />
-                        <span>Timeline</span>
+                        <span>{m.board_tab_timeline()}</span>
                     </button>
                     <button
                         bind:this={tabBtn3}
@@ -242,7 +242,7 @@
                         onclick={() => (selectedTab = 3)}
                     >
                         <Calendar size={16} />
-                        <span>Calendar</span>
+                        <span>{m.board_tab_calendar()}</span>
                     </button>
                     <span
                         bind:this={indicatorEl}
@@ -258,9 +258,9 @@
                         <input
                             type="search"
                             class="search-input"
-                            placeholder="Search tickets..."
+                            placeholder={m.board_search_placeholder()}
                             bind:value={searchQuery}
-                            aria-label="Search tickets"
+                            aria-label={m.board_search_label()}
                         />
                     </div>
                     <div class="sort-wrap">
@@ -274,8 +274,8 @@
                             kind="ghost"
                             size="small"
                             iconDescription={sortHook.sortOrder === "asc"
-                                ? "Sort Ascending"
-                                : "Sort Descending"}
+                                ? m.board_sort_asc()
+                                : m.board_sort_desc()}
                             onclick={() => sortHook.toggleOrder()}
                         >
                             {#if sortHook.sortOrder === "asc"}

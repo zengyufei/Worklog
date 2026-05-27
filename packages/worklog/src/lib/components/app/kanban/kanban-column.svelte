@@ -12,6 +12,7 @@
     } from "carbon-icons-svelte";
     import KanbanTicketCard from "./kanban-ticket-card.svelte";
     import type { Ticket, TicketStatus } from "$lib/components/app/types";
+    import * as m from "$lib/paraglide/messages.js";
 
     let {
         label,
@@ -116,7 +117,7 @@
     }
 </script>
 
-<section class="kanban-column" aria-label="{label} column">
+<section class="kanban-column" aria-label={m.kanban_column_aria_label({ label })}>
     <!-- Column header -->
     <header class="column-header" style="--accent: {headerColor}">
         <div class="column-title-row">
@@ -140,11 +141,11 @@
         onconsider={handleConsider}
         onfinalize={handleFinalize}
         role="list"
-        aria-label="Tickets in {label}"
+        aria-label={m.kanban_column_tickets_aria_label({ label })}
     >
         {#if isLoading}
             <div class="column-loading">
-                <InlineLoading description="Loading tickets…" />
+                <InlineLoading description={m.kanban_column_loading()} />
             </div>
         {:else}
             {#each zoneItems as ticket (ticket.id)}
@@ -168,13 +169,13 @@
 
             {#if loadingMore}
                 <div class="column-loading-more">
-                    <InlineLoading description="Loading more..." />
+                    <InlineLoading description={m.kanban_column_loading_more()} />
                 </div>
             {/if}
 
             {#if zoneItems.length === 0}
                 <div class="empty-state" aria-hidden="true">
-                    <span class="empty-state-text">No tickets</span>
+                    <span class="empty-state-text">{m.kanban_column_empty()}</span>
                 </div>
             {/if}
         {/if}
@@ -188,7 +189,7 @@
             icon={Add}
             on:click={() => onAddTicket?.(status)}
         >
-            Add ticket
+            {m.kanban_column_add_ticket()}
         </Button>
     </div>
 </section>

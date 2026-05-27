@@ -184,7 +184,7 @@
         min-height: 200px;
     }
 
-    .widget h3 {
+    :global(.widget.bx--tile) h3 {
         font-size: 1rem;
         font-weight: 600;
         margin: 0;

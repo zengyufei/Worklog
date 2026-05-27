@@ -1692,10 +1692,6 @@
         outline-offset: 2px;
     }
 
-    .color-swatch-check {
-        fill: #fff;
-    }
-
     .color-swatch-custom {
         width: 2.5rem;
         height: 2.5rem;
@@ -1945,77 +1941,6 @@
         background: var(--cds-ui-01);
         border-radius: 4px;
         cursor: pointer;
-    }
-
-    /* ── Updater Card ──────────────────────────────────────────────────── */
-    .updater-card {
-        background: var(--cds-ui-02);
-        border: 1px solid var(--cds-ui-03);
-        border-radius: 6px;
-        padding: 1.5rem;
-        transition: border-color 0.15s ease;
-    }
-
-    .updater-idle {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 1.5rem;
-    }
-
-    .updater-current {
-        display: flex;
-        flex-direction: column;
-        gap: 0.25rem;
-    }
-
-    .updater-label {
-        font-size: 0.75rem;
-        color: var(--cds-text-helper);
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-    }
-
-    .updater-version {
-        font-size: 1.125rem;
-        font-weight: 600;
-        color: var(--cds-text-primary);
-        font-family: var(--cds-code-01-font-family);
-    }
-
-    .updater-status-row {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-    }
-
-    .updater-status-text {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        gap: 0.125rem;
-    }
-
-    .updater-status-text strong {
-        font-size: 0.875rem;
-        color: var(--cds-text-primary);
-    }
-
-    .updater-status-text span {
-        font-size: 0.8125rem;
-        color: var(--cds-text-secondary);
-    }
-
-    .updater-success {
-        color: var(--cds-support-success, #24a148);
-    }
-
-    .updater-ready {
-        color: var(--cds-support-success, #24a148);
-    }
-
-    .updater-error {
-        color: var(--cds-support-error, #da1e28);
     }
 
     .updater-available {

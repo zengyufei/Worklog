@@ -17,6 +17,7 @@
         TICKET_STATUS_ORDER,
     } from "$lib/components/app/types";
     import { getDb, SettingsRepo } from "$lib/db";
+    import * as m from "$lib/paraglide/messages.js";
 
     type Column = {
         status: TicketStatus;
@@ -49,11 +50,20 @@
     // Loading is now handled by the parent component (+page.svelte)
 
     // ── Column definitions from config ─────────────────────────────────────────
-    const columnsDef = TICKET_STATUS_ORDER.map((status) => ({
+    function getStatusLabel(status: TicketStatus) {
+        switch(status) {
+            case "backlog": return m.status_backlog();
+            case "todo": return m.status_todo();
+            case "in_progress": return m.status_in_progress();
+            case "done": return m.status_done();
+        }
+    }
+
+    const columnsDef = $derived(TICKET_STATUS_ORDER.map((status) => ({
         status,
-        label: TICKET_STATUS_CONFIG[status].label,
+        label: getStatusLabel(status),
         accentColor: TICKET_STATUS_CONFIG[status].accentColor,
-    }));
+    })));
 
     let columns = $derived(
         columnsDef.map((def) => {
@@ -306,20 +316,20 @@
 <div class="board-shell">
     <!-- Stats strip -->
     <div class="board-stats-strip">
-        <span class="stats-text">{doneCount} / {activeTickets} done</span>
+        <span class="stats-text">{m.kanban_stats_done({ done: doneCount, total: activeTickets })}</span>
         <div class="progress-bar">
             <div class="progress-fill" style="width: {progress}%"></div>
         </div>
         {#if totalTickets !== activeTickets}
-            <span class="stats-text stats-backlog">+{totalTickets - activeTickets} backlog</span>
+            <span class="stats-text stats-backlog">{m.kanban_stats_backlog({ count: totalTickets - activeTickets })}</span>
         {/if}
     </div>
 
     {#if searchQuery && filteredColumns.every((c) => c.tickets.length === 0)}
         <InlineNotification
             kind="info"
-            title="No results"
-            subtitle="No tickets match '{searchQuery}'."
+            title={m.kanban_no_results_title()}
+            subtitle={m.kanban_no_results_subtitle({ query: searchQuery })}
             hideCloseButton
         />
     {/if}
@@ -327,7 +337,7 @@
     {#if loadError}
         <InlineNotification
             kind="error"
-            title="Unable to load tickets"
+            title={m.kanban_load_error_title()}
             subtitle={loadError}
             hideCloseButton
         />
@@ -336,7 +346,7 @@
     {#if actionError}
         <InlineNotification
             kind="error"
-            title="Ticket action failed"
+            title={m.kanban_action_error_title()}
             subtitle={actionError}
             hideCloseButton
         />
