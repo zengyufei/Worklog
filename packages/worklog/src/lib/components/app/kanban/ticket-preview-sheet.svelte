@@ -40,6 +40,7 @@
         TICKET_STATUS_CONFIG,
     } from "$lib/components/app/types";
     import { getWorkspaceShellContext } from "$lib/hooks/workspace-shell-context";
+    import * as m from "$lib/paraglide/messages.js";
 
     let {
         ticket,
@@ -212,10 +213,10 @@
         const diffHours = Math.floor(diffMs / 3600000);
         const diffDays = Math.floor(diffMs / 86400000);
 
-        if (diffMins < 1) return "just now";
-        if (diffMins < 60) return `${diffMins}m ago`;
-        if (diffHours < 24) return `${diffHours}h ago`;
-        if (diffDays < 7) return `${diffDays}d ago`;
+        if (diffMins < 1) return m.preview_time_just_now();
+        if (diffMins < 60) return m.preview_time_mins({ m: diffMins });
+        if (diffHours < 24) return m.preview_time_hours({ h: diffHours });
+        if (diffDays < 7) return m.preview_time_days({ d: diffDays });
         return d.toLocaleDateString(undefined, {
             month: "short",
             day: "numeric",
@@ -280,7 +281,7 @@
                     kind="ghost"
                     size="small"
                     icon={Edit}
-                    iconDescription="Edit ticket"
+                    iconDescription={m.preview_edit_ticket()}
                     tooltipPosition="left"
                     onclick={handleEdit}
                 />
@@ -288,7 +289,7 @@
                     kind="danger-ghost"
                     size="small"
                     icon={TrashCan}
-                    iconDescription="Delete ticket"
+                    iconDescription={m.preview_delete_ticket()}
                     tooltipPosition="left"
                     onclick={handleDelete}
                 />
@@ -296,7 +297,7 @@
                     kind="ghost"
                     size="small"
                     icon={Close}
-                    iconDescription="Close panel"
+                    iconDescription={m.preview_close_panel()}
                     tooltipPosition="left"
                     onclick={close}
                 />
@@ -341,7 +342,7 @@
                 <div class="sheet-details-grid">
                     <!-- Status Item -->
                     <div class="detail-grid-item detail-grid-item--full">
-                        <span class="detail-grid-label">Status</span>
+                        <span class="detail-grid-label">{m.preview_status()}</span>
                         <div class="detail-grid-value">
                             {#if statusConfig}
                                 <div class="detail-status-row">
@@ -354,7 +355,7 @@
 
                     <!-- Start Date Item -->
                     <div class="detail-grid-item">
-                        <span class="detail-grid-label">Start Date</span>
+                        <span class="detail-grid-label">{m.preview_start_date()}</span>
                         <div class="detail-grid-value">
                             <span class="detail-date">
                                 <Time size={13} />
@@ -365,7 +366,7 @@
 
                     <!-- Due Date Item -->
                     <div class="detail-grid-item">
-                        <span class="detail-grid-label">Due Date</span>
+                        <span class="detail-grid-label">{m.preview_due_date()}</span>
                         <div class="detail-grid-value">
                             <span
                                 class="detail-date"
@@ -379,9 +380,9 @@
 
                     <!-- Created / Updated Row -->
                     <div class="detail-grid-meta">
-                        <span>Created {formatDate(ticket.created_at)}</span>
+                        <span>{m.preview_created({ date: formatDate(ticket.created_at) })}</span>
                         <span class="meta-separator">•</span>
-                        <span>Updated {formatDate(ticket.updated_at)}</span>
+                        <span>{m.preview_updated({ date: formatDate(ticket.updated_at) })}</span>
                     </div>
                 </div>
             </section>
@@ -394,7 +395,7 @@
                         onclick={() => (descriptionCollapsed = !descriptionCollapsed)}
                         aria-expanded={!descriptionCollapsed}
                     >
-                        <h3 class="sheet-section-title">Description</h3>
+                        <h3 class="sheet-section-title">{m.preview_description()}</h3>
                         <span class="sheet-section-chevron">
                             {#if descriptionCollapsed}
                                 <ChevronDown size={14} />
@@ -414,7 +415,7 @@
             <!-- ── Labels ─────────────────────────────────────────────────── -->
             {#if ticket.labels?.length}
                 <section class="sheet-section">
-                    <h3 class="sheet-section-title">Labels</h3>
+                    <h3 class="sheet-section-title">{m.preview_labels()}</h3>
                     <div class="sheet-labels">
                         {#each ticket.labels as label}
                             <Tag size="sm" type="cool-gray">{label}</Tag>
@@ -425,7 +426,7 @@
 
             <!-- ── Quick status change ────────────────────────────────────── -->
             <section class="sheet-section">
-                <h3 class="sheet-section-title">Move to</h3>
+                <h3 class="sheet-section-title">{m.preview_move_to()}</h3>
                 <div class="sheet-status-actions">
                     {#each ["backlog", "todo", "in_progress", "done"] as TicketStatus[] as s}
                         {@const cfg = TICKET_STATUS_CONFIG[s]}
@@ -435,7 +436,7 @@
                             class:status-pill--active={ticket.status === s}
                             onclick={() => onStatusChange?.(ticket.id, s)}
                             disabled={ticket.status === s}
-                            title="Move to {cfg.label}"
+                            title={m.preview_move_to_label({ label: cfg.label })}
                         >
                             <SIcon size={14} />
                             <span>{cfg.label}</span>
@@ -448,7 +449,7 @@
             <section class="sheet-section sheet-section--comments">
                 <h3 class="sheet-section-title">
                     <ChatBot size={15} />
-                    Comments
+                    {m.preview_comments()}
                     {#if ticket.comments?.length}
                         <span class="comment-count"
                             >{ticket.comments.length}</span
@@ -487,7 +488,7 @@
                     </ul>
                 {:else}
                     <p class="comment-empty">
-                        No comments yet. Be the first to comment!
+                        {m.preview_no_comments()}
                     </p>
                 {/if}
 
@@ -495,7 +496,7 @@
                 <div class="comment-input-area">
                     <textarea
                         class="comment-textarea"
-                        placeholder="Add a comment… (Ctrl+Enter to send)"
+                        placeholder={m.preview_comment_placeholder()}
                         bind:value={commentDraft}
                         onkeydown={handleCommentKeydown}
                         rows={3}
@@ -505,7 +506,7 @@
                         <p class="comment-input-error">{commentError}</p>
                     {/if}
                     <div class="comment-input-footer">
-                        <span class="comment-hint">Ctrl+Enter to send</span>
+                        <span class="comment-hint">{m.preview_comment_hint()}</span>
                         <Button
                             size="small"
                             onclick={submitComment}
@@ -516,7 +517,7 @@
                             {:else}
                                 <Send size={14} />
                             {/if}
-                            {submittingComment ? "Sending…" : "Send"}
+                            {submittingComment ? m.preview_comment_sending() : m.preview_comment_send()}
                         </Button>
                     </div>
                 </div>

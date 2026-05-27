@@ -525,7 +525,7 @@
                 <div class="category-view">
                     {#if matchesSearch("Workspace Information Database schema version Worklog version")}
                         <section class="settings-section">
-                            <h2>Workspace Information</h2>
+                            <h2>{m.settings_workspace_info()}</h2>
                             <div class="settings-card">
                                 <div class="settings-grid">
                                     <TextInput
@@ -566,7 +566,7 @@
 
                     {#if matchesSearch("Updates Check for updates Application")}
                         <section class="settings-section">
-                            <h2>Application Updates</h2>
+                            <h2>{m.settings_app_updates()}</h2>
                             <p class="section-desc">
                                 Check for updates and relaunch after the install
                                 completes.
@@ -790,7 +790,7 @@
 
                     {#if matchesSearch("Theme Dark Light System Mode")}
                         <section class="settings-section">
-                            <h2>Theme</h2>
+                            <h2>{m.settings_theme()}</h2>
                             <p class="section-desc">
                                 Choose the visual theme for the application.
                             </p>
@@ -827,7 +827,7 @@
 
                     {#if matchesSearch("Accent Color Customization Interactive")}
                         <section class="settings-section">
-                            <h2>Accent Color</h2>
+                            <h2>{m.settings_accent_color()}</h2>
                             <p class="section-desc">
                                 Select a primary color for interactive elements and active states.
                             </p>
@@ -869,7 +869,7 @@
 
                     {#if matchesSearch("Font Size Typography Scale")}
                         <section class="settings-section">
-                            <h2>Typography</h2>
+                            <h2>{m.settings_typography()}</h2>
                             <p class="section-desc">
                                 Adjust the base font size for the application.
                             </p>
@@ -891,7 +891,7 @@
                     {#if matchesSearch("Application Zoom global scale")}
                         <section class="settings-section">
                             <div class="header-with-tag">
-                                <h2>Application Zoom</h2>
+                                <h2>{m.settings_app_zoom()}</h2>
                                 <Tag type="teal" size="sm">Experimental</Tag>
                             </div>
                             <p class="section-desc">
@@ -915,7 +915,7 @@
                 <div class="category-view">
                     {#if matchesSearch("Ticket Types Customization Colors Icons")}
                         <section class="settings-section">
-                            <h2>Ticket Types</h2>
+                            <h2>{m.settings_ticket_types()}</h2>
                             <p class="section-desc">
                                 Manage the types of tickets available in your
                                 workspace. Each type can have its own color and
@@ -1054,7 +1054,7 @@
                 <div class="category-view">
                     {#if matchesSearch("Export Import Data Management JSON CSV")}
                         <section class="settings-section">
-                            <h2>Export Workspace Data</h2>
+                            <h2>{m.settings_export_data()}</h2>
                             <p class="section-desc">
                                 Download a copy of your boards and tickets.
                             </p>
@@ -1130,7 +1130,7 @@
                         </section>
 
                         <section class="settings-section">
-                            <h2>Import Workspace Data</h2>
+                            <h2>{m.settings_import_data()}</h2>
                             <p class="section-desc">
                                 Import boards and tickets from a previous export.
                             </p>
@@ -1157,7 +1157,7 @@
                         <section class="settings-section">
                             <div class="header-with-status">
                                 <div class="header-with-tag">
-                                    <h2>Git Synchronization</h2>
+                                    <h2>{m.settings_git_sync()}</h2>
                                     <Tag type="teal" size="sm">Experimental</Tag
                                     >
                                 </div>
@@ -1331,7 +1331,7 @@
                     {#if matchesSearch("Performance Testing Seeding Lazy Loading")}
                         <section class="settings-section">
                             <div class="header-with-tag">
-                                <h2>Performance Testing</h2>
+                                <h2>{m.settings_performance_testing()}</h2>
                                 <Tag type="magenta" size="sm">Debug Only</Tag>
                             </div>
                             <p class="section-desc">
@@ -1394,7 +1394,7 @@
                 <div class="category-view">
                     {#if matchesSearch("Developer Tools Experimental Advanced Diagnostics")}
                         <section class="settings-section">
-                            <h2>Developer Tools</h2>
+                            <h2>{m.settings_developer_tools()}</h2>
                             <p class="section-desc">
                                 Advanced tools for troubleshooting and database
                                 diagnostics.
