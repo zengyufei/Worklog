@@ -2004,23 +2004,6 @@
         gap: 0.75rem;
     }
 
-    .updater-downloading {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-    }
-
-    .updater-download-header {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        color: var(--cds-interactive-01);
-    }
-
-    .updater-download-header strong {
-        font-size: 0.875rem;
-    }
-
     .updater-install-failed {
         display: flex;
         flex-direction: column;
