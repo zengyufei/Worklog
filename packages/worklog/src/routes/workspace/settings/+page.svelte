@@ -1,5 +1,7 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
+    import { getLocale, setLocale } from "$lib/paraglide/runtime.js";
+    import * as m from "$lib/paraglide/messages.js";
     import {
         Button,
         TextArea,
@@ -763,6 +765,29 @@
             <!-- ── Appearance Category ────────────────────────────────── -->
             {#if activeCategory === "appearance"}
                 <div class="category-view">
+                    {#if matchesSearch("Language Locale English French")}
+                        <section class="settings-section">
+                            <h2>{m.settings_language()}</h2>
+                            <p class="section-desc">
+                                {m.settings_language_desc()}
+                            </p>
+                            <div class="settings-card">
+                                <ContentSwitcher 
+                                    selectedIndex={getLocale() === 'fr' ? 1 : 0} 
+                                    on:change={(e) => {
+                                        const index = e.detail;
+                                        const newLang = index === 1 ? 'fr' : 'en';
+                                        setLocale(newLang);
+                                        localStorage.setItem("app_lang", newLang);
+                                    }}
+                                >
+                                    <Switch text="English" />
+                                    <Switch text="Français" />
+                                </ContentSwitcher>
+                            </div>
+                        </section>
+                    {/if}
+
                     {#if matchesSearch("Theme Dark Light System Mode")}
                         <section class="settings-section">
                             <h2>Theme</h2>

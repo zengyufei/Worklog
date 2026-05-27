@@ -1,0 +1,13 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "sidebar_overview": "Overview",
+  "sidebar_global_calendar": "Global Calendar",
+  "sidebar_boards": "Boards",
+  "sidebar_new_board": "New board",
+  "sidebar_settings": "Settings",
+  "sidebar_archived_boards": "Archived boards",
+  "sidebar_loading_boards": "Loading boards...",
+  "sidebar_no_boards": "No boards yet. Create one to get started.",
+  "settings_language": "Language",
+  "settings_language_desc": "Choose the language for the application interface."
+}

@@ -1,0 +1,13 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "sidebar_overview": "Aperçu",
+  "sidebar_global_calendar": "Calendrier Global",
+  "sidebar_boards": "Tableaux",
+  "sidebar_new_board": "Nouveau tableau",
+  "sidebar_settings": "Paramètres",
+  "sidebar_archived_boards": "Tableaux archivés",
+  "sidebar_loading_boards": "Chargement des tableaux...",
+  "sidebar_no_boards": "Aucun tableau pour le moment. Créez-en un pour commencer.",
+  "settings_language": "Langue",
+  "settings_language_desc": "Choisissez la langue de l'interface de l'application."
+}

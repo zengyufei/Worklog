@@ -10,6 +10,7 @@
         Dashboard,
     } from "carbon-icons-svelte";
     import { page } from "$app/stores";
+    import * as m from "$lib/paraglide/messages.js";
 
     import {
         Button,
@@ -326,7 +327,7 @@
                 icon={Dashboard}
                 class="workspace-global-btn {$page.url.pathname === '/workspace/overview' ? 'active' : ''}"
             >
-                Overview
+                {m.sidebar_overview()}
             </Button>
             <Button
                 href="/workspace/calendar"
@@ -335,24 +336,24 @@
                 icon={Calendar}
                 class="workspace-global-btn {$page.url.pathname === '/workspace/calendar' ? 'active' : ''}"
             >
-                Global Calendar
+                {m.sidebar_global_calendar()}
             </Button>
         </div>
 
         <header class="workspace-sidebar-header">
-            <small>Boards</small>
+            <small>{m.sidebar_boards()}</small>
             <Button kind="ghost" size="small" onclick={openCreateBoardModal}>
-                New board
+                {m.sidebar_new_board()}
             </Button>
         </header>
 
         {#if boardsApi.loading}
             <p class="workspace-sidebar-state" aria-busy="true">
-                Loading boards...
+                {m.sidebar_loading_boards()}
             </p>
         {:else if !hasBoards}
             <p class="workspace-sidebar-state">
-                No boards yet. Create one to get started.
+                {m.sidebar_no_boards()}
             </p>
         {:else}
             <TileGroup
@@ -435,7 +436,7 @@
                 icon={Archive}
                 onclick={() => (archivedModalOpen = true)}
             >
-                Archived boards
+                {m.sidebar_archived_boards()}
             </Button>
         </div>
     </div>
@@ -443,7 +444,7 @@
     <footer class="workspace-sidebar-footer">
         <Button kind="ghost" size="small" onclick={openSettings}>
             <Settings />
-            <span>Settings</span>
+            <span>{m.sidebar_settings()}</span>
         </Button>
     </footer>
 </SideNav>
