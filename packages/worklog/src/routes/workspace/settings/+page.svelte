@@ -83,13 +83,13 @@
     let activeCategory = $state<SettingsCategory>("general");
 
     const categories = [
-        { id: "general", label: "General", icon: Settings },
-        { id: "appearance", label: "Appearance", icon: View },
-        { id: "customization", label: "Customization", icon: MagicWand },
-        { id: "data", label: "Data Management", icon: DataBase },
-        { id: "sync", label: "Synchronization", icon: Cloud },
+        { id: "general", label: m.settings_category_general(), icon: Settings },
+        { id: "appearance", label: m.settings_category_appearance(), icon: View },
+        { id: "customization", label: m.settings_category_customization(), icon: MagicWand },
+        { id: "data", label: m.settings_category_data(), icon: DataBase },
+        { id: "sync", label: m.settings_category_sync(), icon: Cloud },
         // { id: "debug", label: "Debug", icon: Code },
-        { id: "advanced", label: "Advanced", icon: Settings },
+        { id: "advanced", label: m.settings_category_advanced(), icon: Settings },
     ] as const;
     let searchQuery = $state("");
 

@@ -9,5 +9,18 @@
   "sidebar_loading_boards": "Loading boards...",
   "sidebar_no_boards": "No boards yet. Create one to get started.",
   "settings_language": "Language",
-  "settings_language_desc": "Choose the language for the application interface."
+  "settings_language_desc": "Choose the language for the application interface.",
+  "toolbar_open_command_palette": "Open Command Palette",
+  "toolbar_refresh_app": "Refresh Application",
+  "toolbar_toggle_theme": "Toggle theme",
+  "toolbar_open_settings": "Open settings",
+  "toolbar_syncing": "Syncing...",
+  "toolbar_syncing_soon": "Syncing soon...",
+  "toolbar_next_sync": "Next sync in {m}m {s}s",
+  "settings_category_general": "General",
+  "settings_category_appearance": "Appearance",
+  "settings_category_customization": "Customization",
+  "settings_category_data": "Data Management",
+  "settings_category_sync": "Synchronization",
+  "settings_category_advanced": "Advanced"
 }

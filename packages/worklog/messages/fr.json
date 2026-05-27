@@ -9,5 +9,18 @@
   "sidebar_loading_boards": "Chargement des tableaux...",
   "sidebar_no_boards": "Aucun tableau pour le moment. Créez-en un pour commencer.",
   "settings_language": "Langue",
-  "settings_language_desc": "Choisissez la langue de l'interface de l'application."
+  "settings_language_desc": "Choisissez la langue de l'interface de l'application.",
+  "toolbar_open_command_palette": "Ouvrir la palette de commandes",
+  "toolbar_refresh_app": "Rafraîchir l'application",
+  "toolbar_toggle_theme": "Changer de thème",
+  "toolbar_open_settings": "Ouvrir les paramètres",
+  "toolbar_syncing": "Synchronisation...",
+  "toolbar_syncing_soon": "Synchronisation imminente...",
+  "toolbar_next_sync": "Prochaine synchronisation dans {m}m {s}s",
+  "settings_category_general": "Général",
+  "settings_category_appearance": "Apparence",
+  "settings_category_customization": "Personnalisation",
+  "settings_category_data": "Gestion des données",
+  "settings_category_sync": "Synchronisation",
+  "settings_category_advanced": "Avancé"
 }

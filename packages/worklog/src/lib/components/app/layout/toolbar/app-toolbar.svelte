@@ -21,6 +21,7 @@
 
     import { syncState } from "$lib/sync/sync-scheduler.svelte";
     import { useAppAppearance } from "$lib/hooks/app-appearance.svelte";
+    import * as m from "$lib/paraglide/messages.js";
 
     type WindowControlAction = "minimize" | "toggle-maximize" | "close";
 
@@ -126,13 +127,13 @@
     const version = __APP_VERSION__;
 
     const formattedSyncTime = $derived.by(() => {
-        if (syncState.isSyncing) return "Syncing...";
+        if (syncState.isSyncing) return m.toolbar_syncing();
         if (!syncState.nextSyncAt) return "";
         const totalSeconds = Math.ceil(syncState.timeRemainingMs / 1000);
-        if (totalSeconds <= 0) return "Syncing soon...";
-        const m = Math.floor(totalSeconds / 60);
-        const s = totalSeconds % 60;
-        return `Next sync in ${m}m ${s}s`;
+        if (totalSeconds <= 0) return m.toolbar_syncing_soon();
+        const min = Math.floor(totalSeconds / 60);
+        const sec = totalSeconds % 60;
+        return m.toolbar_next_sync({ m: min, s: sec });
     });
 </script>
 
@@ -163,7 +164,7 @@
         <Button
             onclick={onOpenPalette}
             kind="ghost"
-            aria-label="Open Command Palette"
+            aria-label={m.toolbar_open_command_palette()}
         >
             <Search />
         </Button>
@@ -173,12 +174,12 @@
                 window.location.reload();
             }}
             kind="ghost"
-            aria-label="Refresh Application"
+            aria-label={m.toolbar_refresh_app()}
         >
             <Renew />
         </Button>
 
-        <Button onclick={toggleTheme} kind="ghost" aria-label="Toggle theme">
+        <Button onclick={toggleTheme} kind="ghost" aria-label={m.toolbar_toggle_theme()}>
             {#if appAppearance.theme === "dark"}
                 <LightFilled />
             {:else}
@@ -188,7 +189,7 @@
 
         {#if showSettings}
             <Button
-                aria-label="Open settings"
+                aria-label={m.toolbar_open_settings()}
                 onclick={onOpenSettings}
                 kind="ghost"
             >
