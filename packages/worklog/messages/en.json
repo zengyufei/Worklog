@@ -22,5 +22,17 @@
   "settings_category_customization": "Customization",
   "settings_category_data": "Data Management",
   "settings_category_sync": "Synchronization",
-  "settings_category_advanced": "Advanced"
+  "settings_category_advanced": "Advanced",
+  "overview_title": "Workspace Overview",
+  "overview_description": "A high-level view of your active boards and tickets.",
+  "overview_loading": "Loading workspace data...",
+  "overview_metrics": "Metrics",
+  "overview_active_boards": "Active Boards",
+  "overview_total_tickets": "Total Tickets",
+  "overview_completion": "Completion",
+  "overview_overall_progress": "Overall Progress",
+  "overview_status_breakdown": "Status Breakdown",
+  "overview_busiest_boards": "Busiest Boards",
+  "overview_open_tickets": "{count} open tickets",
+  "overview_no_active_tickets": "No active tickets."
 }

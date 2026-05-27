@@ -22,5 +22,17 @@
   "settings_category_customization": "Personnalisation",
   "settings_category_data": "Gestion des données",
   "settings_category_sync": "Synchronisation",
-  "settings_category_advanced": "Avancé"
+  "settings_category_advanced": "Avancé",
+  "overview_title": "Aperçu de l'Espace de Travail",
+  "overview_description": "Une vue d'ensemble de vos tableaux et tickets actifs.",
+  "overview_loading": "Chargement des données...",
+  "overview_metrics": "Métriques",
+  "overview_active_boards": "Tableaux actifs",
+  "overview_total_tickets": "Tickets totaux",
+  "overview_completion": "Complétion",
+  "overview_overall_progress": "Progrès global",
+  "overview_status_breakdown": "Répartition des statuts",
+  "overview_busiest_boards": "Tableaux les plus actifs",
+  "overview_open_tickets": "{count} tickets ouverts",
+  "overview_no_active_tickets": "Aucun ticket actif."
 }
