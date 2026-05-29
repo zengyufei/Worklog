@@ -18,6 +18,7 @@
     } from "carbon-icons-svelte";
     import { getWorkspaceShellContext } from "$lib/hooks/workspace-shell-context";
     import type { Board } from "$lib/components/app/types";
+    import * as m from "$lib/paraglide/messages.js";
 
     interface ArchivedBoardsModalProps {
         open: boolean;
@@ -110,28 +111,26 @@
     <ModalHeader>
         <div class="modal-title-row">
             <Archive size={20} />
-            <span>Archived Boards</span>
+            <span>{m.modal_archived_boards_title()}</span>
         </div>
         <p class="modal-subtitle">
-            Archived boards are hidden from the sidebar. Restore a board to make
-            it active again, or delete it permanently.
+            {m.modal_archived_boards_desc()}
         </p>
     </ModalHeader>
 
     <ModalBody>
         {#if loadingArchived}
             <div class="archive-state">
-                <InlineLoading description="Loading archived boards..." />
+                <InlineLoading description={m.modal_archived_boards_loading()} />
             </div>
         {:else if loadError}
             <p class="archive-error">{loadError}</p>
         {:else if boardsApi.archivedBoards.length === 0}
             <div class="archive-state archive-empty">
                 <FolderOff size={40} />
-                <p>No archived boards yet.</p>
+                <p>{m.modal_archived_boards_empty()}</p>
                 <span
-                    >Archive a board from the sidebar context menu to see it
-                    here.</span
+                    >{m.modal_archived_boards_empty_desc()}</span
                 >
             </div>
         {:else}
@@ -149,7 +148,7 @@
                                 <Tag size="sm" type="warm-gray">
                                     <span class="tag-inner">
                                         <Archive size={10} />
-                                        Archived
+                                        {m.modal_archived_boards_tag()}
                                     </span>
                                 </Tag>
                             </div>
@@ -159,20 +158,22 @@
                                 </p>
                             {/if}
                             <span class="archive-item-meta">
-                                Archived {formatDate(board.archived_at)} · Created
-                                {formatDate(board.created_at)}
+                                {m.modal_archived_boards_meta({
+                                    archived_date: formatDate(board.archived_at),
+                                    created_date: formatDate(board.created_at)
+                                })}
                             </span>
                         </div>
 
                         <div class="archive-item-actions">
                             {#if unarchivingId === board.id}
-                                <InlineLoading description="Restoring..." />
+                                <InlineLoading description={m.modal_archived_boards_restoring()} />
                             {:else}
                                 <Button
                                     kind="ghost"
                                     size="small"
                                     icon={Launch}
-                                    iconDescription="Restore and open board"
+                                    iconDescription={m.modal_archived_boards_restore_open()}
                                     tooltipPosition="left"
                                     onclick={() => handleRestoreAndOpen(board)}
                                     disabled={!!unarchivingId || !!deletingId}
@@ -181,7 +182,7 @@
                                     kind="ghost"
                                     size="small"
                                     icon={Undo}
-                                    iconDescription="Restore to active"
+                                    iconDescription={m.modal_archived_boards_restore()}
                                     tooltipPosition="left"
                                     onclick={() => handleUnarchive(board)}
                                     disabled={!!unarchivingId || !!deletingId}
@@ -190,7 +191,7 @@
                                     kind="danger-ghost"
                                     size="small"
                                     icon={TrashCan}
-                                    iconDescription="Delete permanently"
+                                    iconDescription={m.modal_archived_boards_delete_perm()}
                                     tooltipPosition="left"
                                     onclick={() => promptDelete(board.id)}
                                     disabled={!!unarchivingId ||
@@ -205,21 +206,19 @@
     </ModalBody>
 </ComposedModal>
 
-<!-- Permanent delete confirm -->
 <Modal
     danger
     size="xs"
     bind:open={deleteModalOpen}
-    modalHeading="Delete archived board"
-    primaryButtonText={deletingId ? "Deleting..." : "Delete permanently"}
-    secondaryButtonText="Cancel"
+    modalHeading={m.modal_archived_boards_delete_title()}
+    primaryButtonText={deletingId ? m.modal_archived_boards_deleting() : m.modal_archived_boards_delete_perm()}
+    secondaryButtonText={m.modal_cancel()}
     primaryButtonDisabled={!!deletingId}
     on:click:button--secondary={() => (deleteModalOpen = false)}
     on:click:button--primary={confirmDelete}
 >
     <p>
-        This will permanently delete the board and all its tickets. This cannot
-        be undone.
+        {m.modal_archived_boards_delete_desc()}
     </p>
 </Modal>
 
