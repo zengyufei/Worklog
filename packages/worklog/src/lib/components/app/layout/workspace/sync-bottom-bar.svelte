@@ -16,6 +16,7 @@
     import { getDb } from "$lib/db";
 
     import { notifications } from "$lib/hooks/notifications.svelte";
+    import * as m from "$lib/paraglide/messages.js";
 
     const syncConfig = useSyncConfig();
     const workspace = useWorkspace();
@@ -48,7 +49,7 @@
                 await syncConfig.save(db);
                 notifications.add({
                     kind: "success",
-                    title: "Pull Successful",
+                    title: m.sync_pull_success(),
                     subtitle: result.message,
                 });
             } else {
@@ -56,15 +57,15 @@
                     kind: result.status === "conflict" ? "warning" : "error",
                     title:
                         result.status === "conflict"
-                            ? "Sync Conflict"
-                            : "Pull Failed",
+                            ? m.sync_conflict()
+                            : m.sync_pull_failed(),
                     subtitle: result.message,
                 });
             }
         } catch (e) {
             notifications.add({
                 kind: "error",
-                title: "Error",
+                title: m.sync_error(),
                 subtitle: String(e),
             });
         } finally {
@@ -89,20 +90,20 @@
                 await syncConfig.save(db);
                 notifications.add({
                     kind: "success",
-                    title: "Push Successful",
+                    title: m.sync_push_success(),
                     subtitle: result.message,
                 });
             } else {
                 notifications.add({
                     kind: "error",
-                    title: "Push Failed",
+                    title: m.sync_push_failed(),
                     subtitle: result.message,
                 });
             }
         } catch (e) {
             notifications.add({
                 kind: "error",
-                title: "Error",
+                title: m.sync_error(),
                 subtitle: String(e),
             });
         } finally {
@@ -111,15 +112,15 @@
     }
 
     function formatTimeRemaining(ms: number) {
-        if (ms <= 0) return "Due now";
+        if (ms <= 0) return m.sync_time_due_now();
         const seconds = Math.floor(ms / 1000);
-        if (seconds < 60) return `${seconds}s`;
+        if (seconds < 60) return m.sync_time_seconds({ s: seconds });
         const minutes = Math.floor(seconds / 60);
-        return `${minutes}m ${seconds % 60}s`;
+        return m.sync_time_mins_secs({ m: minutes, s: seconds % 60 });
     }
 
     function formatLastSynced(dateStr: string | null) {
-        if (!dateStr) return "Never";
+        if (!dateStr) return m.sync_last_synced_never();
         const date = new Date(dateStr);
         return date.toLocaleTimeString([], {
             hour: "2-digit",
@@ -135,8 +136,8 @@
                 <Cloud size={16} class="cloud-icon disabled" />
             </div>
             <div class="status-text">
-                <span class="label">Sync not configured</span>
-                <span class="subtext">Setup in settings</span>
+                <span class="label">{m.sync_not_configured()}</span>
+                <span class="subtext">{m.sync_setup_settings()}</span>
             </div>
         </div>
     {:else}
@@ -152,18 +153,18 @@
             </div>
             <div class="status-text">
                 {#if isWorking}
-                    <span class="label">Syncing...</span>
+                    <span class="label">{m.sync_syncing()}</span>
                 {:else}
                     <span class="label"
-                        >Last sync: {formatLastSynced(
-                            syncConfig.config.last_synced_at,
-                        )}</span
+                        >{m.sync_last_sync({
+                            time: formatLastSynced(syncConfig.config.last_synced_at)
+                        })}</span
                     >
                     {#if syncConfig.config.auto_sync && syncState.timeRemainingMs > 0}
                         <span class="subtext"
-                            >Next in {formatTimeRemaining(
-                                syncState.timeRemainingMs,
-                            )}</span
+                            >{m.sync_next_in({
+                                time: formatTimeRemaining(syncState.timeRemainingMs)
+                            })}</span
                         >
                     {/if}
                 {/if}
@@ -175,7 +176,7 @@
                 kind="ghost"
                 size="small"
                 icon={WatsonHealthLaunchStudy_1}
-                iconDescription="Pull changes from remote"
+                iconDescription={m.sync_action_pull()}
                 tooltipPosition="top"
                 tooltipAlignment="end"
                 disabled={isWorking}
@@ -185,7 +186,7 @@
                 kind="ghost"
                 size="small"
                 icon={WatsonHealthLaunchStudy_2}
-                iconDescription="Push changes to remote"
+                iconDescription={m.sync_action_push()}
                 tooltipPosition="top"
                 tooltipAlignment="end"
                 disabled={isWorking}
