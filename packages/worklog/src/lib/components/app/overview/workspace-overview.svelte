@@ -1,13 +1,13 @@
 <script lang="ts">
     import { getWorkspaceShellContext } from "$lib/hooks/workspace-shell-context";
-    import { useAllTickets } from "$lib/hooks/all-tickets.svelte";
+    import { useTickets } from "$lib/hooks/tickets.svelte";
     import { ProgressBar, Tile } from "carbon-components-svelte";
     import { TICKET_STATUS_CONFIG } from "$lib/components/app/types";
     import * as m from "$lib/paraglide/messages.js";
 
     const shell = getWorkspaceShellContext();
     const getWorkspacePath = () => shell.workspace.path;
-    const ticketsHook = useAllTickets(getWorkspacePath);
+    const ticketsHook = useTickets(getWorkspacePath);
 
     $effect(() => {
         void ticketsHook.load();
@@ -67,15 +67,21 @@
                 <div class="metrics-grid">
                     <div class="metric">
                         <span class="metric-val">{totalBoards}</span>
-                        <span class="metric-label">{m.overview_active_boards()}</span>
+                        <span class="metric-label"
+                            >{m.overview_active_boards()}</span
+                        >
                     </div>
                     <div class="metric">
                         <span class="metric-val">{totalTickets}</span>
-                        <span class="metric-label">{m.overview_total_tickets()}</span>
+                        <span class="metric-label"
+                            >{m.overview_total_tickets()}</span
+                        >
                     </div>
                     <div class="metric">
                         <span class="metric-val">{completionRate}%</span>
-                        <span class="metric-label">{m.overview_completion()}</span>
+                        <span class="metric-label"
+                            >{m.overview_completion()}</span
+                        >
                     </div>
                 </div>
                 <div class="progress-wrap">

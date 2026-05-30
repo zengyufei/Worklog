@@ -1,8 +1,12 @@
 <script lang="ts">
     import { InlineNotification } from "carbon-components-svelte";
-    import { useAllTickets } from "$lib/hooks/all-tickets.svelte";
+    import { useTickets } from "$lib/hooks/tickets.svelte";
     import { getWorkspaceShellContext } from "$lib/hooks/workspace-shell-context";
-    import type { Ticket, TicketStatus, Comment } from "$lib/components/app/types";
+    import type {
+        Ticket,
+        TicketStatus,
+        Comment,
+    } from "$lib/components/app/types";
     import { CalendarState, setCalendarState } from "./calendar-state.svelte";
     import CalendarHeader from "./calendar-header.svelte";
     import CalendarGrid from "./calendar-grid.svelte";
@@ -15,13 +19,15 @@
 
     const shell = getWorkspaceShellContext();
     const getWorkspacePath = () => shell.workspace.path;
-    const ticketsHook = useAllTickets(getWorkspacePath);
+    const ticketsHook = useTickets(getWorkspacePath);
 
     // Create a proxy hook for the calendar state to prefix board names to titles
     const proxyTicketsHook = {
         get tickets(): Ticket[] {
             return ticketsHook.tickets.map((t) => {
-                const board = shell.boardsApi.boards.find((b) => b.id === t.board_id);
+                const board = shell.boardsApi.boards.find(
+                    (b) => b.id === t.board_id,
+                );
                 const boardName = board?.name ?? "Unknown";
                 return {
                     ...t,
@@ -30,7 +36,9 @@
                 } as Ticket & { _originalTitle: string };
             });
         },
-        get loading() { return ticketsHook.loading; },
+        get loading() {
+            return ticketsHook.loading;
+        },
         load: () => ticketsHook.load(),
     };
 
@@ -51,13 +59,15 @@
 
     const previewTicket = $derived(
         previewTicketId
-            ? (ticketsHook.tickets.find((t) => t.id === previewTicketId) ?? null)
+            ? (ticketsHook.tickets.find((t) => t.id === previewTicketId) ??
+                  null)
             : null,
     );
 
     // Editing from global calendar will retain the original title
     function openEditModal(ticket: Ticket) {
-        editTicket = ticketsHook.tickets.find(t => t.id === ticket.id) ?? ticket;
+        editTicket =
+            ticketsHook.tickets.find((t) => t.id === ticket.id) ?? ticket;
         editModalOpen = true;
     }
 
@@ -99,7 +109,9 @@
             const db = await getDb(workspacePath);
             const settings = await SettingsRepo.getSettings(db);
             author = settings.author_name?.trim() || "Anonymous";
-        } catch { /* use fallback */ }
+        } catch {
+            /* use fallback */
+        }
         const comment: Comment = {
             author,
             body,
@@ -110,7 +122,7 @@
 
     const hasNoDateTickets = $derived(
         calendar.filteredTickets.length > 0 &&
-        calendar.filteredTickets.every((t) => !t.due_date && !t.start_date)
+            calendar.filteredTickets.every((t) => !t.due_date && !t.start_date),
     );
 </script>
 
@@ -130,7 +142,9 @@
 
     <CalendarGrid
         onTicketClick={openPreviewSheet}
-        onDateClick={() => { /* Creating tickets from global calendar is disabled */ }}
+        onDateClick={() => {
+            /* Creating tickets from global calendar is disabled */
+        }}
     />
 </div>
 
@@ -151,11 +165,17 @@
     <TicketPreviewSheet
         bind:open={previewOpen}
         ticket={previewTicket}
-        onEdit={(t) => { previewOpen = false; openEditModal(t); }}
+        onEdit={(t) => {
+            previewOpen = false;
+            openEditModal(t);
+        }}
         onDelete={(id) => {
             previewOpen = false;
             const t = ticketsHook.tickets.find((t) => t.id === id);
-            if (t) { deleteTarget = t; deleteModalOpen = true; }
+            if (t) {
+                deleteTarget = t;
+                deleteModalOpen = true;
+            }
         }}
         onStatusChange={handleStatusChange}
         onAddComment={handleAddComment}
