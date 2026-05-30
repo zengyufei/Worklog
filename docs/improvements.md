@@ -49,7 +49,7 @@ Two independent hooks maintained their own `_tickets` arrays, causing stale data
 
 ---
 
-### 4. `window.location.reload()` After Data Mutations
+### 4. `window.location.reload()` After Data Mutations (not related, The behavior is correct)
 
 | Area | File |
 |---|---|
@@ -63,7 +63,7 @@ After a successful data import, the app does a full hard reload (`window.locatio
 
 ## 🟡 Medium Impact
 
-### 5. Three Different Drag-and-Drop Libraries
+### 5. Three Different Drag-and-Drop Libraries (FIXED)
 
 | Area | File |
 |---|---|
