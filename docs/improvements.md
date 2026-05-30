@@ -75,28 +75,32 @@ Three DnD libraries for one app — `@dnd-kit-svelte/svelte`, `svelte-dnd-action
 
 ---
 
-### 6. Heavy Carbon Components Bundle
+### 6. Heavy Carbon Components Bundle ✅ Already Optimized
 
 | Area | File |
 |---|---|
 | Bundle size | `src/routes/+layout.svelte` |
 
-Importing the full Carbon CSS (`import "carbon-components-svelte/css/all.css"`) adds significant bloat — hundreds of KB of CSS. The `carbon-preprocess-svelte` plugin with `optimizeImports()` is configured in `svelte.config.js`, but the full CSS import bypasses tree-shaking entirely.
+A full CSS import (`import "carbon-components-svelte/css/all.css"`) is present, but `carbon-preprocess-svelte`'s `optimizeCss()` Vite plugin is already configured and handles this at build time — it purges unused Carbon styles, reducing the CSS bundle from ~606 kB to ~53 kB. The `optimizeImports()` preprocessor also rewrites barrel JS imports to source paths for faster compilation.
 
-**Recommendation:** Import only the individual Carbon component CSS files that are actually used, or consider moving away from Carbon given the project's custom visual direction (glass, dark, compact surfaces).
+**Status:** This is actually the recommended setup per the carbon-preprocess-svelte documentation. During development the full CSS is loaded (no workaround), but production builds are properly optimized.
 
 ---
 
-### 7. Unused and Orphaned Dependencies
+### 7. Unused and Orphaned Dependencies ✅ Fixed
 
-| Package | Likely Issue |
+| Package | Action |
 |---|---|
-| `clsx` + `tailwind-merge` | `cn()` utility exists in `utils.ts` but Tailwind is **not configured** anywhere |
-| `layerchart`, `d3-scale`, `d3-shape` | Heavy charting libraries — unclear if still in use |
-| `bits-ui`, `vaul-svelte` | Shadcn-style primitives in devDependencies, unclear usage |
-| `carbon-preprocess-svelte` | Optimizer configured but defeated by full CSS import |
+| `clsx` + `tailwind-merge` | Removed — `cn()` utility was dead code (never called) |
+| `layerchart`, `d3-scale`, `d3-shape` | Removed — no source imports exist |
+| `bits-ui`, `vaul-svelte` | Removed — no source imports exist |
+| `@internationalized/date` | Removed — no source imports exist |
+| `svelte-sonner` | Removed — no source imports exist |
+| `@dnd-kit/helpers` | Removed — unused after DnD consolidation |
+| `@types/d3-scale`, `@types/d3-shape` | Removed — types for removed packages |
+| `carbon-preprocess-svelte` | **Kept** — actively used (`optimizeImports` + `optimizeCss`) |
 
-**Recommendation:** Audit all dependencies. Run `bun run check` after removing each unused package.
+**11 packages removed in total.** `bun install` confirms clean resolution.
 
 ---
 
@@ -244,7 +248,7 @@ Using `$effect.root()` at module scope for a persistent effect is unconventional
 |---|---|---|
 | 🔴 | Remove dead `greet` Rust command | 5 minutes |
 | 🟡 | Clean up debug comments in workspace layout | 1 minute |
-| 🟡 | Audit and remove unused dependencies | 30 minutes |
+| 🟡 | Audit and remove unused dependencies | ✅ Done (11 removed) |
 | 🟡 | Replace `window.location.reload()` with hook invalidation | 1–2 hours |
 | 🟢 | Fix i18n initialization to run once | 15 minutes |
 | 🟢 | Consolidate three DnD libraries into one | 2–3 hours |
