@@ -135,20 +135,22 @@
     .table-content {
         flex: 1;
         overflow-y: auto;
-        padding: 0.5rem 0;
+        overflow-x: auto;
 
         scrollbar-width: thin;
-        scrollbar-color: var(--cds-ui-04) transparent;
+        scrollbar-color: rgba(136, 136, 136, 0.4) transparent;
     }
 
     .table-content::-webkit-scrollbar {
-        width: 5px;
+        width: 10px;
     }
     .table-content::-webkit-scrollbar-track {
         background: transparent;
     }
     .table-content::-webkit-scrollbar-thumb {
-        background: var(--cds-ui-04);
-        border-radius: 3px;
+        background-color: rgba(136, 136, 136, 0.4);
+    }
+    .table-content::-webkit-scrollbar-thumb:hover {
+        background-color: rgba(136, 136, 136, 0.6);
     }
 </style>

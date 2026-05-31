@@ -1,6 +1,5 @@
 <script lang="ts">
     import {
-        DataTable,
         Tag,
         OverflowMenu,
         OverflowMenuItem,
@@ -16,6 +15,7 @@
         TICKET_PRIORITY_CONFIG,
         type TicketPriority,
         type TicketType,
+        type Ticket,
     } from "$lib/components/app/types";
     import * as m from "$lib/paraglide/messages.js";
 
@@ -24,196 +24,193 @@
 
     const state = getTableState();
 
-    export let group: any;
-    export let onEdit: (id: string) => void;
-    export let onDelete: (id: string) => void;
-
-    const headers: any = [
-        { key: "title", value: m.table_title() },
-        { key: "priority", value: m.table_priority() },
-        { key: "type", value: m.table_type() },
-        { key: "labels", value: m.table_labels() },
-        { key: "dueDate", value: m.table_due_date() },
-        { key: "created", value: m.table_created() },
-        { key: "actions", empty: true },
-    ];
+    let {
+        group,
+        onEdit,
+        onDelete,
+    }: {
+        group: {
+            status: string;
+            label: string;
+            icon: any;
+            accentColor: string;
+            tickets: Ticket[];
+        };
+        onEdit: (id: string) => void;
+        onDelete: (id: string) => void;
+    } = $props();
 
     function copyId(ticketId: string) {
         if (navigator.clipboard) {
             void navigator.clipboard.writeText(ticketId);
         }
     }
+
+    // Priority stripe color map (matching kanban cards)
+    const priorityStripeColor: Record<string, string> = {
+        p3: "var(--cds-support-02)",
+        p2: "var(--cds-support-04)",
+        p1: "var(--cds-support-01)",
+    };
 </script>
 
 <div class="status-group" style="--accent: {group.accentColor}">
-    <details class="group-details" open>
-        <summary class="group-header">
-            <div class="group-header-left">
-                <span class="group-accent-bar"></span>
-                <svelte:component this={group.icon} size={16} />
-                <strong class="group-label">{group.label}</strong>
-                <span class="group-count">{group.tickets.length}</span>
-            </div>
-            <span class="group-chevron"></span>
-        </summary>
+    <!-- Group header — matches kanban column header pattern -->
+    <div class="group-header">
+        <div class="group-header-left">
+            <span class="group-accent-bar"></span>
+            {#if group.icon}
+                <group.icon size={16} />
+            {/if}
+            <strong class="group-label">{group.label}</strong>
+            <span class="group-count">{group.tickets.length}</span>
+        </div>
+    </div>
 
-        {#if group.tickets.length > 0}
-            <div class="group-table-wrapper">
-                <DataTable
-                    sortable
-                    size="short"
-                    {headers}
-                    rows={group.tickets.map((t: any) => ({
-                        id: t.id,
-                        title: t.title,
-                        priority: t.priority,
-                        type: t.ticket_type,
-                        labels: t.labels,
-                        dueDate: t.due_date,
-                        created: t.created_at,
-                        status: t.status,
-                    }))}
-                    sort={state.customSort}
-                >
-                    <svelte:fragment slot="cell" let:row let:cell>
-                        {#if cell.key === "title"}
-                            <div class="cell-title">
-                                <span class="cell-title-text">{cell.value}</span
-                                >
-                                <span class="cell-title-id">{row.id}</span>
-                            </div>
-                        {:else if cell.key === "priority"}
-                            {@const PriorityIcon =
-                                priorityIconMap[cell.value as TicketPriority]}
-                            <div class="cell-priority">
-                                {#if PriorityIcon}
-                                    <PriorityIcon size={14} />
-                                {/if}
-                                <Tag
-                                    type={TICKET_PRIORITY_CONFIG[
-                                        cell.value as TicketPriority
-                                    ]?.tagColor || "blue"}
-                                    size="sm"
-                                >
-                                    {TICKET_PRIORITY_CONFIG[
-                                        cell.value as TicketPriority
-                                    ]?.label || cell.value}
-                                </Tag>
-                            </div>
-                        {:else if cell.key === "type"}
-                            {@const customType = ticketTypesApi?.types?.find(
-                                (t) => t.id === cell.value,
-                            )}
-                            {@const TypeIcon =
-                                (customType?.icon &&
-                                    typeIconMap[
-                                        customType.icon as TicketType
-                                    ]) ||
-                                typeIconMap[cell.value as TicketType] ||
-                                Bookmark}
-                            <div class="cell-type">
-                                {#if TypeIcon}
-                                    <TypeIcon size={14} />
-                                {/if}
-                                <Tag
-                                    style="background-color: {customType?.color ||
-                                        '#525252'}; color: white;"
-                                    size="sm"
-                                >
-                                    {customType?.name || cell.value}
-                                </Tag>
-                            </div>
-                        {:else if cell.key === "labels"}
-                            <div class="cell-labels">
-                                {#if Array.isArray(cell.value) && cell.value.length > 0}
-                                    {#each cell.value.slice(0, 3) as label}
-                                        <Tag type="outline" size="sm"
-                                            >{label}</Tag
-                                        >
-                                    {/each}
-                                    {#if cell.value.length > 3}
-                                        <span class="labels-more"
-                                            >+{cell.value.length - 3}</span
-                                        >
+    {#if group.tickets.length > 0}
+        <div class="group-table-wrap">
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th class="th-priority-stripe" aria-hidden="true"></th>
+                        <th class="th-title">{m.table_title()}</th>
+                        <th class="th-priority">{m.table_priority()}</th>
+                        <th class="th-type">{m.table_type()}</th>
+                        <th class="th-labels">{m.table_labels()}</th>
+                        <th class="th-due">{m.table_due_date()}</th>
+                        <th class="th-created">{m.table_created()}</th>
+                        <th class="th-actions"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {#each group.tickets as ticket (ticket.id)}
+                        {@const PriorityIcon = priorityIconMap[ticket.priority as TicketPriority]}
+                        {@const customType = ticketTypesApi?.types?.find((t) => t.id === ticket.ticket_type)}
+                        {@const TypeIcon = (customType?.icon && typeIconMap[customType.icon as TicketType]) || typeIconMap[ticket.ticket_type as TicketType] || Bookmark}
+                        {@const due = state.formatDueDate(ticket.due_date, ticket.status === "done")}
+                        <tr
+                            class="table-row"
+                            style="--row-prio-color: {priorityStripeColor[ticket.priority] || 'var(--cds-ui-03)'};"
+                        >
+                            <td class="td-priority-stripe" aria-hidden="true">
+                                <span class="priority-stripe-inner"></span>
+                            </td>
+                            <td class="td-title">
+                                <div class="cell-title">
+                                    <span class="cell-title-text">{ticket.title}</span>
+                                    <span class="cell-title-id">{ticket.id}</span>
+                                </div>
+                            </td>
+                            <td class="td-priority">
+                                <div class="cell-priority">
+                                    {#if PriorityIcon}
+                                        <PriorityIcon size={14} />
                                     {/if}
-                                {:else}
-                                    <span class="cell-muted">—</span>
-                                {/if}
-                            </div>
-                        {:else if cell.key === "dueDate"}
-                            {@const due = state.formatDueDate(
-                                cell.value,
-                                row.status === "done",
-                            )}
-                            <div class="cell-due" class:overdue={due.overdue}>
-                                <Calendar size={14} />
-                                <span>{due.text}</span>
-                            </div>
-                        {:else if cell.key === "created"}
-                            <span class="cell-date"
-                                >{state.formatRelativeDate(cell.value)}</span
-                            >
-                        {:else if cell.key === "actions"}
-                            <div class="cell-actions">
-                                <OverflowMenu flipped size="sm">
-                                    <OverflowMenuItem
-                                        text={m.table_copy_id()}
-                                        on:click={() => copyId(row.id)}
-                                    />
-                                    <OverflowMenuItem
-                                        text={m.table_edit_ticket()}
-                                        on:click={() => onEdit(row.id)}
-                                    />
-                                    <OverflowMenuItem
-                                        danger
-                                        text={m.table_delete()}
-                                        on:click={() => onDelete(row.id)}
-                                    />
-                                </OverflowMenu>
-                            </div>
-                        {:else}
-                            {cell.value}
-                        {/if}
-                    </svelte:fragment>
-                </DataTable>
-            </div>
-        {:else}
-            <div class="group-empty">
-                <span>{m.kanban_column_empty()}</span>
-            </div>
-        {/if}
-    </details>
+                                    <Tag
+                                        type={TICKET_PRIORITY_CONFIG[
+                                            ticket.priority as TicketPriority
+                                        ]?.tagColor || "blue"}
+                                        size="sm"
+                                    >
+                                        {TICKET_PRIORITY_CONFIG[
+                                            ticket.priority as TicketPriority
+                                        ]?.label || ticket.priority}
+                                    </Tag>
+                                </div>
+                            </td>
+                            <td class="td-type">
+                                <div class="cell-type">
+                                    {#if TypeIcon}
+                                        <TypeIcon size={14} />
+                                    {/if}
+                                    <Tag
+                                        style="background-color: {customType?.color ||
+                                            '#525252'}; color: white;"
+                                        size="sm"
+                                    >
+                                        {customType?.name || ticket.ticket_type}
+                                    </Tag>
+                                </div>
+                            </td>
+                            <td class="td-labels">
+                                <div class="cell-labels">
+                                    {#if Array.isArray(ticket.labels) && ticket.labels.length > 0}
+                                        {#each ticket.labels.slice(0, 3) as label}
+                                            <Tag type="outline" size="sm"
+                                                >{label}</Tag
+                                            >
+                                        {/each}
+                                        {#if ticket.labels.length > 3}
+                                            <span class="labels-more"
+                                                >+{ticket.labels.length - 3}</span
+                                            >
+                                        {/if}
+                                    {:else}
+                                        <span class="cell-muted">—</span>
+                                    {/if}
+                                </div>
+                            </td>
+                            <td class="td-due">
+                                <div class="cell-due" class:overdue={due.overdue}>
+                                    <Calendar size={14} />
+                                    <span>{due.text}</span>
+                                </div>
+                            </td>
+                            <td class="td-created">
+                                <span class="cell-date"
+                                    >{state.formatRelativeDate(ticket.created_at)}</span
+                                >
+                            </td>
+                            <td class="td-actions">
+                                <div class="cell-actions">
+                                    <OverflowMenu flipped size="sm">
+                                        <OverflowMenuItem
+                                            text={m.table_copy_id()}
+                                            on:click={() => copyId(ticket.id)}
+                                        />
+                                        <OverflowMenuItem
+                                            text={m.table_edit_ticket()}
+                                            on:click={() => onEdit(ticket.id)}
+                                        />
+                                        <OverflowMenuItem
+                                            danger
+                                            text={m.table_delete()}
+                                            on:click={() => onDelete(ticket.id)}
+                                        />
+                                    </OverflowMenu>
+                                </div>
+                            </td>
+                        </tr>
+                    {/each}
+                </tbody>
+            </table>
+        </div>
+    {:else}
+        <div class="group-empty">
+            <span>{m.kanban_column_empty()}</span>
+        </div>
+    {/if}
 </div>
 
 <style>
     .status-group {
-        margin-bottom: 0.25rem;
+        margin-bottom: 0;
+        border-bottom: 1px solid var(--cds-ui-03);
     }
 
-    .group-details {
-        border: none;
+    .status-group:last-child {
+        border-bottom: none;
     }
 
-    .group-details > summary {
-        list-style: none;
-    }
-    .group-details > summary::-webkit-details-marker {
-        display: none;
-    }
-
+    /* ── Group Header (kanban-column style) ──────────────────────────────── */
     .group-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 0.5rem 1rem;
-        cursor: pointer;
+        padding: 0.625rem 1rem;
+        background: var(--cds-ui-01);
+        border-bottom: 1px solid var(--cds-ui-03);
         user-select: none;
-        transition: background 0.12s ease;
-        border-bottom: 1px solid transparent;
-    }
-
-    .group-header:hover {
-        background: var(--cds-hover-ui);
     }
 
     .group-header-left {
@@ -237,8 +234,11 @@
 
     .group-label {
         font-size: 0.8125rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
         color: var(--cds-text-01);
-        letter-spacing: 0.01em;
+        margin: 0;
     }
 
     .group-count {
@@ -253,57 +253,74 @@
         line-height: 1.25rem;
     }
 
-    .group-chevron {
-        width: 0;
-        height: 0;
-        border-left: 4px solid transparent;
-        border-right: 4px solid transparent;
-        border-top: 5px solid var(--cds-text-02);
-        transition: transform 0.15s ease;
+    /* ── Custom Table ────────────────────────────────────────────────────── */
+    .group-table-wrap {
+        overflow: visible;
     }
 
-    .group-details:not([open]) .group-chevron {
-        transform: rotate(-90deg);
+    .custom-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: var(--font-body, "IBM Plex Sans", sans-serif);
     }
 
-    .group-table-wrapper {
-        border-bottom: 1px solid var(--cds-ui-03);
+    .custom-table thead {
+        background: var(--cds-ui-background);
     }
 
-    .group-table-wrapper :global(.bx--data-table) {
-        border: none;
-    }
-
-    .group-table-wrapper :global(.bx--data-table thead) {
-        background: var(--cds-ui-01);
-    }
-
-    .group-table-wrapper :global(.bx--data-table thead th) {
+    .custom-table thead th {
         font-size: 0.6875rem;
+        font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.06em;
         color: var(--cds-text-02);
-        padding-top: 0.375rem;
-        padding-bottom: 0.375rem;
+        padding: 0.5rem 0.625rem;
+        text-align: left;
         border-bottom: 1px solid var(--cds-ui-03);
+        white-space: nowrap;
     }
 
-    .group-table-wrapper :global(.bx--data-table tbody tr) {
+    /* ── Rows with priority stripe ───────────────────────────────────────── */
+    .table-row {
         transition: background 0.1s ease;
     }
 
-    .group-table-wrapper :global(.bx--data-table tbody tr:hover) {
+    .table-row:hover {
         background: var(--cds-hover-ui);
     }
 
-    .group-table-wrapper :global(.bx--data-table td) {
+    .table-row td {
+        padding: 0.5rem 0.625rem;
         border-bottom: 1px solid
             color-mix(in srgb, var(--cds-ui-03) 50%, transparent);
-        padding-top: 0.5rem;
-        padding-bottom: 0.5rem;
         vertical-align: middle;
+        font-size: 0.8125rem;
+        color: var(--cds-text-01);
     }
 
+    /* Priority stripe column */
+    .td-priority-stripe {
+        width: 4px;
+        padding: 0 !important;
+        overflow: visible;
+        position: relative;
+    }
+
+    .priority-stripe-inner {
+        display: block;
+        position: absolute;
+        inset: 2px 0 2px 0;
+        width: 4px;
+        border-radius: 2px;
+        background: var(--row-prio-color, var(--cds-ui-03));
+    }
+
+    .th-priority-stripe {
+        width: 4px;
+        padding: 0 !important;
+    }
+
+    /* ── Cell Contents ───────────────────────────────────────────────────── */
     .cell-title {
         display: flex;
         flex-direction: column;
@@ -392,13 +409,18 @@
     .cell-actions {
         display: flex;
         justify-content: flex-end;
+        overflow: visible;
     }
 
+    .td-actions {
+        overflow: visible;
+    }
+
+    /* ── Empty State ─────────────────────────────────────────────────────── */
     .group-empty {
         padding: 0.75rem 1rem 0.75rem 2.5rem;
         font-size: 0.75rem;
         color: var(--cds-text-placeholder);
         font-style: italic;
-        border-bottom: 1px solid var(--cds-ui-03);
     }
 </style>
