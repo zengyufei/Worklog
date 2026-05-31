@@ -29,35 +29,50 @@
       "identifier": "fs:allow-write-text-file",
       "allow": [
         { "path": "$DOCUMENT/**/*" },
-        { "path": "$HOME/**/*" }
+        { "path": "$HOME/**/*" },
+        { "path": "$APPDATA/**/*" },
+        { "path": "$RESOURCE/**/*" },
+        { "path": "$DESKTOP/**/*" }
       ]
     },
     {
       "identifier": "fs:allow-read-text-file",
       "allow": [
         { "path": "$DOCUMENT/**/*" },
-        { "path": "$HOME/**/*" }
+        { "path": "$HOME/**/*" },
+        { "path": "$APPDATA/**/*" },
+        { "path": "$RESOURCE/**/*" },
+        { "path": "$DESKTOP/**/*" }
       ]
     },
     {
       "identifier": "fs:allow-read-dir",
       "allow": [
         { "path": "$DOCUMENT/**/*" },
-        { "path": "$HOME/**/*" }
+        { "path": "$HOME/**/*" },
+        { "path": "$APPDATA/**/*" },
+        { "path": "$RESOURCE/**/*" },
+        { "path": "$DESKTOP/**/*" }
       ]
     },
     {
       "identifier": "fs:allow-mkdir",
       "allow": [
         { "path": "$DOCUMENT/**/*" },
-        { "path": "$HOME/**/*" }
+        { "path": "$HOME/**/*" },
+        { "path": "$APPDATA/**/*" },
+        { "path": "$RESOURCE/**/*" },
+        { "path": "$DESKTOP/**/*" }
       ]
     },
     {
       "identifier": "fs:allow-exists",
       "allow": [
         { "path": "$DOCUMENT/**/*" },
-        { "path": "$HOME/**/*" }
+        { "path": "$HOME/**/*" },
+        { "path": "$APPDATA/**/*" },
+        { "path": "$RESOURCE/**/*" },
+        { "path": "$DESKTOP/**/*" }
       ]
     },
     {
