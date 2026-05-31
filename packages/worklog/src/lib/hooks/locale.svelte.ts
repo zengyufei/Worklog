@@ -22,7 +22,7 @@ overwriteGetLocale(() => _locale);
 
 /** Returns the current locale as a Svelte-reactive value. */
 export function getReactiveLocale(): Locale {
-	return _locale;
+    return _locale;
 }
 
 /**
@@ -30,7 +30,7 @@ export function getReactiveLocale(): Locale {
  * so all components re-render with the new translations.
  */
 export function setReactiveLocale(newLang: Locale): void {
-	if (newLang === _locale) return;
-	paraglideSetLocale(newLang, { reload: false });
-	_locale = newLang;
+    if (newLang === _locale) return;
+    paraglideSetLocale(newLang, { reload: false });
+    _locale = newLang;
 }

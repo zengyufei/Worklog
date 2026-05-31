@@ -1,7 +1,10 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
 	// @ts-ignore
-	import { setReactiveLocale, getReactiveLocale } from "$lib/hooks/locale.svelte";
+	import {
+		setReactiveLocale,
+		getReactiveLocale,
+	} from "$lib/hooks/locale.svelte";
 
 	// Initialize language
 	if (typeof localStorage !== "undefined") {
