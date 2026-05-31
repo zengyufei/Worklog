@@ -1,5 +1,5 @@
-import { useWorkspace } from "$lib/hooks/workspace.svelte";
-import { useSyncConfig } from "$lib/sync/sync-config.svelte";
+import { getWorkspace } from "$lib/hooks/workspace.svelte";
+import { getSyncConfig } from "$lib/sync/sync-config.svelte";
 import { SyncEngine } from "$lib/sync/sync-engine";
 import { getDb } from "$lib/db";
 import { notifications } from "$lib/hooks/notifications.svelte";
@@ -18,8 +18,8 @@ export const syncState = $state({
  * It checks every minute if an auto-sync is due based on the configured interval.
  */
 export function initSyncScheduler() {
-    const workspace = useWorkspace();
-    const syncConfig = useSyncConfig();
+    const workspace = getWorkspace();
+    const syncConfig = getSyncConfig();
 
     if (schedulerInterval !== null) {
         clearInterval(schedulerInterval);
@@ -60,7 +60,7 @@ export function initSyncScheduler() {
         // Check if interval has elapsed
         const lastSyncedStr = syncConfig.config.last_synced_at;
         const intervalMs = syncConfig.config.auto_sync_interval * 60 * 1000;
-        
+
         let shouldSync = false;
         if (!lastSyncedStr) {
             shouldSync = true;
@@ -77,13 +77,13 @@ export function initSyncScheduler() {
                 const db = await getDb(workspace.path);
                 const engine = new SyncEngine(workspace.path);
                 const isGitAvailable = await engine.isGitAvailable();
-                
+
                 if (isGitAvailable) {
                     await engine.initialize(syncConfig.config);
                     // Fast-forward pull before push to avoid conflicts when possible
                     await engine.pull(db, syncConfig.config);
                     const result = await engine.push(db, syncConfig.config);
-                    
+
                     if (result.status === "success") {
                         syncConfig.updateLastSynced(result.timestamp);
                         await syncConfig.save(db);

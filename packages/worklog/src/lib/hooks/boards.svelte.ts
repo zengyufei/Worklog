@@ -6,7 +6,7 @@ let _archivedBoards = $state<Board[]>([]);
 let _active = $state<Board | null>(null);
 let _loading = $state(false);
 
-export function useBoards(getWorkspacePath: () => string | null) {
+export function getBoards(getWorkspacePath: () => string | null) {
     function requireWorkspacePath(): string {
         const path = getWorkspacePath();
         if (!path) throw new Error('No workspace selected');

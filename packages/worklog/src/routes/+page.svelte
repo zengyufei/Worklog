@@ -1,9 +1,9 @@
 <script lang="ts">
     import { Button } from "carbon-components-svelte";
     import { goto } from "$app/navigation";
-    import { useWorkspace } from "$lib/hooks/workspace.svelte";
+    import { getWorkspace } from "$lib/hooks/workspace.svelte";
 
-    const workspace = useWorkspace();
+    const workspace = getWorkspace();
 
     const openWorkspaceLabel = $derived(
         workspace.status === "error"

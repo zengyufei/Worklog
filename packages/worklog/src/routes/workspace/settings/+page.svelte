@@ -22,7 +22,7 @@
         Switch,
         InlineNotification,
     } from "carbon-components-svelte";
-    import { useWorkspace } from "$lib/hooks/workspace.svelte";
+    import { getWorkspace } from "$lib/hooks/workspace.svelte";
     import { getDb } from "$lib/db";
     import {
         exportDatabaseWithOptions,
@@ -36,11 +36,14 @@
         type UpdateState,
     } from "$lib/updater";
     import type { ExportFormat, ExportMode } from "$lib/db/mappers";
-    import { useSyncConfig } from "$lib/sync/sync-config.svelte";
+    import { getSyncConfig } from "$lib/sync/sync-config.svelte";
     import { SyncEngine } from "$lib/sync/sync-engine";
     import type { SyncStatus } from "$lib/sync/types";
-    import { useAppZoom } from "$lib/hooks/app-zoom.svelte";
-    import { useAppAppearance, type ThemeMode } from "$lib/hooks/app-appearance.svelte";
+    import { getAppZoom } from "$lib/hooks/app-zoom.svelte";
+    import {
+        useAppAppearance,
+        type ThemeMode,
+    } from "$lib/hooks/app-appearance.svelte";
     import ZoomControls from "$lib/components/app/layout/workspace/zoom-controls.svelte";
     import {
         Settings,
@@ -84,19 +87,31 @@
 
     const categories = [
         { id: "general", label: m.settings_category_general(), icon: Settings },
-        { id: "appearance", label: m.settings_category_appearance(), icon: View },
-        { id: "customization", label: m.settings_category_customization(), icon: MagicWand },
+        {
+            id: "appearance",
+            label: m.settings_category_appearance(),
+            icon: View,
+        },
+        {
+            id: "customization",
+            label: m.settings_category_customization(),
+            icon: MagicWand,
+        },
         { id: "data", label: m.settings_category_data(), icon: DataBase },
         { id: "sync", label: m.settings_category_sync(), icon: Cloud },
         // { id: "debug", label: "Debug", icon: Code },
-        { id: "advanced", label: m.settings_category_advanced(), icon: Settings },
+        {
+            id: "advanced",
+            label: m.settings_category_advanced(),
+            icon: Settings,
+        },
     ] as const;
     let searchQuery = $state("");
 
-    const workspace = useWorkspace();
+    const workspace = getWorkspace();
     const { ticketTypesApi } = getWorkspaceShellContext();
-    const syncConfig = useSyncConfig();
-    const appZoom = useAppZoom();
+    const syncConfig = getSyncConfig();
+    const appZoom = getAppZoom();
     const appAppearance = useAppAppearance();
 
     const workspaceName = $derived(workspace.meta?.name ?? "Workspace");
@@ -772,13 +787,17 @@
                                 {m.settings_language_desc()}
                             </p>
                             <div class="settings-card">
-                                <ContentSwitcher 
-                                    selectedIndex={getLocale() === 'fr' ? 1 : 0} 
+                                <ContentSwitcher
+                                    selectedIndex={getLocale() === "fr" ? 1 : 0}
                                     on:change={(e) => {
                                         const index = e.detail;
-                                        const newLang = index === 1 ? 'fr' : 'en';
+                                        const newLang =
+                                            index === 1 ? "fr" : "en";
                                         setLocale(newLang);
-                                        localStorage.setItem("app_lang", newLang);
+                                        localStorage.setItem(
+                                            "app_lang",
+                                            newLang,
+                                        );
                                     }}
                                 >
                                     <Switch text="English" />
@@ -798,24 +817,30 @@
                                 <div class="theme-selector">
                                     <button
                                         class="theme-card"
-                                        class:selected={appAppearance.theme === "light"}
-                                        onclick={() => appAppearance.theme = "light"}
+                                        class:selected={appAppearance.theme ===
+                                            "light"}
+                                        onclick={() =>
+                                            (appAppearance.theme = "light")}
                                     >
                                         <Sun size={24} />
                                         <span>Light</span>
                                     </button>
                                     <button
                                         class="theme-card"
-                                        class:selected={appAppearance.theme === "dark"}
-                                        onclick={() => appAppearance.theme = "dark"}
+                                        class:selected={appAppearance.theme ===
+                                            "dark"}
+                                        onclick={() =>
+                                            (appAppearance.theme = "dark")}
                                     >
                                         <Moon size={24} />
                                         <span>Dark</span>
                                     </button>
                                     <button
                                         class="theme-card"
-                                        class:selected={appAppearance.theme === "system"}
-                                        onclick={() => appAppearance.theme = "system"}
+                                        class:selected={appAppearance.theme ===
+                                            "system"}
+                                        onclick={() =>
+                                            (appAppearance.theme = "system")}
                                     >
                                         <Screen size={24} />
                                         <span>System</span>
@@ -829,28 +854,26 @@
                         <section class="settings-section">
                             <h2>{m.settings_accent_color()}</h2>
                             <p class="section-desc">
-                                Select a primary color for interactive elements and active states.
+                                Select a primary color for interactive elements
+                                and active states.
                             </p>
                             <div class="settings-card">
                                 <div class="accent-palette">
-                                    {#each [
-                                        "#0f62fe", /* Carbon Blue */
-                                        "#0072c3", /* Teal/Cyan */
-                                        "#198038", /* Green */
-                                        "#a56eff", /* Purple */
-                                        "#fa4d56", /* Red */
-                                        "#ff832b", /* Orange */
-                                        "#f1c21b"  /* Yellow */
-                                    ] as color}
+                                    {#each ["#0f62fe" /* Carbon Blue */, "#0072c3" /* Teal/Cyan */, "#198038" /* Green */, "#a56eff" /* Purple */, "#fa4d56" /* Red */, "#ff832b" /* Orange */, "#f1c21b" /* Yellow */] as color}
                                         <button
                                             class="color-swatch"
-                                            class:selected={appAppearance.accent === color}
+                                            class:selected={appAppearance.accent ===
+                                                color}
                                             style="background-color: {color};"
-                                            onclick={() => appAppearance.accent = color}
+                                            onclick={() =>
+                                                (appAppearance.accent = color)}
                                             title={color}
                                         >
                                             {#if appAppearance.accent === color}
-                                                <Checkmark size={16} class="color-swatch-check" />
+                                                <Checkmark
+                                                    size={16}
+                                                    class="color-swatch-check"
+                                                />
                                             {/if}
                                         </button>
                                     {/each}
@@ -874,12 +897,22 @@
                                 Adjust the base font size for the application.
                             </p>
                             <div class="settings-card">
-                                <ContentSwitcher selectedIndex={appAppearance.fontSize === 'small' ? 0 : appAppearance.fontSize === 'large' ? 2 : 1} on:change={(e) => {
-                                    const index = e.detail;
-                                    if (index === 0) appAppearance.fontSize = 'small';
-                                    else if (index === 2) appAppearance.fontSize = 'large';
-                                    else appAppearance.fontSize = 'default';
-                                }}>
+                                <ContentSwitcher
+                                    selectedIndex={appAppearance.fontSize ===
+                                    "small"
+                                        ? 0
+                                        : appAppearance.fontSize === "large"
+                                          ? 2
+                                          : 1}
+                                    on:change={(e) => {
+                                        const index = e.detail;
+                                        if (index === 0)
+                                            appAppearance.fontSize = "small";
+                                        else if (index === 2)
+                                            appAppearance.fontSize = "large";
+                                        else appAppearance.fontSize = "default";
+                                    }}
+                                >
                                     <Switch text="Small" />
                                     <Switch text="Default" />
                                     <Switch text="Large" />
@@ -923,126 +956,133 @@
                             </p>
                             <div class="settings-card">
                                 <div class="type-management-list">
-                                {#each ticketTypesApi.types as type}
-                                    <div
-                                        class="type-item"
-                                        class:is-default={type.is_default}
-                                    >
-                                        {#if editingTypeId === type.id}
-                                            <div class="type-edit-form">
-                                                <TextInput
-                                                    size="sm"
-                                                    bind:value={editingTypeName}
-                                                />
-                                                <input
-                                                    type="color"
-                                                    bind:value={
-                                                        editingTypeColor
-                                                    }
-                                                    class="color-input-sm"
-                                                />
-                                                <Button
-                                                    size="small"
-                                                    kind="ghost"
-                                                    icon={Checkmark}
-                                                    iconDescription="Save"
-                                                    onclick={() =>
-                                                        handleUpdateType(
-                                                            type.id,
-                                                        )}
-                                                />
-                                                <Button
-                                                    size="small"
-                                                    kind="ghost"
-                                                    icon={Close}
-                                                    iconDescription="Cancel"
-                                                    onclick={() =>
-                                                        (editingTypeId = null)}
-                                                />
-                                            </div>
-                                        {:else}
-                                            <div class="type-display">
-                                                <div
-                                                    class="type-color-dot"
-                                                    style="background-color: {type.color}"
-                                                ></div>
-                                                <span class="type-name"
-                                                    >{type.name}</span
-                                                >
-                                                {#if type.is_default}
-                                                    <Tag size="sm" type="blue"
-                                                        >Default</Tag
-                                                    >
-                                                {/if}
-                                            </div>
-                                            <div class="type-actions">
-                                                {#if !type.is_default}
+                                    {#each ticketTypesApi.types as type}
+                                        <div
+                                            class="type-item"
+                                            class:is-default={type.is_default}
+                                        >
+                                            {#if editingTypeId === type.id}
+                                                <div class="type-edit-form">
+                                                    <TextInput
+                                                        size="sm"
+                                                        bind:value={
+                                                            editingTypeName
+                                                        }
+                                                    />
+                                                    <input
+                                                        type="color"
+                                                        bind:value={
+                                                            editingTypeColor
+                                                        }
+                                                        class="color-input-sm"
+                                                    />
                                                     <Button
                                                         size="small"
                                                         kind="ghost"
+                                                        icon={Checkmark}
+                                                        iconDescription="Save"
                                                         onclick={() =>
-                                                            handleSetDefaultType(
+                                                            handleUpdateType(
                                                                 type.id,
                                                             )}
+                                                    />
+                                                    <Button
+                                                        size="small"
+                                                        kind="ghost"
+                                                        icon={Close}
+                                                        iconDescription="Cancel"
+                                                        onclick={() =>
+                                                            (editingTypeId =
+                                                                null)}
+                                                    />
+                                                </div>
+                                            {:else}
+                                                <div class="type-display">
+                                                    <div
+                                                        class="type-color-dot"
+                                                        style="background-color: {type.color}"
+                                                    ></div>
+                                                    <span class="type-name"
+                                                        >{type.name}</span
                                                     >
-                                                        Set Default
-                                                    </Button>
-                                                {/if}
-                                                <Button
-                                                    size="small"
-                                                    kind="ghost"
-                                                    icon={Code}
-                                                    iconDescription="Edit"
-                                                    onclick={() => {
-                                                        editingTypeId = type.id;
-                                                        editingTypeName =
-                                                            type.name;
-                                                        editingTypeColor =
-                                                            type.color;
-                                                    }}
-                                                />
-                                                <Button
-                                                    size="small"
-                                                    kind="ghost"
-                                                    icon={TrashCan}
-                                                    iconDescription="Delete"
-                                                    onclick={() =>
-                                                        handleDeleteType(
-                                                            type.id,
-                                                        )}
-                                                />
-                                            </div>
-                                        {/if}
-                                    </div>
-                                {/each}
-                            </div>
-
-                            <div class="add-type-form">
-                                <h3>Add New Type</h3>
-                                <div class="add-type-inputs">
-                                    <TextInput
-                                        labelText="Name"
-                                        placeholder="e.g. Research"
-                                        bind:value={newTypeName}
-                                    />
-                                    <div class="color-picker-group">
-                                        <label for="new-type-color">Color</label
-                                        >
-                                        <input
-                                            id="new-type-color"
-                                            type="color"
-                                            bind:value={newTypeColor}
-                                        />
-                                    </div>
-                                    <Button
-                                        kind="secondary"
-                                        icon={Add}
-                                        onclick={handleAddType}
-                                    >
-                                        Add Type
-                                    </Button>
+                                                    {#if type.is_default}
+                                                        <Tag
+                                                            size="sm"
+                                                            type="blue"
+                                                            >Default</Tag
+                                                        >
+                                                    {/if}
+                                                </div>
+                                                <div class="type-actions">
+                                                    {#if !type.is_default}
+                                                        <Button
+                                                            size="small"
+                                                            kind="ghost"
+                                                            onclick={() =>
+                                                                handleSetDefaultType(
+                                                                    type.id,
+                                                                )}
+                                                        >
+                                                            Set Default
+                                                        </Button>
+                                                    {/if}
+                                                    <Button
+                                                        size="small"
+                                                        kind="ghost"
+                                                        icon={Code}
+                                                        iconDescription="Edit"
+                                                        onclick={() => {
+                                                            editingTypeId =
+                                                                type.id;
+                                                            editingTypeName =
+                                                                type.name;
+                                                            editingTypeColor =
+                                                                type.color;
+                                                        }}
+                                                    />
+                                                    <Button
+                                                        size="small"
+                                                        kind="ghost"
+                                                        icon={TrashCan}
+                                                        iconDescription="Delete"
+                                                        onclick={() =>
+                                                            handleDeleteType(
+                                                                type.id,
+                                                            )}
+                                                    />
+                                                </div>
+                                            {/if}
+                                        </div>
+                                    {/each}
                                 </div>
-                            </div>
+
+                                <div class="add-type-form">
+                                    <h3>Add New Type</h3>
+                                    <div class="add-type-inputs">
+                                        <TextInput
+                                            labelText="Name"
+                                            placeholder="e.g. Research"
+                                            bind:value={newTypeName}
+                                        />
+                                        <div class="color-picker-group">
+                                            <label for="new-type-color"
+                                                >Color</label
+                                            >
+                                            <input
+                                                id="new-type-color"
+                                                type="color"
+                                                bind:value={newTypeColor}
+                                            />
+                                        </div>
+                                        <Button
+                                            kind="secondary"
+                                            icon={Add}
+                                            onclick={handleAddType}
+                                        >
+                                            Add Type
+                                        </Button>
+                                    </div>
+                                </div>
                             </div>
                         </section>
                     {/if}
@@ -1058,30 +1098,36 @@
                             <p class="section-desc">
                                 Download a copy of your boards and tickets.
                             </p>
-                            
+
                             <div class="settings-card">
                                 <h3>Format</h3>
                                 <div class="theme-selector">
                                     <button
                                         class="export-card"
                                         class:selected={exportFormat === "json"}
-                                        onclick={() => exportFormat = "json"}
+                                        onclick={() => (exportFormat = "json")}
                                     >
                                         <Document size={24} />
                                         <div class="export-card-text">
                                             <span>JSON</span>
-                                            <small>Machine-readable, preserves full fidelity (recommended)</small>
+                                            <small
+                                                >Machine-readable, preserves
+                                                full fidelity (recommended)</small
+                                            >
                                         </div>
                                     </button>
                                     <button
                                         class="export-card"
                                         class:selected={exportFormat === "csv"}
-                                        onclick={() => exportFormat = "csv"}
+                                        onclick={() => (exportFormat = "csv")}
                                     >
                                         <Table size={24} />
                                         <div class="export-card-text">
                                             <span>CSV</span>
-                                            <small>Spreadsheet-compatible, boards and tickets only</small>
+                                            <small
+                                                >Spreadsheet-compatible, boards
+                                                and tickets only</small
+                                            >
                                         </div>
                                     </button>
                                 </div>
@@ -1090,40 +1136,59 @@
                                 <div class="theme-selector">
                                     <button
                                         class="export-card"
-                                        class:selected={exportMode === "single-file"}
-                                        onclick={() => exportMode = "single-file"}
+                                        class:selected={exportMode ===
+                                            "single-file"}
+                                        onclick={() =>
+                                            (exportMode = "single-file")}
                                     >
                                         <Document size={24} />
                                         <div class="export-card-text">
                                             <span>Single file</span>
-                                            <small>All boards combined into one file</small>
+                                            <small
+                                                >All boards combined into one
+                                                file</small
+                                            >
                                         </div>
                                     </button>
                                     <button
                                         class="export-card"
                                         class:selected={exportMode === "folder"}
-                                        onclick={() => exportMode = "folder"}
+                                        onclick={() => (exportMode = "folder")}
                                     >
                                         <Folder size={24} />
                                         <div class="export-card-text">
                                             <span>Per-board folder</span>
-                                            <small>A separate file for each board</small>
+                                            <small
+                                                >A separate file for each board</small
+                                            >
                                         </div>
                                     </button>
                                 </div>
 
                                 <div class="export-preview">
-                                    <strong>📦 You are about to export:</strong> {exportFormat.toUpperCase()} &middot; {exportMode === "single-file" ? "Single file" : "Per-board folder"}<br/>
+                                    <strong>📦 You are about to export:</strong>
+                                    {exportFormat.toUpperCase()} &middot; {exportMode ===
+                                    "single-file"
+                                        ? "Single file"
+                                        : "Per-board folder"}<br />
                                     <span class="preview-muted">
                                         {#if exportMode === "single-file"}
-                                            This will download one `worklog-export.{exportFormat}` file with all boards and tickets.
+                                            This will download one
+                                            `worklog-export.{exportFormat}` file
+                                            with all boards and tickets.
                                         {:else}
-                                            This will create a folder containing separate `.{exportFormat}` files for each board.
+                                            This will create a folder containing
+                                            separate `.{exportFormat}` files for
+                                            each board.
                                         {/if}
                                     </span>
                                 </div>
 
-                                <Button kind="primary" icon={Download} onclick={handleExport}>
+                                <Button
+                                    kind="primary"
+                                    icon={Download}
+                                    onclick={handleExport}
+                                >
                                     Export Data
                                 </Button>
                             </div>
@@ -1132,7 +1197,8 @@
                         <section class="settings-section">
                             <h2>{m.settings_import_data()}</h2>
                             <p class="section-desc">
-                                Import boards and tickets from a previous export.
+                                Import boards and tickets from a previous
+                                export.
                             </p>
                             <div class="settings-card">
                                 <InlineNotification
@@ -1141,7 +1207,11 @@
                                     subtitle="Importing merges data. Existing tickets with the same ID will be overwritten."
                                     hideCloseButton
                                 />
-                                <Button kind="danger-tertiary" icon={Upload} onclick={handleImport}>
+                                <Button
+                                    kind="danger-tertiary"
+                                    icon={Upload}
+                                    onclick={handleImport}
+                                >
                                     Import Data
                                 </Button>
                             </div>
@@ -1171,154 +1241,158 @@
                             </p>
                             <div class="settings-card">
                                 {#if gitAvailable === false}
-                                <aside class="git-warning" role="alert">
-                                    <strong>Git not found.</strong>
-                                    <span>
-                                        The <code>git</code> command was not found
-                                        on your system. Install Git to use this feature.
-                                    </span>
-                                </aside>
-                            {/if}
+                                    <aside class="git-warning" role="alert">
+                                        <strong>Git not found.</strong>
+                                        <span>
+                                            The <code>git</code> command was not
+                                            found on your system. Install Git to
+                                            use this feature.
+                                        </span>
+                                    </aside>
+                                {/if}
 
-                            <div class="sync-form">
-                                <TextInput
-                                    id="sync-remote-url"
-                                    labelText="Remote URL"
-                                    placeholder="https://github.com/user/repo.git"
-                                    bind:value={syncRemoteUrl}
-                                    disabled={gitAvailable === false}
-                                />
-
-                                <PasswordInput
-                                    id="sync-access-token"
-                                    labelText="Access Token"
-                                    placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
-                                    bind:value={syncAccessToken}
-                                    disabled={gitAvailable === false}
-                                />
-
-                                <div class="settings-grid">
+                                <div class="sync-form">
                                     <TextInput
-                                        id="sync-branch"
-                                        labelText="Branch"
-                                        placeholder="main"
-                                        bind:value={syncBranch}
+                                        id="sync-remote-url"
+                                        labelText="Remote URL"
+                                        placeholder="https://github.com/user/repo.git"
+                                        bind:value={syncRemoteUrl}
                                         disabled={gitAvailable === false}
                                     />
 
-                                    <TextInput
-                                        id="sync-git-name"
-                                        labelText="Git Name"
-                                        placeholder="Worklog User"
-                                        bind:value={syncGitName}
+                                    <PasswordInput
+                                        id="sync-access-token"
+                                        labelText="Access Token"
+                                        placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
+                                        bind:value={syncAccessToken}
                                         disabled={gitAvailable === false}
                                     />
 
-                                    <TextInput
-                                        id="sync-git-email"
-                                        labelText="Git Email"
-                                        placeholder="user@example.com"
-                                        bind:value={syncGitEmail}
-                                        disabled={gitAvailable === false}
-                                    />
-                                </div>
-
-                                <div class="sync-options">
-                                    <Toggle
-                                        id="sync-auto-sync"
-                                        labelText="Auto-sync"
-                                        labelA="Off"
-                                        labelB="On"
-                                        bind:toggled={syncAutoSync}
-                                        disabled={gitAvailable === false}
-                                    />
-
-                                    {#if syncAutoSync}
-                                        <Select
-                                            id="sync-auto-sync-interval"
-                                            labelText="Sync Interval"
-                                            bind:selected={syncAutoSyncInterval}
+                                    <div class="settings-grid">
+                                        <TextInput
+                                            id="sync-branch"
+                                            labelText="Branch"
+                                            placeholder="main"
+                                            bind:value={syncBranch}
                                             disabled={gitAvailable === false}
-                                        >
-                                            <SelectItem
-                                                value={1}
-                                                text="Every 1 minutes"
-                                            />
-                                            <SelectItem
-                                                value={5}
-                                                text="Every 5 minutes"
-                                            />
-                                            <SelectItem
-                                                value={15}
-                                                text="Every 15 minutes"
-                                            />
-                                            <SelectItem
-                                                value={30}
-                                                text="Every 30 minutes"
-                                            />
-                                            <SelectItem
-                                                value={60}
-                                                text="Every 1 hour"
-                                            />
-                                            <SelectItem
-                                                value={120}
-                                                text="Every 2 hours"
-                                            />
-                                            <SelectItem
-                                                value={360}
-                                                text="Every 6 hours"
-                                            />
-                                        </Select>
+                                        />
+
+                                        <TextInput
+                                            id="sync-git-name"
+                                            labelText="Git Name"
+                                            placeholder="Worklog User"
+                                            bind:value={syncGitName}
+                                            disabled={gitAvailable === false}
+                                        />
+
+                                        <TextInput
+                                            id="sync-git-email"
+                                            labelText="Git Email"
+                                            placeholder="user@example.com"
+                                            bind:value={syncGitEmail}
+                                            disabled={gitAvailable === false}
+                                        />
+                                    </div>
+
+                                    <div class="sync-options">
+                                        <Toggle
+                                            id="sync-auto-sync"
+                                            labelText="Auto-sync"
+                                            labelA="Off"
+                                            labelB="On"
+                                            bind:toggled={syncAutoSync}
+                                            disabled={gitAvailable === false}
+                                        />
+
+                                        {#if syncAutoSync}
+                                            <Select
+                                                id="sync-auto-sync-interval"
+                                                labelText="Sync Interval"
+                                                bind:selected={
+                                                    syncAutoSyncInterval
+                                                }
+                                                disabled={gitAvailable ===
+                                                    false}
+                                            >
+                                                <SelectItem
+                                                    value={1}
+                                                    text="Every 1 minutes"
+                                                />
+                                                <SelectItem
+                                                    value={5}
+                                                    text="Every 5 minutes"
+                                                />
+                                                <SelectItem
+                                                    value={15}
+                                                    text="Every 15 minutes"
+                                                />
+                                                <SelectItem
+                                                    value={30}
+                                                    text="Every 30 minutes"
+                                                />
+                                                <SelectItem
+                                                    value={60}
+                                                    text="Every 1 hour"
+                                                />
+                                                <SelectItem
+                                                    value={120}
+                                                    text="Every 2 hours"
+                                                />
+                                                <SelectItem
+                                                    value={360}
+                                                    text="Every 6 hours"
+                                                />
+                                            </Select>
+                                        {/if}
+                                    </div>
+
+                                    {#if syncConfig.config.last_synced_at}
+                                        <TextInput
+                                            id="sync-last-synced"
+                                            labelText="Last synced"
+                                            value={new Date(
+                                                syncConfig.config.last_synced_at,
+                                            ).toLocaleString()}
+                                            readonly
+                                        />
                                     {/if}
                                 </div>
 
-                                {#if syncConfig.config.last_synced_at}
-                                    <TextInput
-                                        id="sync-last-synced"
-                                        labelText="Last synced"
-                                        value={new Date(
-                                            syncConfig.config.last_synced_at,
-                                        ).toLocaleString()}
-                                        readonly
-                                    />
-                                {/if}
-                            </div>
+                                <div class="actions-group">
+                                    <Button
+                                        kind="primary"
+                                        onclick={saveSyncConfig}
+                                        disabled={gitAvailable === false}
+                                    >
+                                        Save Configuration
+                                    </Button>
 
-                            <div class="actions-group">
-                                <Button
-                                    kind="primary"
-                                    onclick={saveSyncConfig}
-                                    disabled={gitAvailable === false}
-                                >
-                                    Save Configuration
-                                </Button>
-
-                                {#if syncConfigured && gitAvailable !== false}
-                                    <div class="manual-actions">
-                                        <h3>Manual Actions</h3>
-                                        {#if syncLoading}
-                                            <InlineLoading
-                                                description={syncLoadingMessage}
-                                            />
-                                        {:else}
-                                            <ButtonSet>
-                                                <Button
-                                                    kind="tertiary"
-                                                    onclick={handleSyncPush}
-                                                >
-                                                    Push
-                                                </Button>
-                                                <Button
-                                                    kind="tertiary"
-                                                    onclick={handleSyncPull}
-                                                >
-                                                    Pull
-                                                </Button>
-                                            </ButtonSet>
-                                        {/if}
-                                    </div>
-                                {/if}
-                            </div>
+                                    {#if syncConfigured && gitAvailable !== false}
+                                        <div class="manual-actions">
+                                            <h3>Manual Actions</h3>
+                                            {#if syncLoading}
+                                                <InlineLoading
+                                                    description={syncLoadingMessage}
+                                                />
+                                            {:else}
+                                                <ButtonSet>
+                                                    <Button
+                                                        kind="tertiary"
+                                                        onclick={handleSyncPush}
+                                                    >
+                                                        Push
+                                                    </Button>
+                                                    <Button
+                                                        kind="tertiary"
+                                                        onclick={handleSyncPull}
+                                                    >
+                                                        Pull
+                                                    </Button>
+                                                </ButtonSet>
+                                            {/if}
+                                        </div>
+                                    {/if}
+                                </div>
                             </div>
                         </section>
                     {/if}
@@ -1340,49 +1414,55 @@
                             </p>
                             <div class="settings-card">
                                 <div class="debug-card">
-                                <h3>Seed Large Board</h3>
-                                <p>
-                                    Create a new board named "Performance Test
-                                    Board" with 200 tickets (50 per status).
-                                    This is useful for verifying lazy loading,
-                                    infinite scroll, and deferred rendering.
-                                </p>
-                                <div class="debug-actions">
-                                    <Button
-                                        kind="tertiary"
-                                        icon={MagicWand}
-                                        onclick={handleSeedPerformance}
-                                    >
-                                        Seed 200 Tickets
-                                    </Button>
+                                    <h3>Seed Large Board</h3>
+                                    <p>
+                                        Create a new board named "Performance
+                                        Test Board" with 200 tickets (50 per
+                                        status). This is useful for verifying
+                                        lazy loading, infinite scroll, and
+                                        deferred rendering.
+                                    </p>
+                                    <div class="debug-actions">
+                                        <Button
+                                            kind="tertiary"
+                                            icon={MagicWand}
+                                            onclick={handleSeedPerformance}
+                                        >
+                                            Seed 200 Tickets
+                                        </Button>
+                                    </div>
                                 </div>
-                            </div>
 
-                            <div class="debug-card" style="margin-top: 1.5rem;">
-                                <h3>How to Verify Lazy Loading</h3>
-                                <ul class="debug-guide">
-                                    <li>
-                                        <strong>Infinite Scroll:</strong> Open the
-                                        "Performance Test Board". Scroll down any
-                                        column. You should see an "Inline Loading"
-                                        spinner briefly at the bottom before more
-                                        tickets appear.
-                                    </li>
-                                    <li>
-                                        <strong>Deferred Rendering:</strong> Open
-                                        the browser/Tauri inspector (F12). Look at
-                                        the DOM for tickets far down the list. Their
-                                        body content should be empty (skeleton) until
-                                        you scroll near them.
-                                    </li>
-                                    <li>
-                                        <strong>Network/DB Activity:</strong> Observe
-                                        the database logs or debug console to see
-                                        paginated SQL queries (LIMIT/OFFSET) being
-                                        executed as you scroll.
-                                    </li>
-                                </ul>
-                            </div>
+                                <div
+                                    class="debug-card"
+                                    style="margin-top: 1.5rem;"
+                                >
+                                    <h3>How to Verify Lazy Loading</h3>
+                                    <ul class="debug-guide">
+                                        <li>
+                                            <strong>Infinite Scroll:</strong> Open
+                                            the "Performance Test Board". Scroll
+                                            down any column. You should see an "Inline
+                                            Loading" spinner briefly at the bottom
+                                            before more tickets appear.
+                                        </li>
+                                        <li>
+                                            <strong>Deferred Rendering:</strong>
+                                            Open the browser/Tauri inspector (F12).
+                                            Look at the DOM for tickets far down
+                                            the list. Their body content should be
+                                            empty (skeleton) until you scroll near
+                                            them.
+                                        </li>
+                                        <li>
+                                            <strong>Network/DB Activity:</strong
+                                            > Observe the database logs or debug
+                                            console to see paginated SQL queries
+                                            (LIMIT/OFFSET) being executed as you
+                                            scroll.
+                                        </li>
+                                    </ul>
+                                </div>
                             </div>
                         </section>
                     {/if}
@@ -1401,17 +1481,17 @@
                             </p>
                             <div class="settings-card">
                                 <div class="advanced-grid">
-                                <Button
-                                    kind="ghost"
-                                    onclick={refreshWorkspaceState}
-                                >
-                                    Force State Re-init
-                                </Button>
-                                <p class="help-text">
-                                    Re-scans the workspace directory and reloads
-                                    all board metadata.
-                                </p>
-                            </div>
+                                    <Button
+                                        kind="ghost"
+                                        onclick={refreshWorkspaceState}
+                                    >
+                                        Force State Re-init
+                                    </Button>
+                                    <p class="help-text">
+                                        Re-scans the workspace directory and
+                                        reloads all board metadata.
+                                    </p>
+                                </div>
                             </div>
                         </section>
                     {/if}
@@ -1479,7 +1559,11 @@
     }
 
     .nav-item.active {
-        background: color-mix(in srgb, var(--cds-interactive-01) 10%, transparent);
+        background: color-mix(
+            in srgb,
+            var(--cds-interactive-01) 10%,
+            transparent
+        );
         color: var(--cds-interactive-01);
         font-weight: 600;
         border-radius: 0 4px 4px 0;
@@ -1487,7 +1571,7 @@
     }
 
     .nav-item.active::before {
-        content: '';
+        content: "";
         position: absolute;
         left: 0;
         top: 0;
@@ -1603,7 +1687,7 @@
         display: flex;
         flex-direction: column;
         gap: 1.5rem;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
     }
 
     .section-desc {
@@ -1655,7 +1739,11 @@
 
     .theme-card.selected {
         border-color: var(--cds-interactive-01);
-        background: color-mix(in srgb, var(--cds-interactive-01) 5%, var(--cds-ui-01));
+        background: color-mix(
+            in srgb,
+            var(--cds-interactive-01) 5%,
+            var(--cds-ui-01)
+        );
         color: var(--cds-interactive-01);
     }
 
@@ -1742,7 +1830,11 @@
 
     .export-card.selected {
         border-color: var(--cds-interactive-01);
-        background: color-mix(in srgb, var(--cds-interactive-01) 5%, var(--cds-ui-01));
+        background: color-mix(
+            in srgb,
+            var(--cds-interactive-01) 5%,
+            var(--cds-ui-01)
+        );
         color: var(--cds-interactive-01);
     }
 

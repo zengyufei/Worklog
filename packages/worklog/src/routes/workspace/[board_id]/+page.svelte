@@ -21,9 +21,9 @@
         SortAscending,
         SortDescending,
     } from "carbon-icons-svelte";
-    import { useTicketSort } from "$lib/hooks/ticket-sort.svelte";
+    import { getTicketSort } from "$lib/hooks/ticket-sort.svelte";
     import { getWorkspaceShellContext } from "$lib/hooks/workspace-shell-context";
-    import { useTickets } from "$lib/hooks/tickets.svelte";
+    import { getTickets } from "$lib/hooks/tickets.svelte";
     import * as m from "$lib/paraglide/messages.js";
 
     import type { PageProps } from "./$types";
@@ -37,7 +37,7 @@
         boardsApi.boards.find((item) => item.id === data.boardId) ?? null,
     );
 
-    const ticketsApi = useTickets(
+    const ticketsApi = getTickets(
         () => shell.workspace.path,
         () => board?.id ?? null,
     );
@@ -51,7 +51,7 @@
 
     // ── Search & Sort (shared across all views) ────────────────────────────────
     let searchQuery = $state("");
-    const sortHook = useTicketSort();
+    const sortHook = getTicketSort();
     const sortItems = $derived([
         { id: "position", text: m.board_sort_manual() },
         { id: "priority", text: m.board_sort_priority() },

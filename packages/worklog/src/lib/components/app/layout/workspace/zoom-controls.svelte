@@ -1,10 +1,10 @@
 <script lang="ts">
     import { Button } from "carbon-components-svelte";
     import { ZoomIn, ZoomOut } from "carbon-icons-svelte";
-    import { useAppZoom } from "$lib/hooks/app-zoom.svelte";
+    import { getAppZoom } from "$lib/hooks/app-zoom.svelte";
     import * as m from "$lib/paraglide/messages.js";
 
-    const appZoom = useAppZoom();
+    const appZoom = getAppZoom();
 </script>
 
 <div class="zoom-controls">

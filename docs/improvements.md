@@ -147,15 +147,27 @@ If `open_workspace()` partially updates `_path` then throws, the comparison and 
 
 ## 🟢 Lower Impact / Polish
 
-### 11. `use*` Naming Convention for Singletons
+### 11. `use*` Naming Convention for Singletons ✅ Fixed
 
 | Area | Files |
 |---|---|
-| Clarity | All `src/lib/hooks/*.svelte.ts` |
+| Clarity | All `src/lib/hooks/*.svelte.ts`, `src/lib/sync/sync-config.svelte.ts` |
 
-Functions like `useWorkspace()`, `useBoards()`, `useCommandPalette()` are module-level singletons, not per-component instances. The `use*` prefix implies they should be called at the component level. This is confusing — especially since `useTickets()` creates **new independent state** while `useWorkspace()` returns the same singleton every time.
+Module-level singletons (state defined at module level) now use `get*` prefix to distinguish them from instance-based hooks that create new state each call.
 
-**Recommendation:** Rename module-level singletons to `getWorkspace()`, `workspaceState`, or similar to make the distinction clear.
+| Before | After | Nature |
+|---|---|---|
+| `useWorkspace()` | `getWorkspace()` | Singleton |
+| `useBoards(path)` | `getBoards(path)` | Singleton |
+| `useTickets(path, boardId?)` | `getTickets(path, boardId?)` | Singleton |
+| `useCommandPalette()` | `getCommandPalette()` | Singleton |
+| `useAppZoom()` | `getAppZoom()` | Singleton |
+| `useSyncConfig()` | `getSyncConfig()` | Singleton |
+| `useTicketSort()` | `getTicketSort()` | Singleton |
+| `useTicketTypes(path)` | *(kept)* | Instance-based (new state per call) |
+| `useAllTickets(path)` | *(kept, deprecated)* | Alias → calls `getTickets(path)` |
+
+**17 files updated.** `svelte-check` passes with 0 errors.
 
 ---
 

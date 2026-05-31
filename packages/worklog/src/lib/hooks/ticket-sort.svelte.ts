@@ -19,7 +19,7 @@ let _sortOrder = $state<SortOrder>(
     (typeof localStorage !== 'undefined' && localStorage.getItem(STORAGE_KEY_ORDER) as SortOrder) || "asc"
 );
 
-export function useTicketSort() {
+export function getTicketSort() {
     $effect(() => {
         localStorage.setItem(STORAGE_KEY_BY, _sortBy);
         localStorage.setItem(STORAGE_KEY_ORDER, _sortOrder);

@@ -21,7 +21,7 @@ if (browser) {
     });
 }
 
-export function useAppZoom() {
+export function getAppZoom() {
     return {
         get zoom() {
             return globalZoom;

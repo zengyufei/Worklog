@@ -11,7 +11,7 @@ let _status = $state<SyncStatus>('not_configured');
  * Reactive hook for sync configuration.
  * Config is persisted in the sync_config database table.
  */
-export function useSyncConfig() {
+export function getSyncConfig() {
     async function load(db: Database): Promise<void> {
         try {
             const rows = await db.select<any[]>(

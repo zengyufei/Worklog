@@ -1,6 +1,6 @@
 import { getContext, setContext } from 'svelte';
 import { type Ticket } from "$lib/components/app/types";
-import { useTicketSort } from "$lib/hooks/ticket-sort.svelte";
+import { getTicketSort } from "$lib/hooks/ticket-sort.svelte";
 
 export type CalendarDay = {
     date: Date;
@@ -12,7 +12,7 @@ export type CalendarDay = {
 
 export class CalendarState {
     #ticketsHook: any;
-    #sortHook = useTicketSort();
+    #sortHook = getTicketSort();
     #getSearchQuery: () => string;
 
     viewMode = $state<"month" | "week">("month");

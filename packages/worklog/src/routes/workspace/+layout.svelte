@@ -4,21 +4,27 @@
     import { Dashboard } from "carbon-icons-svelte";
 
     import WorkspaceSidebar from "$lib/components/app/layout/workspace/workspace-sidebar.svelte";
-    import { useBoards } from "$lib/hooks/boards.svelte";
+    import { getBoards } from "$lib/hooks/boards.svelte";
     import { useTicketTypes } from "$lib/hooks/ticket-types.svelte";
-    import { setWorkspaceShellContext } from "$lib/hooks/workspace-shell-context";
-    import { useWorkspace } from "$lib/hooks/workspace.svelte";
-    import { useCommandPalette } from "$lib/hooks/command-palette.svelte";
+    import {
+        getWorkspaceShellContext,
+        setWorkspaceShellContext,
+    } from "$lib/hooks/workspace-shell-context";
+    import { getWorkspace } from "$lib/hooks/workspace.svelte";
+    import { getCommandPalette } from "$lib/hooks/command-palette.svelte";
     import { page } from "$app/state";
     import type { CommandAction } from "$lib/components/app/types";
-    import { initSyncScheduler, destroySyncScheduler } from "$lib/sync/sync-scheduler.svelte";
+    import {
+        initSyncScheduler,
+        destroySyncScheduler,
+    } from "$lib/sync/sync-scheduler.svelte";
     import { onDestroy } from "svelte";
 
     let { children } = $props();
-    const workspace = useWorkspace();
-    const boardsApi = useBoards(() => workspace.path);
+    const workspace = getWorkspace();
+    const boardsApi = getBoards(() => workspace.path);
     const ticketTypesApi = useTicketTypes(() => workspace.path);
-    const palette = useCommandPalette();
+    const palette = getCommandPalette();
 
     setWorkspaceShellContext({ workspace, boardsApi, ticketTypesApi });
 
@@ -57,22 +63,25 @@
         lastLoadedWorkspacePath = workspacePath;
         boardLoadError = null;
 
-        void Promise.all([
-            boardsApi.load(),
-            ticketTypesApi.load()
-        ]).catch((error) => {
-            boardLoadError = String(error);
-            lastLoadedWorkspacePath = null;
-        });
+        void Promise.all([boardsApi.load(), ticketTypesApi.load()]).catch(
+            (error) => {
+                boardLoadError = String(error);
+                lastLoadedWorkspacePath = null;
+            },
+        );
 
         // Load sync config and start auto-sync interval
         import("$lib/db").then(({ getDb }) => {
             getDb(workspacePath).then((db) => {
-                import("$lib/sync/sync-config.svelte").then(({ useSyncConfig }) => {
-                    useSyncConfig().load(db).then(() => {
-                        initSyncScheduler();
-                    });
-                });
+                import("$lib/sync/sync-config.svelte").then(
+                    ({ getSyncConfig }) => {
+                        getSyncConfig()
+                            .load(db)
+                            .then(() => {
+                                initSyncScheduler();
+                            });
+                    },
+                );
             });
         });
     });

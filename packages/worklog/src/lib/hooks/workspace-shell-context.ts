@@ -1,11 +1,11 @@
 import { createContext } from "svelte";
 
-import type { useBoards } from "$lib/hooks/boards.svelte";
-import type { useWorkspace } from "$lib/hooks/workspace.svelte";
+import type { getBoards } from "$lib/hooks/boards.svelte";
+import type { getWorkspace } from "$lib/hooks/workspace.svelte";
 import type { useTicketTypes } from "$lib/hooks/ticket-types.svelte";
 
-export type WorkspaceApi = ReturnType<typeof useWorkspace>;
-export type BoardsApi = ReturnType<typeof useBoards>;
+export type WorkspaceApi = ReturnType<typeof getWorkspace>;
+export type BoardsApi = ReturnType<typeof getBoards>;
 export type TicketTypesApi = ReturnType<typeof useTicketTypes>;
 
 export interface WorkspaceShellContext {

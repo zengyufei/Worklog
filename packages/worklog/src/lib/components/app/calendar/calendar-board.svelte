@@ -1,6 +1,6 @@
 <script lang="ts">
     import { InlineNotification } from "carbon-components-svelte";
-    import { useTickets } from "$lib/hooks/tickets.svelte";
+    import { getTickets } from "$lib/hooks/tickets.svelte";
     import { getWorkspaceShellContext } from "$lib/hooks/workspace-shell-context";
     import type { Ticket, TicketStatus } from "$lib/components/app/types";
     import type { Comment } from "$lib/components/app/types";
@@ -18,7 +18,7 @@
     const shell = getWorkspaceShellContext();
     const getWorkspacePath = () => shell.workspace.path;
     const getBoardId = () => shell.boardsApi.active?.id ?? null;
-    const ticketsHook = useTickets(getWorkspacePath, getBoardId);
+    const ticketsHook = getTickets(getWorkspacePath, getBoardId);
 
     const calendar = new CalendarState(ticketsHook, () => searchQuery);
     setCalendarState(calendar);
@@ -33,7 +33,8 @@
 
     const previewTicket = $derived(
         previewTicketId
-            ? (ticketsHook.tickets.find((t) => t.id === previewTicketId) ?? null)
+            ? (ticketsHook.tickets.find((t) => t.id === previewTicketId) ??
+                  null)
             : null,
     );
 
@@ -98,7 +99,9 @@
             const db = await getDb(workspacePath);
             const settings = await SettingsRepo.getSettings(db);
             author = settings.author_name?.trim() || "Anonymous";
-        } catch { /* use fallback */ }
+        } catch {
+            /* use fallback */
+        }
         const comment: Comment = {
             author,
             body,
@@ -109,7 +112,7 @@
 
     const hasNoDateTickets = $derived(
         calendar.filteredTickets.length > 0 &&
-        calendar.filteredTickets.every((t) => !t.due_date && !t.start_date)
+            calendar.filteredTickets.every((t) => !t.due_date && !t.start_date),
     );
 </script>
 
@@ -127,10 +130,7 @@
         </div>
     {/if}
 
-    <CalendarGrid
-        onTicketClick={openPreviewSheet}
-        onDateClick={openAddModal}
-    />
+    <CalendarGrid onTicketClick={openPreviewSheet} onDateClick={openAddModal} />
 </div>
 
 <!-- ── Modals ────────────────────────────────────────────────────────────────── -->
@@ -149,11 +149,17 @@
 <TicketPreviewSheet
     bind:open={previewOpen}
     ticket={previewTicket}
-    onEdit={(t) => { previewOpen = false; openEditModal(t); }}
+    onEdit={(t) => {
+        previewOpen = false;
+        openEditModal(t);
+    }}
     onDelete={(id) => {
         previewOpen = false;
         const t = ticketsHook.tickets.find((t) => t.id === id);
-        if (t) { deleteTarget = t; deleteModalOpen = true; }
+        if (t) {
+            deleteTarget = t;
+            deleteModalOpen = true;
+        }
     }}
     onStatusChange={handleStatusChange}
     onAddComment={handleAddComment}
