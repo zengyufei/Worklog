@@ -42,6 +42,21 @@ type WorkspaceStatus =
     | 'ready'       // fully loaded, show board view
     | 'error'       // something went wrong
 
+/** Classify common Tauri errors into user-friendly messages. */
+function classifyWorkspaceError(raw: string): string {
+    // Tauri filesystem scope violations (Windows "forbidden path")
+    if (
+        raw.toLowerCase().includes('forbidden') ||
+        raw.toLowerCase().includes('not allowed') ||
+        raw.toLowerCase().includes('permission denied') ||
+        raw.includes('tauri::fs') ||
+        raw.includes('not permitted')
+    ) {
+        return 'The workspace folder is not accessible. It may be in a restricted system directory or on a removable drive that is no longer available. Please choose a different folder.';
+    }
+    return raw;
+}
+
 let _path = $state<string | null>(null);
 let _meta = $state<WorkspaceMeta | null>(null);
 let _status = $state<WorkspaceStatus>('idle');
@@ -74,8 +89,26 @@ export function getWorkspace() {
                     _status = 'no_workspace';
                 }
             } catch (e) {
-                _error = String(e);
-                _status = 'error';
+                const msg = String(e);
+                _error = classifyWorkspaceError(msg);
+
+                // If the saved path is no longer accessible (e.g. drive removed,
+                // permissions changed), clear it so the next launch goes straight
+                // to the workspace selector instead of re-triggering the error.
+                if (
+                    msg.toLowerCase().includes('forbidden') ||
+                    msg.toLowerCase().includes('not allowed') ||
+                    msg.toLowerCase().includes('permission denied') ||
+                    msg.toLowerCase().includes('no such file or directory') ||
+                    msg.toLowerCase().includes('enosys')
+                ) {
+                    _path = null;
+                    _meta = null;
+                    clearSavedWorkspacePath();
+                    _status = 'no_workspace';
+                } else {
+                    _status = 'error';
+                }
             } finally {
                 initInFlight = null;
             }
