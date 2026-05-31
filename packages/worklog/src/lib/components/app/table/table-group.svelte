@@ -84,21 +84,37 @@
                 </thead>
                 <tbody>
                     {#each group.tickets as ticket (ticket.id)}
-                        {@const PriorityIcon = priorityIconMap[ticket.priority as TicketPriority]}
-                        {@const customType = ticketTypesApi?.types?.find((t) => t.id === ticket.ticket_type)}
-                        {@const TypeIcon = (customType?.icon && typeIconMap[customType.icon as TicketType]) || typeIconMap[ticket.ticket_type as TicketType] || Bookmark}
-                        {@const due = state.formatDueDate(ticket.due_date, ticket.status === "done")}
+                        {@const PriorityIcon =
+                            priorityIconMap[ticket.priority as TicketPriority]}
+                        {@const customType = ticketTypesApi?.types?.find(
+                            (t) => t.id === ticket.ticket_type,
+                        )}
+                        {@const TypeIcon =
+                            (customType?.icon &&
+                                typeIconMap[customType.icon as TicketType]) ||
+                            typeIconMap[ticket.ticket_type as TicketType] ||
+                            Bookmark}
+                        {@const due = state.formatDueDate(
+                            ticket.due_date,
+                            ticket.status === "done",
+                        )}
                         <tr
                             class="table-row"
-                            style="--row-prio-color: {priorityStripeColor[ticket.priority] || 'var(--cds-ui-03)'};"
+                            style="--row-prio-color: {priorityStripeColor[
+                                ticket.priority
+                            ] || 'var(--cds-ui-03)'};"
                         >
                             <td class="td-priority-stripe" aria-hidden="true">
                                 <span class="priority-stripe-inner"></span>
                             </td>
                             <td class="td-title">
                                 <div class="cell-title">
-                                    <span class="cell-title-text">{ticket.title}</span>
-                                    <span class="cell-title-id">{ticket.id}</span>
+                                    <span class="cell-title-text"
+                                        >{ticket.title}</span
+                                    >
+                                    <span class="cell-title-id"
+                                        >{ticket.id}</span
+                                    >
                                 </div>
                             </td>
                             <td class="td-priority">
@@ -142,7 +158,8 @@
                                         {/each}
                                         {#if ticket.labels.length > 3}
                                             <span class="labels-more"
-                                                >+{ticket.labels.length - 3}</span
+                                                >+{ticket.labels.length -
+                                                    3}</span
                                             >
                                         {/if}
                                     {:else}
@@ -151,14 +168,19 @@
                                 </div>
                             </td>
                             <td class="td-due">
-                                <div class="cell-due" class:overdue={due.overdue}>
+                                <div
+                                    class="cell-due"
+                                    class:overdue={due.overdue}
+                                >
                                     <Calendar size={14} />
                                     <span>{due.text}</span>
                                 </div>
                             </td>
                             <td class="td-created">
                                 <span class="cell-date"
-                                    >{state.formatRelativeDate(ticket.created_at)}</span
+                                    >{state.formatRelativeDate(
+                                        ticket.created_at,
+                                    )}</span
                                 >
                             </td>
                             <td class="td-actions">
