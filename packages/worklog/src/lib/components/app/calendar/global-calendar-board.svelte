@@ -1,6 +1,6 @@
 <script lang="ts">
     import { InlineNotification } from "carbon-components-svelte";
-    import { useTickets } from "$lib/hooks/tickets.svelte";
+    import { getTickets } from "$lib/hooks/tickets.svelte";
     import { getWorkspaceShellContext } from "$lib/hooks/workspace-shell-context";
     import type {
         Ticket,
@@ -19,7 +19,7 @@
 
     const shell = getWorkspaceShellContext();
     const getWorkspacePath = () => shell.workspace.path;
-    const ticketsHook = useTickets(getWorkspacePath);
+    const ticketsHook = getTickets(getWorkspacePath);
 
     // Create a proxy hook for the calendar state to prefix board names to titles
     const proxyTicketsHook = {

@@ -1,6 +1,6 @@
 <script lang="ts">
     import { InlineNotification } from "carbon-components-svelte";
-    import { useTickets } from "$lib/hooks/tickets.svelte";
+    import { getTickets } from "$lib/hooks/tickets.svelte";
     import { getWorkspaceShellContext } from "$lib/hooks/workspace-shell-context";
     import type { Ticket, TicketStatus } from "$lib/components/app/types";
     import { type Comment } from "$lib/components/app/types";
@@ -25,12 +25,16 @@
     const { ticketTypesApi } = shell;
     const getWorkspacePath = () => shell.workspace.path;
     const getBoardId = () => shell.boardsApi.active?.id ?? null;
-    const ticketsHook = useTickets(getWorkspacePath, getBoardId);
+    const ticketsHook = getTickets(getWorkspacePath, getBoardId);
 
     let actionError = $state<string | null>(null);
 
     // Initialize State Context — pass searchQuery getter so parent drives filtering
-    const gantt = new GanttState(ticketsHook, ticketTypesApi, () => searchQuery);
+    const gantt = new GanttState(
+        ticketsHook,
+        ticketTypesApi,
+        () => searchQuery,
+    );
     setGanttState(gantt);
 
     // Auto-scroll to today on mount

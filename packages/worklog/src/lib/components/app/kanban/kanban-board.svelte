@@ -6,8 +6,8 @@
     import TicketDeleteConfirm from "./ticket-delete-confirm.svelte";
     import TicketPreviewSheet from "./ticket-preview-sheet.svelte";
     import { getWorkspaceShellContext } from "$lib/hooks/workspace-shell-context";
-    import { useTickets } from "$lib/hooks/tickets.svelte";
-    import { useTicketSort } from "$lib/hooks/ticket-sort.svelte";
+    import { getTickets } from "$lib/hooks/tickets.svelte";
+    import { getTicketSort } from "$lib/hooks/ticket-sort.svelte";
     import { SortAscending, SortDescending } from "carbon-icons-svelte";
     import {
         type Ticket,
@@ -32,8 +32,8 @@
     const getWorkspacePath = () => shell.workspace.path;
     const getBoardId = () => shell.boardsApi.active?.id ?? null;
 
-    const ticketsHook = useTickets(getWorkspacePath, getBoardId);
-    const sortHook = useTicketSort();
+    const ticketsHook = getTickets(getWorkspacePath, getBoardId);
+    const sortHook = getTicketSort();
 
     const sortItems = [
         { id: "position", text: "Manual Order" },
@@ -51,19 +51,25 @@
 
     // ── Column definitions from config ─────────────────────────────────────────
     function getStatusLabel(status: TicketStatus) {
-        switch(status) {
-            case "backlog": return m.status_backlog();
-            case "todo": return m.status_todo();
-            case "in_progress": return m.status_in_progress();
-            case "done": return m.status_done();
+        switch (status) {
+            case "backlog":
+                return m.status_backlog();
+            case "todo":
+                return m.status_todo();
+            case "in_progress":
+                return m.status_in_progress();
+            case "done":
+                return m.status_done();
         }
     }
 
-    const columnsDef = $derived(TICKET_STATUS_ORDER.map((status) => ({
-        status,
-        label: getStatusLabel(status),
-        accentColor: TICKET_STATUS_CONFIG[status].accentColor,
-    })));
+    const columnsDef = $derived(
+        TICKET_STATUS_ORDER.map((status) => ({
+            status,
+            label: getStatusLabel(status),
+            accentColor: TICKET_STATUS_CONFIG[status].accentColor,
+        })),
+    );
 
     let columns = $derived(
         columnsDef.map((def) => {
@@ -76,8 +82,6 @@
             };
         }),
     );
-
-
 
     const filteredColumns = $derived(
         columns.map((col) => ({
@@ -316,12 +320,21 @@
 <div class="board-shell">
     <!-- Stats strip -->
     <div class="board-stats-strip">
-        <span class="stats-text">{m.kanban_stats_done({ done: doneCount, total: activeTickets })}</span>
+        <span class="stats-text"
+            >{m.kanban_stats_done({
+                done: doneCount,
+                total: activeTickets,
+            })}</span
+        >
         <div class="progress-bar">
             <div class="progress-fill" style="width: {progress}%"></div>
         </div>
         {#if totalTickets !== activeTickets}
-            <span class="stats-text stats-backlog">{m.kanban_stats_backlog({ count: totalTickets - activeTickets })}</span>
+            <span class="stats-text stats-backlog"
+                >{m.kanban_stats_backlog({
+                    count: totalTickets - activeTickets,
+                })}</span
+            >
         {/if}
     </div>
 
@@ -462,8 +475,6 @@
         flex-shrink: 0;
         background: var(--cds-ui-background);
     }
-
-
 
     .stats-text {
         font-size: 0.75rem;

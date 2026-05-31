@@ -49,7 +49,7 @@ Two independent hooks maintained their own `_tickets` arrays, causing stale data
 
 ---
 
-### 4. `window.location.reload()` After Data Mutations
+### 4. `window.location.reload()` After Data Mutations (not related, The behavior is correct)
 
 | Area | File |
 |---|---|
@@ -63,7 +63,7 @@ After a successful data import, the app does a full hard reload (`window.locatio
 
 ## 🟡 Medium Impact
 
-### 5. Three Different Drag-and-Drop Libraries
+### 5. Three Different Drag-and-Drop Libraries (FIXED)
 
 | Area | File |
 |---|---|
@@ -75,28 +75,32 @@ Three DnD libraries for one app — `@dnd-kit-svelte/svelte`, `svelte-dnd-action
 
 ---
 
-### 6. Heavy Carbon Components Bundle
+### 6. Heavy Carbon Components Bundle ✅ Already Optimized
 
 | Area | File |
 |---|---|
 | Bundle size | `src/routes/+layout.svelte` |
 
-Importing the full Carbon CSS (`import "carbon-components-svelte/css/all.css"`) adds significant bloat — hundreds of KB of CSS. The `carbon-preprocess-svelte` plugin with `optimizeImports()` is configured in `svelte.config.js`, but the full CSS import bypasses tree-shaking entirely.
+A full CSS import (`import "carbon-components-svelte/css/all.css"`) is present, but `carbon-preprocess-svelte`'s `optimizeCss()` Vite plugin is already configured and handles this at build time — it purges unused Carbon styles, reducing the CSS bundle from ~606 kB to ~53 kB. The `optimizeImports()` preprocessor also rewrites barrel JS imports to source paths for faster compilation.
 
-**Recommendation:** Import only the individual Carbon component CSS files that are actually used, or consider moving away from Carbon given the project's custom visual direction (glass, dark, compact surfaces).
+**Status:** This is actually the recommended setup per the carbon-preprocess-svelte documentation. During development the full CSS is loaded (no workaround), but production builds are properly optimized.
 
 ---
 
-### 7. Unused and Orphaned Dependencies
+### 7. Unused and Orphaned Dependencies ✅ Fixed
 
-| Package | Likely Issue |
+| Package | Action |
 |---|---|
-| `clsx` + `tailwind-merge` | `cn()` utility exists in `utils.ts` but Tailwind is **not configured** anywhere |
-| `layerchart`, `d3-scale`, `d3-shape` | Heavy charting libraries — unclear if still in use |
-| `bits-ui`, `vaul-svelte` | Shadcn-style primitives in devDependencies, unclear usage |
-| `carbon-preprocess-svelte` | Optimizer configured but defeated by full CSS import |
+| `clsx` + `tailwind-merge` | Removed — `cn()` utility was dead code (never called) |
+| `layerchart`, `d3-scale`, `d3-shape` | Removed — no source imports exist |
+| `bits-ui`, `vaul-svelte` | Removed — no source imports exist |
+| `@internationalized/date` | Removed — no source imports exist |
+| `svelte-sonner` | Removed — no source imports exist |
+| `@dnd-kit/helpers` | Removed — unused after DnD consolidation |
+| `@types/d3-scale`, `@types/d3-shape` | Removed — types for removed packages |
+| `carbon-preprocess-svelte` | **Kept** — actively used (`optimizeImports` + `optimizeCss`) |
 
-**Recommendation:** Audit all dependencies. Run `bun run check` after removing each unused package.
+**11 packages removed in total.** `bun install` confirms clean resolution.
 
 ---
 
@@ -143,15 +147,27 @@ If `open_workspace()` partially updates `_path` then throws, the comparison and 
 
 ## 🟢 Lower Impact / Polish
 
-### 11. `use*` Naming Convention for Singletons
+### 11. `use*` Naming Convention for Singletons ✅ Fixed
 
 | Area | Files |
 |---|---|
-| Clarity | All `src/lib/hooks/*.svelte.ts` |
+| Clarity | All `src/lib/hooks/*.svelte.ts`, `src/lib/sync/sync-config.svelte.ts` |
 
-Functions like `useWorkspace()`, `useBoards()`, `useCommandPalette()` are module-level singletons, not per-component instances. The `use*` prefix implies they should be called at the component level. This is confusing — especially since `useTickets()` creates **new independent state** while `useWorkspace()` returns the same singleton every time.
+Module-level singletons (state defined at module level) now use `get*` prefix to distinguish them from instance-based hooks that create new state each call.
 
-**Recommendation:** Rename module-level singletons to `getWorkspace()`, `workspaceState`, or similar to make the distinction clear.
+| Before | After | Nature |
+|---|---|---|
+| `useWorkspace()` | `getWorkspace()` | Singleton |
+| `useBoards(path)` | `getBoards(path)` | Singleton |
+| `useTickets(path, boardId?)` | `getTickets(path, boardId?)` | Singleton |
+| `useCommandPalette()` | `getCommandPalette()` | Singleton |
+| `useAppZoom()` | `getAppZoom()` | Singleton |
+| `useSyncConfig()` | `getSyncConfig()` | Singleton |
+| `useTicketSort()` | `getTicketSort()` | Singleton |
+| `useTicketTypes(path)` | *(kept)* | Instance-based (new state per call) |
+| `useAllTickets(path)` | *(kept, deprecated)* | Alias → calls `getTickets(path)` |
+
+**17 files updated.** `svelte-check` passes with 0 errors.
 
 ---
 
@@ -244,7 +260,7 @@ Using `$effect.root()` at module scope for a persistent effect is unconventional
 |---|---|---|
 | 🔴 | Remove dead `greet` Rust command | 5 minutes |
 | 🟡 | Clean up debug comments in workspace layout | 1 minute |
-| 🟡 | Audit and remove unused dependencies | 30 minutes |
+| 🟡 | Audit and remove unused dependencies | ✅ Done (11 removed) |
 | 🟡 | Replace `window.location.reload()` with hook invalidation | 1–2 hours |
 | 🟢 | Fix i18n initialization to run once | 15 minutes |
 | 🟢 | Consolidate three DnD libraries into one | 2–3 hours |

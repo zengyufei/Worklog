@@ -5,7 +5,7 @@ import {
     TICKET_STATUS_ORDER,
     TICKET_STATUS_CONFIG
 } from "$lib/components/app/types";
-import { useTicketSort } from "$lib/hooks/ticket-sort.svelte";
+import { getTicketSort } from "$lib/hooks/ticket-sort.svelte";
 import { Pending, TaskComplete, InProgress as InProgressIcon, CheckmarkFilled } from "carbon-icons-svelte";
 
 export type RowItem =
@@ -43,7 +43,7 @@ export class GanttState {
 
     #ticketsHook: any;
     #ticketTypesApi: any;
-    #sortHook = useTicketSort();
+    #sortHook = getTicketSort();
     #getSearchQuery: () => string;
 
     zoomLevel = $state<"day" | "week" | "month">("day");

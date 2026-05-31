@@ -22,9 +22,9 @@
 	// @ts-ignore
 	import AppToolbar from "$lib/components/app/layout/toolbar/app-toolbar.svelte";
 	import CommandPalette from "$lib/components/app/layout/command-palette/command-palette.svelte";
-	import { useWorkspace } from "$lib/hooks/workspace.svelte";
-	import { useCommandPalette } from "$lib/hooks/command-palette.svelte";
-	import { useAppZoom } from "$lib/hooks/app-zoom.svelte";
+	import { getWorkspace } from "$lib/hooks/workspace.svelte";
+	import { getCommandPalette } from "$lib/hooks/command-palette.svelte";
+	import { getAppZoom } from "$lib/hooks/app-zoom.svelte";
 	import { notifications } from "$lib/hooks/notifications.svelte";
 	import {
 		buildCommandActions,
@@ -37,9 +37,9 @@
 	import { importFromFile } from "$lib/db/mappers";
 
 	let { children } = $props();
-	const workspace = useWorkspace();
-	const palette = useCommandPalette();
-	const appZoom = useAppZoom();
+	const workspace = getWorkspace();
+	const palette = getCommandPalette();
+	const appZoom = getAppZoom();
 	let hasInitializedWorkspace = $state(false);
 
 	// ── App-level callbacks ────────────────────────────────────────────────

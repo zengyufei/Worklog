@@ -1,13 +1,13 @@
 <script lang="ts">
     import { InlineNotification } from "carbon-components-svelte";
-    import { useTickets } from "$lib/hooks/tickets.svelte";
+    import { getTickets } from "$lib/hooks/tickets.svelte";
     import { getWorkspaceShellContext } from "$lib/hooks/workspace-shell-context";
     import type { Ticket } from "$lib/components/app/types";
-    
+
     // Extracted Components
     import { TableState, setTableState } from "./table-state.svelte";
     import TableGroup from "./table-group.svelte";
-    
+
     // Modals
     import TicketAddEditModal from "../kanban/ticket-add-edit-modal.svelte";
     import TicketDeleteConfirm from "../kanban/ticket-delete-confirm.svelte";
@@ -18,7 +18,7 @@
     const getWorkspacePath = () => shell.workspace.path;
     const getBoardId = () => shell.boardsApi.active?.id ?? null;
 
-    const ticketsHook = useTickets(getWorkspacePath, getBoardId);
+    const ticketsHook = getTickets(getWorkspacePath, getBoardId);
 
     // Initialize State Context — pass searchQuery getter so parent drives filtering
     const tableState = new TableState(ticketsHook, () => searchQuery);
@@ -31,7 +31,9 @@
     let deleteTarget = $state<Ticket | null>(null);
 
     function handleEdit(ticketId: string) {
-        const t = tableState.filteredTickets.find((t: Ticket) => t.id === ticketId);
+        const t = tableState.filteredTickets.find(
+            (t: Ticket) => t.id === ticketId,
+        );
         if (t) {
             editTicket = t;
             editModalOpen = true;
@@ -39,7 +41,9 @@
     }
 
     function handleDelete(ticketId: string) {
-        const t = tableState.filteredTickets.find((t: Ticket) => t.id === ticketId);
+        const t = tableState.filteredTickets.find(
+            (t: Ticket) => t.id === ticketId,
+        );
         if (t) {
             deleteTarget = t;
             deleteModalOpen = true;
@@ -83,7 +87,6 @@
 </script>
 
 <div class="table-view-shell">
-
     <!-- Empty State -->
     {#if tableState.totalCount === 0 && searchQuery.trim()}
         <div class="table-empty-state">
@@ -99,11 +102,7 @@
     <!-- Grouped Table Content -->
     <div class="table-content">
         {#each tableState.groupedTickets as group}
-            <TableGroup
-                {group}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-            />
+            <TableGroup {group} onEdit={handleEdit} onDelete={handleDelete} />
         {/each}
     </div>
 </div>

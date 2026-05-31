@@ -9,17 +9,16 @@
     import { Button } from "carbon-components-svelte";
 
     import { syncState } from "$lib/sync/sync-scheduler.svelte";
-    import { useSyncConfig } from "$lib/sync/sync-config.svelte";
-
-    import { useWorkspace } from "$lib/hooks/workspace.svelte";
+    import { getSyncConfig } from "$lib/sync/sync-config.svelte";
+    import { getWorkspace } from "$lib/hooks/workspace.svelte";
     import { SyncEngine } from "$lib/sync/sync-engine";
     import { getDb } from "$lib/db";
 
     import { notifications } from "$lib/hooks/notifications.svelte";
     import * as m from "$lib/paraglide/messages.js";
 
-    const syncConfig = useSyncConfig();
-    const workspace = useWorkspace();
+    const syncConfig = getSyncConfig();
+    const workspace = getWorkspace();
 
     let manualSyncing = $state(false);
     let lastResult = $state<{
@@ -157,13 +156,17 @@
                 {:else}
                     <span class="label"
                         >{m.sync_last_sync({
-                            time: formatLastSynced(syncConfig.config.last_synced_at)
+                            time: formatLastSynced(
+                                syncConfig.config.last_synced_at,
+                            ),
                         })}</span
                     >
                     {#if syncConfig.config.auto_sync && syncState.timeRemainingMs > 0}
                         <span class="subtext"
                             >{m.sync_next_in({
-                                time: formatTimeRemaining(syncState.timeRemainingMs)
+                                time: formatTimeRemaining(
+                                    syncState.timeRemainingMs,
+                                ),
                             })}</span
                         >
                     {/if}

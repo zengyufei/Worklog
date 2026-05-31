@@ -9,7 +9,7 @@ let _baseActions = $state<CommandAction[]>([]);
 let _dynamicActions = $state<CommandAction[]>([]);
 let _selectedIndex = $state(0);
 
-export function useCommandPalette() {
+export function getCommandPalette() {
 
     function open() {
         _open = true;

@@ -47,7 +47,7 @@ let _meta = $state<WorkspaceMeta | null>(null);
 let _status = $state<WorkspaceStatus>('idle');
 let _error = $state<string | null>(null);
 
-export function useWorkspace() {
+export function getWorkspace() {
 
     // Called once on app boot from +layout.svelte
     async function init() {

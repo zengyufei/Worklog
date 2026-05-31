@@ -1,10 +1,10 @@
 <!-- src/lib/components/app/layout/command-palette/command-palette.svelte -->
 <script lang="ts">
     import { Search, ArrowRight, Keyboard } from "carbon-icons-svelte";
-    import { useCommandPalette } from "$lib/hooks/command-palette.svelte";
+    import { getCommandPalette } from "$lib/hooks/command-palette.svelte";
     import type { CommandAction } from "$lib/components/app/types";
 
-    const palette = useCommandPalette();
+    const palette = getCommandPalette();
 
     // ── Filtered actions ───────────────────────────────────────────────────
     const filtered = $derived.by<CommandAction[]>(() => {
@@ -51,7 +51,10 @@
     }
 
     const grouped = $derived.by(() => {
-        const map = new Map<string, { action: CommandAction; flatIndex: number }[]>();
+        const map = new Map<
+            string,
+            { action: CommandAction; flatIndex: number }[]
+        >();
         filtered.forEach((action, i) => {
             const cat = action.category ?? "Commands";
             if (!map.has(cat)) map.set(cat, []);
@@ -100,7 +103,9 @@
 
     // ── Click outside to close ─────────────────────────────────────────────
     function handleBackdropClick(e: MouseEvent) {
-        if ((e.target as HTMLElement)?.classList?.contains("palette-backdrop")) {
+        if (
+            (e.target as HTMLElement)?.classList?.contains("palette-backdrop")
+        ) {
             palette.close();
         }
     }
@@ -143,7 +148,11 @@
     <!-- svelte-ignore a11y_click_events_have_key_events -->
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div class="palette-backdrop" onclick={handleBackdropClick}>
-        <div class="palette-container" role="dialog" aria-label="Command palette">
+        <div
+            class="palette-container"
+            role="dialog"
+            aria-label="Command palette"
+        >
             <!-- Search input -->
             <div class="palette-search">
                 <Search size={20} class="palette-search-icon" />
@@ -172,7 +181,9 @@
                 {:else}
                     {#each grouped as group}
                         <div class="palette-group">
-                            <div class="palette-group-header">{group.category}</div>
+                            <div class="palette-group-header">
+                                {group.category}
+                            </div>
                             {#each group.actions as { action, flatIndex } (action.id)}
                                 <!-- svelte-ignore a11y_click_events_have_key_events -->
                                 <div
@@ -182,8 +193,10 @@
                                         palette.selectedIndex}
                                     role="option"
                                     tabindex="-1"
-                                    aria-selected={flatIndex === palette.selectedIndex}
-                                    onmouseenter={() => palette.setSelectedIndex(flatIndex)}
+                                    aria-selected={flatIndex ===
+                                        palette.selectedIndex}
+                                    onmouseenter={() =>
+                                        palette.setSelectedIndex(flatIndex)}
                                     onclick={() => palette.runAction(action)}
                                 >
                                     <div class="palette-item-left">
@@ -204,7 +217,8 @@
                                                 >{action.label}</span
                                             >
                                             {#if action.subtitle}
-                                                <span class="palette-item-subtitle"
+                                                <span
+                                                    class="palette-item-subtitle"
                                                     >{action.subtitle}</span
                                                 >
                                             {/if}
@@ -213,7 +227,9 @@
                                     {#if action.shortcut}
                                         <div class="palette-item-shortcut">
                                             {#each formatShortcut(action.shortcut) as key}
-                                                <kbd class="palette-kbd">{key}</kbd>
+                                                <kbd class="palette-kbd"
+                                                    >{key}</kbd
+                                                >
                                             {/each}
                                         </div>
                                     {/if}
@@ -229,7 +245,8 @@
                 <div class="palette-hint">
                     <Keyboard size={14} />
                     <span
-                        ><kbd>↑↓</kbd> navigate &middot; <kbd>Enter</kbd> run &middot;
+                        ><kbd>↑↓</kbd> navigate &middot; <kbd>Enter</kbd> run
+                        &middot;
                         <kbd>Esc</kbd> close</span
                     >
                 </div>
@@ -321,11 +338,7 @@
     .palette-esc-badge {
         font-size: 0.625rem;
         font-weight: 600;
-        font-family: var(
-            --cds-code-01-font-family,
-            "IBM Plex Mono",
-            monospace
-        );
+        font-family: var(--cds-code-01-font-family, "IBM Plex Mono", monospace);
         padding: 0.125rem 0.375rem;
         border-radius: 3px;
         background: var(--cds-ui-03);
@@ -468,11 +481,7 @@
         padding: 0 0.3rem;
         font-size: 0.6875rem;
         font-weight: 600;
-        font-family: var(
-            --cds-code-01-font-family,
-            "IBM Plex Mono",
-            monospace
-        );
+        font-family: var(--cds-code-01-font-family, "IBM Plex Mono", monospace);
         border-radius: 3px;
         background: var(--cds-ui-03);
         color: var(--cds-text-02);
@@ -501,11 +510,7 @@
     }
 
     .palette-hint kbd {
-        font-family: var(
-            --cds-code-01-font-family,
-            "IBM Plex Mono",
-            monospace
-        );
+        font-family: var(--cds-code-01-font-family, "IBM Plex Mono", monospace);
         font-weight: 600;
         font-size: inherit;
     }

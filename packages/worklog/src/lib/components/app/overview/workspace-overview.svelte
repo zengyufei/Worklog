@@ -1,13 +1,13 @@
 <script lang="ts">
     import { getWorkspaceShellContext } from "$lib/hooks/workspace-shell-context";
-    import { useTickets } from "$lib/hooks/tickets.svelte";
+    import { getTickets } from "$lib/hooks/tickets.svelte";
     import { ProgressBar, Tile } from "carbon-components-svelte";
     import { TICKET_STATUS_CONFIG } from "$lib/components/app/types";
     import * as m from "$lib/paraglide/messages.js";
 
     const shell = getWorkspaceShellContext();
     const getWorkspacePath = () => shell.workspace.path;
-    const ticketsHook = useTickets(getWorkspacePath);
+    const ticketsHook = getTickets(getWorkspacePath);
 
     $effect(() => {
         void ticketsHook.load();

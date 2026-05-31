@@ -20,18 +20,20 @@ let _loading = $state(false);
 let _mode = $state<TicketsMode | null>(null);
 
 /**
- * Unified ticket hook — replaces both useTickets and useAllTickets.
+ * Unified ticket hook — shared singleton that combines board-scoped
+ * and all-tickets modes. Mutations from any consumer are reflected
+ * everywhere.
  *
  * Pass a boardId getter to load board-scoped tickets (paginated by status).
  * Omit it (or return null) to load all tickets across the workspace.
  *
  * Example — board scope:
- *   const tickets = useTickets(() => path, () => boardId);
+ *   const tickets = getTickets(() => path, () => boardId);
  *
  * Example — all scope:
- *   const tickets = useTickets(() => path);
+ *   const tickets = getTickets(() => path);
  */
-export function useTickets(
+export function getTickets(
     getWorkspacePath: () => string | null,
     getBoardId?: () => string | null,
 ) {
@@ -164,8 +166,8 @@ export function useTickets(
 }
 
 // ── Backward-compatible alias ───────────────────────────────────────────────
-// useAllTickets(getWorkspacePath) === useTickets(getWorkspacePath)
-/** @deprecated Use `useTickets(path)` instead. Will be removed in a future release. */
+// useAllTickets(getWorkspacePath) === getTickets(getWorkspacePath)
+/** @deprecated Use `getTickets(path)` instead. Will be removed in a future release. */
 export function useAllTickets(getWorkspacePath: () => string | null) {
-    return useTickets(getWorkspacePath);
+    return getTickets(getWorkspacePath);
 }
