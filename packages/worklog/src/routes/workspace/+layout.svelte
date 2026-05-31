@@ -12,6 +12,7 @@
     } from "$lib/hooks/workspace-shell-context";
     import { getWorkspace } from "$lib/hooks/workspace.svelte";
     import { getCommandPalette } from "$lib/hooks/command-palette.svelte";
+    import { getReactiveLocale } from "$lib/hooks/locale.svelte";
     import { page } from "$app/state";
     import type { CommandAction } from "$lib/components/app/types";
     import {
@@ -117,6 +118,9 @@
 
     const isSettingsRoute = $derived(page.route.id === "/workspace/settings");
 
+    // Reactive locale anchor — re-renders this layout and the sidebar on language switch
+    const _localeTag = $derived(getReactiveLocale());
+
     onDestroy(() => {
         destroySyncScheduler();
     });
@@ -134,6 +138,9 @@
         onOpenBoard={openBoard}
     />
 {/if}
+
+<!-- Reactive locale anchor — re-renders sidebar et al on language switch -->
+<span style="display:none" aria-hidden="true">{_localeTag}</span>
 
 <Content class="layout-content">
     {#if workspace.status === "ready"}

@@ -1,17 +1,17 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
 	// @ts-ignore
-	import { setLocale } from "$lib/paraglide/runtime.js";
+	import { setReactiveLocale, getReactiveLocale } from "$lib/hooks/locale.svelte";
 
 	// Initialize language
 	if (typeof localStorage !== "undefined") {
 		const savedLang = localStorage.getItem("app_lang");
 		if (savedLang === "fr" || savedLang === "en") {
-			setLocale(savedLang);
+			setReactiveLocale(savedLang);
 		} else {
 			const browserLang = navigator.language.split("-")[0];
 			const initLang = browserLang === "fr" ? "fr" : "en";
-			setLocale(initLang);
+			setReactiveLocale(initLang);
 			localStorage.setItem("app_lang", initLang);
 		}
 	}
@@ -41,6 +41,10 @@
 	const palette = getCommandPalette();
 	const appZoom = getAppZoom();
 	let hasInitializedWorkspace = $state(false);
+
+	// Reactive locale anchor — creates a Svelte dependency so the whole tree
+	// re-renders when the language is switched.
+	let _localeTag = $derived(getReactiveLocale());
 
 	// ── App-level callbacks ────────────────────────────────────────────────
 	function openSettings() {
@@ -240,6 +244,9 @@
 		<Loading />
 	{/if}
 </div>
+
+<!-- Reactive locale anchor — re-renders layout + children on language switch -->
+<span style="display:none" aria-hidden="true">{_localeTag}</span>
 
 <!-- Command Palette (deferred rendering) -->
 {#if palette.isOpen}

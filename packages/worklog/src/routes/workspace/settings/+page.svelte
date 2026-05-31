@@ -1,6 +1,6 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
-    import { getLocale, setLocale } from "$lib/paraglide/runtime.js";
+    import { getReactiveLocale, setReactiveLocale } from "$lib/hooks/locale.svelte";
     import * as m from "$lib/paraglide/messages.js";
     import {
         Button,
@@ -788,12 +788,12 @@
                             </p>
                             <div class="settings-card">
                                 <ContentSwitcher
-                                    selectedIndex={getLocale() === "fr" ? 1 : 0}
+                                    selectedIndex={getReactiveLocale() === "fr" ? 1 : 0}
                                     on:change={(e) => {
                                         const index = e.detail;
                                         const newLang =
                                             index === 1 ? "fr" : "en";
-                                        setLocale(newLang);
+                                        setReactiveLocale(newLang);
                                         localStorage.setItem(
                                             "app_lang",
                                             newLang,
