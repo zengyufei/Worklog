@@ -28,6 +28,7 @@
 	import { getWorkspace } from "$lib/hooks/workspace.svelte";
 	import { getCommandPalette } from "$lib/hooks/command-palette.svelte";
 	import { getAppZoom } from "$lib/hooks/app-zoom.svelte";
+	import { getUndoRedo } from "$lib/hooks/undo-redo.svelte";
 	import { notifications } from "$lib/hooks/notifications.svelte";
 	import {
 		buildCommandActions,
@@ -136,6 +137,53 @@
 		}
 	}
 
+	// ── Undo / Redo ─────────────────────────────────────────────────────────
+	const _undoRedo = getUndoRedo();
+
+	async function undo() {
+		try {
+			const didUndo = await _undoRedo.undo();
+			if (didUndo) {
+				notifications.add({
+					kind: "info",
+					title: "Undo",
+					subtitle: _undoRedo.lastUndoDesc || "Action reverted",
+					timeout: 2000,
+				});
+			}
+		} catch (error) {
+			console.error("Undo failed", error);
+			notifications.add({
+				kind: "error",
+				title: "Undo Failed",
+				subtitle: String(error),
+				timeout: 4000,
+			});
+		}
+	}
+
+	async function redo() {
+		try {
+			const didRedo = await _undoRedo.redo();
+			if (didRedo) {
+				notifications.add({
+					kind: "info",
+					title: "Redo",
+					subtitle: _undoRedo.lastRedoDesc || "Action restored",
+					timeout: 2000,
+				});
+			}
+		} catch (error) {
+			console.error("Redo failed", error);
+			notifications.add({
+				kind: "error",
+				title: "Redo Failed",
+				subtitle: String(error),
+				timeout: 4000,
+			});
+		}
+	}
+
 	// ── Command palette actions & shortcuts ────────────────────────────────
 	const appCallbacks = {
 		openSettings,
@@ -148,6 +196,8 @@
 		openWorkspace: openWorkspaceFolder,
 		exportData,
 		importData,
+		undo,
+		redo,
 	};
 
 	const commandActions = buildCommandActions(appCallbacks);
@@ -240,6 +290,8 @@
 		showSettings={workspace.status === "ready"}
 		onOpenSettings={openSettings}
 		onOpenPalette={() => palette.toggle()}
+		onUndo={undo}
+		onRedo={redo}
 	/>
 	{@render children()}
 

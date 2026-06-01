@@ -12,6 +12,8 @@ import {
     FolderOpen,
     Download,
     Upload,
+    Undo,
+    Redo,
 } from "carbon-icons-svelte";
 
 // ── Shortcut Definitions ───────────────────────────────────────────────────
@@ -77,6 +79,8 @@ export interface AppCallbacks {
     openWorkspace: () => void;
     exportData: () => void;
     importData: () => void;
+    undo: () => void;
+    redo: () => void;
 }
 
 export function buildCommandActions(callbacks: AppCallbacks): CommandAction[] {
@@ -180,6 +184,24 @@ export function buildCommandActions(callbacks: AppCallbacks): CommandAction[] {
             icon: Upload,
             run: callbacks.importData,
         },
+        {
+            id: "undo",
+            label: "Undo",
+            subtitle: "Revert the last action",
+            shortcut: formatShortcut({ key: "z", ctrlOrCmd: true, label: "", run: () => { } }),
+            category: "Actions",
+            icon: Undo,
+            run: callbacks.undo,
+        },
+        {
+            id: "redo",
+            label: "Redo",
+            subtitle: "Restore a reverted action",
+            shortcut: formatShortcut({ key: "z", ctrlOrCmd: true, shift: true, label: "", run: () => { } }),
+            category: "Actions",
+            icon: Redo,
+            run: callbacks.redo,
+        },
     ];
 }
 
@@ -198,6 +220,8 @@ export function buildShortcuts(callbacks: AppCallbacks & { openCommandPalette: (
         { key: "w", ctrlOrCmd: true, shift: true, label: "Close Workspace", run: callbacks.closeWorkspace },
         { key: "o", ctrlOrCmd: true, label: "Open Workspace", run: callbacks.openWorkspace },
         { key: "e", ctrlOrCmd: true, shift: true, label: "Export Data", run: callbacks.exportData },
+        { key: "z", ctrlOrCmd: true, label: "Undo", run: callbacks.undo },
+        { key: "z", ctrlOrCmd: true, shift: true, label: "Redo", run: callbacks.redo },
     ];
 }
 

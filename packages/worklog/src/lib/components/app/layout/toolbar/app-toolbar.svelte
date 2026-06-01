@@ -9,6 +9,8 @@
         LightFilled,
         Renew,
         Search,
+        Undo,
+        Redo,
     } from "carbon-icons-svelte";
 
     import {
@@ -21,6 +23,7 @@
 
     import { syncState } from "$lib/sync/sync-scheduler.svelte";
     import { useAppAppearance } from "$lib/hooks/app-appearance.svelte";
+    import { getUndoRedo } from "$lib/hooks/undo-redo.svelte";
     import * as m from "$lib/paraglide/messages.js";
 
     type WindowControlAction = "minimize" | "toggle-maximize" | "close";
@@ -29,6 +32,8 @@
         showSettings?: boolean;
         onOpenSettings?: () => void;
         onOpenPalette?: () => void;
+        onUndo?: () => void;
+        onRedo?: () => void;
     }
 
     const noop = () => {};
@@ -37,7 +42,11 @@
         showSettings = false,
         onOpenSettings = noop,
         onOpenPalette = noop,
+        onUndo = noop,
+        onRedo = noop,
     }: AppToolbarProps = $props();
+
+    const undoRedo = getUndoRedo();
 
     const appAppearance = useAppAppearance();
     let isMaximized = $state(false);
@@ -111,8 +120,11 @@
     }
 
     let logo = $derived(
-        appAppearance.theme === "dark" || (appAppearance.theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches) 
-        ? "/logo-white.png" : "/logo-black.png",
+        appAppearance.theme === "dark" ||
+            (appAppearance.theme === "system" &&
+                window.matchMedia("(prefers-color-scheme: dark)").matches)
+            ? "/logo-white.png"
+            : "/logo-black.png",
     );
 
     // Listen for theme toggle events from the command palette / shortcuts
@@ -170,6 +182,24 @@
         </Button>
 
         <Button
+            disabled={!undoRedo.canUndo}
+            onclick={onUndo}
+            kind="ghost"
+            aria-label="Undo"
+        >
+            <Undo />
+        </Button>
+
+        <Button
+            disabled={!undoRedo.canRedo}
+            onclick={onRedo}
+            kind="ghost"
+            aria-label="Redo"
+        >
+            <Redo />
+        </Button>
+
+        <Button
             onclick={() => {
                 window.location.reload();
             }}
@@ -179,7 +209,11 @@
             <Renew />
         </Button>
 
-        <Button onclick={toggleTheme} kind="ghost" aria-label={m.toolbar_toggle_theme()}>
+        <Button
+            onclick={toggleTheme}
+            kind="ghost"
+            aria-label={m.toolbar_toggle_theme()}
+        >
             {#if appAppearance.theme === "dark"}
                 <LightFilled />
             {:else}

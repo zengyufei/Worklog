@@ -320,7 +320,7 @@ async function migrate_v10(db: Database) {
     } catch {
         // Ignore if column already exists (e.g. from fresh creation of v9 schema)
     }
-    
+
     try {
         await db.execute(`ALTER TABLE sync_config ADD COLUMN git_email TEXT NOT NULL DEFAULT ''`);
     } catch {
@@ -429,6 +429,33 @@ async function migrate_v13(db: Database) {
     }
 }
 
+/**
+ * Migration v14:
+ * Create the append-only events table for immutable audit logging.
+ */
+async function migrate_v14(db: Database) {
+    await db.execute(`
+        CREATE TABLE IF NOT EXISTS events (
+            id          TEXT PRIMARY KEY,
+            entity_type TEXT NOT NULL,
+            entity_id   TEXT NOT NULL,
+            event_type  TEXT NOT NULL,
+            payload     TEXT NOT NULL DEFAULT '{}',
+            actor       TEXT NOT NULL DEFAULT '',
+            created_at  TEXT NOT NULL
+        )
+    `);
+    await db.execute(
+        `CREATE INDEX IF NOT EXISTS idx_events_entity ON events(entity_type, entity_id)`
+    );
+    await db.execute(
+        `CREATE INDEX IF NOT EXISTS idx_events_type ON events(event_type)`
+    );
+    await db.execute(
+        `CREATE INDEX IF NOT EXISTS idx_events_created_at ON events(created_at)`
+    );
+}
+
 export async function runMigrations(db: Database): Promise<void> {
     const rows = await db.select<{ schema_version: number }[]>(
         `SELECT schema_version FROM workspace_meta WHERE id = 1`
@@ -484,6 +511,10 @@ export async function runMigrations(db: Database): Promise<void> {
 
     if (current < 13) {
         await migrate_v13(db);
+    }
+
+    if (current < 14) {
+        await migrate_v14(db);
     }
 
     await db.execute(
