@@ -1,5 +1,12 @@
 import type { Ticket, CreateTicketInput, UpdateTicketInput, Comment } from '$lib/components/app/types';
 import { getDb, TicketRepo } from '$lib/db';
+import {
+	getUndoRedo,
+	registerMutationHandler,
+	registerEventPersistence,
+	type UndoRedoEvent,
+} from '$lib/hooks/undo-redo.svelte';
+import { TicketEvents } from '$lib/hooks/events.svelte';
 
 
 // ── Module-level shared state ──────────────────────────────────────────────
@@ -18,6 +25,101 @@ let _tickets = $state<Ticket[]>([]);
 let _counts = $state<Record<string, number>>({});
 let _loading = $state(false);
 let _mode = $state<TicketsMode | null>(null);
+
+// Module-level workspace path getter used by the undo/redo handler.
+// Updated each time getTickets() is called so the handler always has
+// a live path even after the registering consumer dismounts.
+let _getWorkspacePath: () => string | null = () => null;
+
+// ── Undo/redo mutation handler (registered once) ───────────────────────────
+let _handlerRegistered = false;
+
+function ensureHandlerRegistered(getPath: () => string | null) {
+	if (_handlerRegistered) return;
+	_handlerRegistered = true;
+
+	// Register the mutation handler for applying inversions
+	registerMutationHandler(async (event: UndoRedoEvent) => {
+		const path = _getWorkspacePath();
+		if (!path) throw new Error('Cannot undo/redo: no workspace selected');
+
+		const db = await getDb(path);
+
+		switch (event.type) {
+			case 'ticket:update': {
+				if (!event.after) throw new Error('Invalid undo event: missing after state');
+				await TicketRepo.updateTicket(db, event.ticketId, event.after as UpdateTicketInput);
+				const updated = await TicketRepo.getTicketById(db, event.ticketId);
+				if (updated) {
+					const idx = _tickets.findIndex((t) => t.id === event.ticketId);
+					if (idx !== -1) {
+						_tickets[idx] = updated;
+					}
+				}
+				break;
+			}
+			case 'ticket:create': {
+				if (!event.after) throw new Error('Invalid undo event: missing after state');
+				const created = await TicketRepo.createTicket(db, event.after as unknown as CreateTicketInput);
+				_tickets = [..._tickets, created].sort((a, b) => a.position - b.position);
+				if (_counts[created.status]) {
+					_counts[created.status] = (_counts[created.status] ?? 0) + 1;
+				}
+				break;
+			}
+			case 'ticket:delete': {
+				await TicketRepo.deleteTicket(db, event.ticketId);
+				const deleted = _tickets.find((t) => t.id === event.ticketId);
+				_tickets = _tickets.filter((t) => t.id !== event.ticketId);
+				if (deleted?.status) {
+					_counts[deleted.status] = Math.max(0, (_counts[deleted.status] ?? 0) - 1);
+				}
+				break;
+			}
+		}
+	});
+
+	// Register event persistence — when undo-redo pushes/undoes/redoes,
+	// a corresponding lifecycle event is written to the events table.
+	registerEventPersistence(async (event: UndoRedoEvent, direction: 'push' | 'undo' | 'redo') => {
+		const path = _getWorkspacePath();
+		if (!path) return;
+
+		try {
+			const db = await getDb(path);
+
+			switch (event.type) {
+				case 'ticket:create':
+					if (direction === 'push') {
+						await TicketEvents.created(db, event.ticketId, event.after ?? {});
+					} else if (direction === 'undo') {
+						await TicketEvents.deleted(db, event.ticketId, event.after ?? {});
+					} else {
+						await TicketEvents.created(db, event.ticketId, event.after ?? {});
+					}
+					break;
+				case 'ticket:delete':
+					if (direction === 'push') {
+						await TicketEvents.deleted(db, event.ticketId, event.before ?? {});
+					} else if (direction === 'undo') {
+						await TicketEvents.created(db, event.ticketId, event.before ?? {});
+					} else {
+						await TicketEvents.deleted(db, event.ticketId, event.before ?? {});
+					}
+					break;
+				case 'ticket:update':
+					if (direction === 'push') {
+						// The push was already handled by the direct emit in update()/move()
+					} else {
+						await TicketEvents.updated(db, event.ticketId, event.after, event.before ?? {});
+					}
+					break;
+			}
+		} catch (err) {
+			console.error('Event persistence failed:', err);
+		}
+	});
+}
 
 /**
  * Unified ticket hook — shared singleton that combines board-scoped
@@ -39,11 +141,18 @@ export function getTickets(
 ) {
     const hasBoardScope = !!getBoardId;
 
+    // Keep the handler's path getter live
+    _getWorkspacePath = getWorkspacePath;
+    ensureHandlerRegistered(getWorkspacePath);
+
     function requireWorkspacePath(): string {
         const path = getWorkspacePath();
         if (!path) throw new Error('No workspace selected');
         return path;
     }
+
+    // ── Local undo-redo instance ──────────────────────────────────────────
+    const _undoRedo = getUndoRedo();
 
     // ── Load ────────────────────────────────────────────────────────────────
     async function load() {
@@ -114,6 +223,20 @@ export function getTickets(
         if (ticket.status) {
             _counts[ticket.status] = (_counts[ticket.status] ?? 0) + 1;
         }
+
+        _undoRedo.push({
+            type: 'ticket:create',
+            ticketId: ticket.id,
+            before: null,
+            after: { ...ticket } as unknown as Record<string, unknown>,
+            description: `Create ticket ${ticket.id}`,
+            timestamp: Date.now(),
+        });
+
+        // Emit lifecycle event
+        TicketEvents.created(db, ticket.id, { ...ticket } as unknown as Record<string, unknown>)
+            .catch((err) => console.error('Failed to emit ticket_created event:', err));
+
         return ticket;
     }
 
@@ -126,10 +249,48 @@ export function getTickets(
 
         _tickets = _tickets.map(t => t.id === id ? ticket : t).sort((a, b) => a.position - b.position);
 
+        // Track status change for lifecycle event emission
+        const statusChanged = oldTicket && input.status && oldTicket.status !== input.status;
+
         // Update counts if status changed
-        if (oldTicket && input.status && oldTicket.status !== input.status) {
-            _counts[oldTicket.status] = Math.max(0, (_counts[oldTicket.status] ?? 0) - 1);
-            _counts[input.status] = (_counts[input.status] ?? 0) + 1;
+        if (statusChanged) {
+            _counts[oldTicket!.status] = Math.max(0, (_counts[oldTicket!.status] ?? 0) - 1);
+            _counts[input.status!] = (_counts[input.status!] ?? 0) + 1;
+        }
+
+        // Push undo event — capture only the fields that actually changed
+        if (oldTicket) {
+            const changedFields: Record<string, unknown> = {};
+            const inputKeys = Object.keys(input) as (keyof UpdateTicketInput)[];
+            for (const key of inputKeys) {
+                const oldVal = oldTicket[key as keyof Ticket];
+                const newVal = input[key];
+                // Only record if the value actually changed
+                if (JSON.stringify(oldVal) !== JSON.stringify(newVal)) {
+                    changedFields[key as string] = oldVal as unknown as Record<string, unknown>;
+                }
+            }
+
+            if (Object.keys(changedFields).length > 0) {
+                _undoRedo.push({
+                    type: 'ticket:update',
+                    ticketId: id,
+                    before: changedFields,
+                    after: { ...input } as unknown as Record<string, unknown>,
+                    description: `Update ticket ${id}`,
+                    timestamp: Date.now(),
+                });
+
+                // Emit lifecycle events — distinguish moves from regular updates
+                if (statusChanged) {
+                    TicketEvents.moved(db, id, oldTicket.status, input.status!, {
+                        position: input.position,
+                    }).catch((err) => console.error('Failed to emit ticket_moved event:', err));
+                } else {
+                    TicketEvents.updated(db, id, changedFields, { ...input } as unknown as Record<string, unknown>)
+                        .catch((err) => console.error('Failed to emit ticket_updated event:', err));
+                }
+            }
         }
 
         return ticket;
@@ -153,6 +314,21 @@ export function getTickets(
         _tickets = _tickets.filter(t => t.id !== id);
         if (ticket?.status) {
             _counts[ticket.status] = Math.max(0, (_counts[ticket.status] ?? 0) - 1);
+        }
+
+        if (ticket) {
+            _undoRedo.push({
+                type: 'ticket:delete',
+                ticketId: id,
+                before: { ...ticket } as unknown as Record<string, unknown>,
+                after: null,
+                description: `Delete ticket ${id}`,
+                timestamp: Date.now(),
+            });
+
+            // Emit lifecycle event
+            TicketEvents.deleted(db, id, { ...ticket } as unknown as Record<string, unknown>)
+                .catch((err) => console.error('Failed to emit ticket_deleted event:', err));
         }
     }
 

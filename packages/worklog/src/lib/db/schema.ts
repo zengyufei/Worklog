@@ -1,4 +1,4 @@
-export const SCHEMA_VERSION = 13;
+export const SCHEMA_VERSION = 14;
 
 export const CREATE_TABLES = `
   CREATE TABLE IF NOT EXISTS workspace_meta (
@@ -75,4 +75,18 @@ export const CREATE_TABLES = `
   CREATE INDEX IF NOT EXISTS idx_tickets_ticket_type ON tickets(ticket_type);
   CREATE INDEX IF NOT EXISTS idx_tickets_due_date ON tickets(due_date);
   CREATE INDEX IF NOT EXISTS idx_ticket_types_is_default ON ticket_types(is_default);
+
+  CREATE TABLE IF NOT EXISTS events (
+    id          TEXT PRIMARY KEY,
+    entity_type TEXT NOT NULL,
+    entity_id   TEXT NOT NULL,
+    event_type  TEXT NOT NULL,
+    payload     TEXT NOT NULL DEFAULT '{}',
+    actor       TEXT NOT NULL DEFAULT '',
+    created_at  TEXT NOT NULL
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_events_entity ON events(entity_type, entity_id);
+  CREATE INDEX IF NOT EXISTS idx_events_type ON events(event_type);
+  CREATE INDEX IF NOT EXISTS idx_events_created_at ON events(created_at);
 `;

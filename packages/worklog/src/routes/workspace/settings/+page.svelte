@@ -77,6 +77,8 @@
     } from "carbon-icons-svelte";
     import { getWorkspaceShellContext } from "$lib/hooks/workspace-shell-context";
     import { seedDatabase, seedLazyLoadingTest } from "$lib/db/seed";
+    import { EventRepo, type EventRecord } from "$lib/db";
+    import { Time } from "carbon-icons-svelte";
 
     type SettingsCategory =
         | "general"
@@ -102,7 +104,7 @@
         },
         { id: "data", label: m.settings_category_data(), icon: DataBase },
         { id: "sync", label: m.settings_category_sync(), icon: Cloud },
-        // { id: "debug", label: "Debug", icon: Code },
+        { id: "debug", label: "Debug", icon: Code },
         {
             id: "advanced",
             label: m.settings_category_advanced(),
@@ -470,6 +472,66 @@
             });
         }
     }
+
+    // ── Events Viewer State ───────────────────────────────────────────────
+    let events = $state<EventRecord[]>([]);
+    let eventsLoading = $state(false);
+    let eventsError = $state<string | null>(null);
+    let expandedEventId = $state<string | null>(null);
+
+    async function loadEvents() {
+        if (!workspace.path) return;
+        eventsLoading = true;
+        eventsError = null;
+        try {
+            const db = await getDb(workspace.path);
+            events = await EventRepo.listEvents(db, { desc: true, limit: 200 });
+        } catch (e) {
+            eventsError = String(e);
+            events = [];
+        } finally {
+            eventsLoading = false;
+        }
+    }
+
+    function toggleEventPayload(eventId: string) {
+        expandedEventId = expandedEventId === eventId ? null : eventId;
+    }
+
+    function formatPayload(payload: Record<string, unknown>): string {
+        return JSON.stringify(payload, null, 2);
+    }
+
+    function formatTimestamp(ts: string): string {
+        const d = new Date(ts);
+        return d.toLocaleString(undefined, {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+        });
+    }
+
+    function truncateId(id: string): string {
+        return id.length > 14 ? id.slice(0, 14) + "…" : id;
+    }
+
+    // ── Filter state for events ────────────────────────────────────────────
+    let eventTypeFilter = $state<string>("all");
+
+    const filteredEvents = $derived(
+        eventTypeFilter === "all"
+            ? events
+            : events.filter((e) => e.event_type === eventTypeFilter),
+    );
+
+    // Derive unique event types for the filter dropdown
+    const availableEventTypes = $derived<string[]>([
+        "all",
+        ...new Set(events.map((e) => e.event_type)),
+    ]);
 
     // @ts-ignore
     const version = __APP_VERSION__;
@@ -1467,6 +1529,180 @@
                                             scroll.
                                         </li>
                                     </ul>
+                                </div>
+                            </div>
+                        </section>
+                    {/if}
+
+                    {#if matchesSearch("Events Audit Log Viewer")}
+                        <section class="settings-section">
+                            <div class="header-with-tag">
+                                <h2>Events Log</h2>
+                                <Tag type="magenta" size="sm">Debug Only</Tag>
+                            </div>
+                            <p class="section-desc">
+                                Immutable audit log of all ticket and board
+                                actions. Events are append-only and ordered by
+                                creation time.
+                            </p>
+                            <div class="settings-card">
+                                <div class="debug-card">
+                                    <div class="debug-actions">
+                                        <Button
+                                            kind="tertiary"
+                                            icon={Time}
+                                            onclick={loadEvents}
+                                            disabled={eventsLoading}
+                                        >
+                                            {eventsLoading
+                                                ? "Loading…"
+                                                : "Load Events"}
+                                        </Button>
+                                        {#if events.length > 0}
+                                            <span
+                                                style="margin-left: 0.75rem; font-size: 0.875rem; color: var(--cds-text-secondary); align-self: center;"
+                                            >
+                                                {events.length} event{events.length !== 1 ? "s" : ""}
+                                            </span>
+                                        {/if}
+                                    </div>
+
+                                    {#if eventsError}
+                                        <InlineNotification
+                                            kind="error"
+                                            title="Failed to load events"
+                                            subtitle={eventsError}
+                                            hideCloseButton
+                                        />
+                                    {/if}
+
+                                    {#if events.length > 0}
+                                        <!-- Filter -->
+                                        <div style="display: flex; gap: 0.5rem; align-items: center; margin-top: 1rem;">
+                                            <label
+                                                for="event-type-filter"
+                                                style="font-size: 0.875rem; color: var(--cds-text-secondary);"
+                                            >
+                                                Filter:
+                                            </label>
+                                            <select
+                                                id="event-type-filter"
+                                                bind:value={eventTypeFilter}
+                                                style="padding: 0.25rem 0.5rem; border: 1px solid var(--cds-ui-03); border-radius: 4px; background: var(--cds-field-01); color: var(--cds-text-primary); font-size: 0.875rem;"
+                                            >
+                                                {#each availableEventTypes as type}
+                                                    <option value={type}>
+                                                        {type === "all" ? "All Types" : type.replace("_", " ")}
+                                                    </option>
+                                                {/each}
+                                            </select>
+                                        </div>
+
+                                        <!-- Events Table -->
+                                        <div
+                                            style="margin-top: 0.75rem; overflow-x: auto; border: 1px solid var(--cds-ui-03); border-radius: 4px;"
+                                        >
+                                            <table
+                                                style="width: 100%; border-collapse: collapse; font-size: 0.8125rem;"
+                                            >
+                                                <thead>
+                                                    <tr
+                                                        style="background: var(--cds-ui-01);"
+                                                    >
+                                                        <th
+                                                            style="padding: 0.5rem; text-align: left; color: var(--cds-text-secondary); font-weight: 600; white-space: nowrap;"
+                                                        >
+                                                            Type
+                                                        </th>
+                                                        <th
+                                                            style="padding: 0.5rem; text-align: left; color: var(--cds-text-secondary); font-weight: 600; white-space: nowrap;"
+                                                        >
+                                                            Entity
+                                                        </th>
+                                                        <th
+                                                            style="padding: 0.5rem; text-align: left; color: var(--cds-text-secondary); font-weight: 600; white-space: nowrap;"
+                                                        >
+                                                            Actor
+                                                        </th>
+                                                        <th
+                                                            style="padding: 0.5rem; text-align: left; color: var(--cds-text-secondary); font-weight: 600; white-space: nowrap;"
+                                                        >
+                                                            Created
+                                                        </th>
+                                                        <th
+                                                            style="padding: 0.5rem; text-align: left; color: var(--cds-text-secondary); font-weight: 600; white-space: nowrap;"
+                                                        >
+                                                            Payload
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {#each filteredEvents as event (event.id)}
+                                                        <tr
+                                                            style="border-top: 1px solid var(--cds-ui-03);"
+                                                            class:expanded={expandedEventId === event.id}
+                                                        >
+                                                            <td
+                                                                style="padding: 0.5rem; white-space: nowrap;"
+                                                            >
+                                                                <Tag
+                                                                    type="cool-gray"
+                                                                    size="sm"
+                                                                >
+                                                                    {event.event_type.replace(/_/g, " ")}
+                                                                </Tag>
+                                                            </td>
+                                                            <td
+                                                                style="padding: 0.5rem; white-space: nowrap; color: var(--cds-text-primary); font-family: monospace; font-size: 0.75rem;"
+                                                            >
+                                                                {event.entity_type}/{truncateId(event.entity_id)}
+                                                            </td>
+                                                            <td
+                                                                style="padding: 0.5rem; white-space: nowrap; color: var(--cds-text-primary);"
+                                                            >
+                                                                {event.actor || "—"}
+                                                            </td>
+                                                            <td
+                                                                style="padding: 0.5rem; white-space: nowrap; color: var(--cds-text-secondary); font-size: 0.75rem;"
+                                                            >
+                                                                {formatTimestamp(event.created_at)}
+                                                            </td>
+                                                            <td
+                                                                style="padding: 0.5rem;"
+                                                            >
+                                                                <Button
+                                                                    kind="ghost"
+                                                                    size="small"
+                                                                    onclick={() => toggleEventPayload(event.id)}
+                                                                >
+                                                                    {expandedEventId === event.id ? "Hide" : "Show"} JSON
+                                                                </Button>
+                                                            </td>
+                                                        </tr>
+                                                        {#if expandedEventId === event.id}
+                                                            <tr>
+                                                                <td
+                                                                    colspan="5"
+                                                                    style="padding: 0 0.5rem 0.5rem 0.5rem;"
+                                                                >
+                                                                    <pre
+                                                                        style="background: var(--cds-ui-01); border: 1px solid var(--cds-ui-03); border-radius: 4px; padding: 0.75rem; font-size: 0.75rem; line-height: 1.4; overflow-x: auto; white-space: pre-wrap; color: var(--cds-text-primary); max-height: 300px; overflow-y: auto;"
+><code>${formatPayload(event.payload)}</code></pre>
+                                                                </td>
+                                                            </tr>
+                                                        {/if}
+                                                    {/each}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    {:else if !eventsLoading}
+                                        <p
+                                            style="margin-top: 1rem; font-size: 0.875rem; color: var(--cds-text-secondary);"
+                                        >
+                                            Click "Load Events" to fetch the
+                                            audit log.
+                                        </p>
+                                    {/if}
                                 </div>
                             </div>
                         </section>
