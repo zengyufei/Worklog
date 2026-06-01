@@ -1562,7 +1562,10 @@
                                             <span
                                                 style="margin-left: 0.75rem; font-size: 0.875rem; color: var(--cds-text-secondary); align-self: center;"
                                             >
-                                                {events.length} event{events.length !== 1 ? "s" : ""}
+                                                {events.length} event{events.length !==
+                                                1
+                                                    ? "s"
+                                                    : ""}
                                             </span>
                                         {/if}
                                     </div>
@@ -1578,7 +1581,9 @@
 
                                     {#if events.length > 0}
                                         <!-- Filter -->
-                                        <div style="display: flex; gap: 0.5rem; align-items: center; margin-top: 1rem;">
+                                        <div
+                                            style="display: flex; gap: 0.5rem; align-items: center; margin-top: 1rem;"
+                                        >
                                             <label
                                                 for="event-type-filter"
                                                 style="font-size: 0.875rem; color: var(--cds-text-secondary);"
@@ -1592,7 +1597,12 @@
                                             >
                                                 {#each availableEventTypes as type}
                                                     <option value={type}>
-                                                        {type === "all" ? "All Types" : type.replace("_", " ")}
+                                                        {type === "all"
+                                                            ? "All Types"
+                                                            : type.replace(
+                                                                  "_",
+                                                                  " ",
+                                                              )}
                                                     </option>
                                                 {/each}
                                             </select>
@@ -1640,7 +1650,8 @@
                                                     {#each filteredEvents as event (event.id)}
                                                         <tr
                                                             style="border-top: 1px solid var(--cds-ui-03);"
-                                                            class:expanded={expandedEventId === event.id}
+                                                            class:expanded={expandedEventId ===
+                                                                event.id}
                                                         >
                                                             <td
                                                                 style="padding: 0.5rem; white-space: nowrap;"
@@ -1649,23 +1660,31 @@
                                                                     type="cool-gray"
                                                                     size="sm"
                                                                 >
-                                                                    {event.event_type.replace(/_/g, " ")}
+                                                                    {event.event_type.replace(
+                                                                        /_/g,
+                                                                        " ",
+                                                                    )}
                                                                 </Tag>
                                                             </td>
                                                             <td
                                                                 style="padding: 0.5rem; white-space: nowrap; color: var(--cds-text-primary); font-family: monospace; font-size: 0.75rem;"
                                                             >
-                                                                {event.entity_type}/{truncateId(event.entity_id)}
+                                                                {event.entity_type}/{truncateId(
+                                                                    event.entity_id,
+                                                                )}
                                                             </td>
                                                             <td
                                                                 style="padding: 0.5rem; white-space: nowrap; color: var(--cds-text-primary);"
                                                             >
-                                                                {event.actor || "—"}
+                                                                {event.actor ||
+                                                                    "—"}
                                                             </td>
                                                             <td
                                                                 style="padding: 0.5rem; white-space: nowrap; color: var(--cds-text-secondary); font-size: 0.75rem;"
                                                             >
-                                                                {formatTimestamp(event.created_at)}
+                                                                {formatTimestamp(
+                                                                    event.created_at,
+                                                                )}
                                                             </td>
                                                             <td
                                                                 style="padding: 0.5rem;"
@@ -1673,9 +1692,16 @@
                                                                 <Button
                                                                     kind="ghost"
                                                                     size="small"
-                                                                    onclick={() => toggleEventPayload(event.id)}
+                                                                    onclick={() =>
+                                                                        toggleEventPayload(
+                                                                            event.id,
+                                                                        )}
                                                                 >
-                                                                    {expandedEventId === event.id ? "Hide" : "Show"} JSON
+                                                                    {expandedEventId ===
+                                                                    event.id
+                                                                        ? "Hide"
+                                                                        : "Show"}
+                                                                    JSON
                                                                 </Button>
                                                             </td>
                                                         </tr>
@@ -1686,8 +1712,11 @@
                                                                     style="padding: 0 0.5rem 0.5rem 0.5rem;"
                                                                 >
                                                                     <pre
-                                                                        style="background: var(--cds-ui-01); border: 1px solid var(--cds-ui-03); border-radius: 4px; padding: 0.75rem; font-size: 0.75rem; line-height: 1.4; overflow-x: auto; white-space: pre-wrap; color: var(--cds-text-primary); max-height: 300px; overflow-y: auto;"
-><code>${formatPayload(event.payload)}</code></pre>
+                                                                        style="background: var(--cds-ui-01); border: 1px solid var(--cds-ui-03); border-radius: 4px; padding: 0.75rem; font-size: 0.75rem; line-height: 1.4; overflow-x: auto; white-space: pre-wrap; color: var(--cds-text-primary); max-height: 300px; overflow-y: auto;"><code
+                                                                            >${formatPayload(
+                                                                                event.payload,
+                                                                            )}</code
+                                                                        ></pre>
                                                                 </td>
                                                             </tr>
                                                         {/if}

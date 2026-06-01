@@ -120,8 +120,11 @@
     }
 
     let logo = $derived(
-        appAppearance.theme === "dark" || (appAppearance.theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches) 
-        ? "/logo-white.png" : "/logo-black.png",
+        appAppearance.theme === "dark" ||
+            (appAppearance.theme === "system" &&
+                window.matchMedia("(prefers-color-scheme: dark)").matches)
+            ? "/logo-white.png"
+            : "/logo-black.png",
     );
 
     // Listen for theme toggle events from the command palette / shortcuts
@@ -206,7 +209,11 @@
             <Renew />
         </Button>
 
-        <Button onclick={toggleTheme} kind="ghost" aria-label={m.toolbar_toggle_theme()}>
+        <Button
+            onclick={toggleTheme}
+            kind="ghost"
+            aria-label={m.toolbar_toggle_theme()}
+        >
             {#if appAppearance.theme === "dark"}
                 <LightFilled />
             {:else}

@@ -1,10 +1,10 @@
 import type { Ticket, CreateTicketInput, UpdateTicketInput, Comment } from '$lib/components/app/types';
 import { getDb, TicketRepo } from '$lib/db';
 import {
-	getUndoRedo,
-	registerMutationHandler,
-	registerEventPersistence,
-	type UndoRedoEvent,
+    getUndoRedo,
+    registerMutationHandler,
+    registerEventPersistence,
+    type UndoRedoEvent,
 } from '$lib/hooks/undo-redo.svelte';
 import { TicketEvents } from '$lib/hooks/events.svelte';
 
@@ -35,90 +35,90 @@ let _getWorkspacePath: () => string | null = () => null;
 let _handlerRegistered = false;
 
 function ensureHandlerRegistered(getPath: () => string | null) {
-	if (_handlerRegistered) return;
-	_handlerRegistered = true;
+    if (_handlerRegistered) return;
+    _handlerRegistered = true;
 
-	// Register the mutation handler for applying inversions
-	registerMutationHandler(async (event: UndoRedoEvent) => {
-		const path = _getWorkspacePath();
-		if (!path) throw new Error('Cannot undo/redo: no workspace selected');
+    // Register the mutation handler for applying inversions
+    registerMutationHandler(async (event: UndoRedoEvent) => {
+        const path = _getWorkspacePath();
+        if (!path) throw new Error('Cannot undo/redo: no workspace selected');
 
-		const db = await getDb(path);
+        const db = await getDb(path);
 
-		switch (event.type) {
-			case 'ticket:update': {
-				if (!event.after) throw new Error('Invalid undo event: missing after state');
-				await TicketRepo.updateTicket(db, event.ticketId, event.after as UpdateTicketInput);
-				const updated = await TicketRepo.getTicketById(db, event.ticketId);
-				if (updated) {
-					const idx = _tickets.findIndex((t) => t.id === event.ticketId);
-					if (idx !== -1) {
-						_tickets[idx] = updated;
-					}
-				}
-				break;
-			}
-			case 'ticket:create': {
-				if (!event.after) throw new Error('Invalid undo event: missing after state');
-				const created = await TicketRepo.createTicket(db, event.after as unknown as CreateTicketInput);
-				_tickets = [..._tickets, created].sort((a, b) => a.position - b.position);
-				if (_counts[created.status]) {
-					_counts[created.status] = (_counts[created.status] ?? 0) + 1;
-				}
-				break;
-			}
-			case 'ticket:delete': {
-				await TicketRepo.deleteTicket(db, event.ticketId);
-				const deleted = _tickets.find((t) => t.id === event.ticketId);
-				_tickets = _tickets.filter((t) => t.id !== event.ticketId);
-				if (deleted?.status) {
-					_counts[deleted.status] = Math.max(0, (_counts[deleted.status] ?? 0) - 1);
-				}
-				break;
-			}
-		}
-	});
+        switch (event.type) {
+            case 'ticket:update': {
+                if (!event.after) throw new Error('Invalid undo event: missing after state');
+                await TicketRepo.updateTicket(db, event.ticketId, event.after as UpdateTicketInput);
+                const updated = await TicketRepo.getTicketById(db, event.ticketId);
+                if (updated) {
+                    const idx = _tickets.findIndex((t) => t.id === event.ticketId);
+                    if (idx !== -1) {
+                        _tickets[idx] = updated;
+                    }
+                }
+                break;
+            }
+            case 'ticket:create': {
+                if (!event.after) throw new Error('Invalid undo event: missing after state');
+                const created = await TicketRepo.createTicket(db, event.after as unknown as CreateTicketInput);
+                _tickets = [..._tickets, created].sort((a, b) => a.position - b.position);
+                if (_counts[created.status]) {
+                    _counts[created.status] = (_counts[created.status] ?? 0) + 1;
+                }
+                break;
+            }
+            case 'ticket:delete': {
+                await TicketRepo.deleteTicket(db, event.ticketId);
+                const deleted = _tickets.find((t) => t.id === event.ticketId);
+                _tickets = _tickets.filter((t) => t.id !== event.ticketId);
+                if (deleted?.status) {
+                    _counts[deleted.status] = Math.max(0, (_counts[deleted.status] ?? 0) - 1);
+                }
+                break;
+            }
+        }
+    });
 
-	// Register event persistence — when undo-redo pushes/undoes/redoes,
-	// a corresponding lifecycle event is written to the events table.
-	registerEventPersistence(async (event: UndoRedoEvent, direction: 'push' | 'undo' | 'redo') => {
-		const path = _getWorkspacePath();
-		if (!path) return;
+    // Register event persistence — when undo-redo pushes/undoes/redoes,
+    // a corresponding lifecycle event is written to the events table.
+    registerEventPersistence(async (event: UndoRedoEvent, direction: 'push' | 'undo' | 'redo') => {
+        const path = _getWorkspacePath();
+        if (!path) return;
 
-		try {
-			const db = await getDb(path);
+        try {
+            const db = await getDb(path);
 
-			switch (event.type) {
-				case 'ticket:create':
-					if (direction === 'push') {
-						await TicketEvents.created(db, event.ticketId, event.after ?? {});
-					} else if (direction === 'undo') {
-						await TicketEvents.deleted(db, event.ticketId, event.after ?? {});
-					} else {
-						await TicketEvents.created(db, event.ticketId, event.after ?? {});
-					}
-					break;
-				case 'ticket:delete':
-					if (direction === 'push') {
-						await TicketEvents.deleted(db, event.ticketId, event.before ?? {});
-					} else if (direction === 'undo') {
-						await TicketEvents.created(db, event.ticketId, event.before ?? {});
-					} else {
-						await TicketEvents.deleted(db, event.ticketId, event.before ?? {});
-					}
-					break;
-				case 'ticket:update':
-					if (direction === 'push') {
-						// The push was already handled by the direct emit in update()/move()
-					} else {
-						await TicketEvents.updated(db, event.ticketId, event.after, event.before ?? {});
-					}
-					break;
-			}
-		} catch (err) {
-			console.error('Event persistence failed:', err);
-		}
-	});
+            switch (event.type) {
+                case 'ticket:create':
+                    if (direction === 'push') {
+                        await TicketEvents.created(db, event.ticketId, event.after ?? {});
+                    } else if (direction === 'undo') {
+                        await TicketEvents.deleted(db, event.ticketId, event.after ?? {});
+                    } else {
+                        await TicketEvents.created(db, event.ticketId, event.after ?? {});
+                    }
+                    break;
+                case 'ticket:delete':
+                    if (direction === 'push') {
+                        await TicketEvents.deleted(db, event.ticketId, event.before ?? {});
+                    } else if (direction === 'undo') {
+                        await TicketEvents.created(db, event.ticketId, event.before ?? {});
+                    } else {
+                        await TicketEvents.deleted(db, event.ticketId, event.before ?? {});
+                    }
+                    break;
+                case 'ticket:update':
+                    if (direction === 'push') {
+                        // The push was already handled by the direct emit in update()/move()
+                    } else {
+                        await TicketEvents.updated(db, event.ticketId, event.after, event.before ?? {});
+                    }
+                    break;
+            }
+        } catch (err) {
+            console.error('Event persistence failed:', err);
+        }
+    });
 }
 
 /**

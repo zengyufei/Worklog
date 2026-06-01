@@ -6,10 +6,10 @@ export * as TicketTypeRepo from './repositories/ticket-type.repo';
 export * as SettingsRepo from './repositories/settings.repo';
 export * as EventRepo from './repositories/event.repo';
 export type {
-	EntityType,
-	EventType,
-	TicketEventType,
-	BoardEventType,
-	EventRecord,
-	CreateEventInput,
+    EntityType,
+    EventType,
+    TicketEventType,
+    BoardEventType,
+    EventRecord,
+    CreateEventInput,
 } from './repositories/event.repo';

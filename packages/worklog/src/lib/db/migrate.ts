@@ -320,7 +320,7 @@ async function migrate_v10(db: Database) {
     } catch {
         // Ignore if column already exists (e.g. from fresh creation of v9 schema)
     }
-    
+
     try {
         await db.execute(`ALTER TABLE sync_config ADD COLUMN git_email TEXT NOT NULL DEFAULT ''`);
     } catch {
