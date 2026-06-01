@@ -1,6 +1,6 @@
 # Worklog : Local-first Desktop Project Manager
+<img width="1372" height="561" alt="inline-logo png(1)" src="https://github.com/user-attachments/assets/bde4c0c5-1fe4-4695-ac22-39a3a3fdbcb8" />
 
-<img width="1922" height="818" alt="Worklog banner" src="https://github.com/user-attachments/assets/aee54de1-58de-4bca-a3f4-246ec4dd4713" />
 
 ***
 
