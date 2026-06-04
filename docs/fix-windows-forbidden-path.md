@@ -8,31 +8,42 @@ On Windows 11, reopening Worklog after selecting a workspace folder results in a
 
 ## Root Cause
 
-Tauri v2's `tauri-plugin-fs` enforces strict filesystem access scopes defined in `src-tauri/capabilities/default.json`. The scopes were limited to `$DOCUMENT/**/*` and `$HOME/**/*` — but the user-chosen workspace path often falls outside these:
+Tauri v2's `tauri-plugin-fs` enforces strict filesystem access scopes defined in `src-tauri/capabilities/default.json`. The scopes were originally limited to drive-specific variables (`$DOCUMENT`, `$HOME`, `$APPDATA`, `$RESOURCE`, `$DESKTOP`) — all of which resolve to paths on the `C:` drive on Windows.
 
-| Scope variable | Windows 11 resolution | In original config? |
-|---|---|---|
-| `$DOCUMENT` | `C:\Users\<user>\Documents` | ✅ |
-| `$HOME` | `C:\Users\<user>` | ✅ |
-| `$RESOURCE` | The app's install directory (same dir as `worklog.exe`) | ❌ |
-| `$APPDATA` | `C:\Users\<user>\AppData\Roaming` | ❌ |
-| `$DESKTOP` | `C:\Users\<user>\Desktop` | ❌ |
+When a user selected a workspace on a **different drive** (e.g. `E:\MyFiles\Worklog`) — external USB drive, secondary partition, SD card, etc. — the path didn't match any configured scope. Calls to `exists()`, `mkdir()`, `Database.load()`, and other filesystem operations threw a **"forbidden path"** error.
 
-When the saved workspace path resolved to a location outside the allowed scopes, calls to `exists()`, `mkdir()`, and other filesystem operations threw a "forbidden path" error on every relaunch — the app was stuck in an error loop.
+The same error also occurred for workspaces in `$APPDATA`, `$DESKTOP`, `$RESOURCE` before those scopes were added.
 
 ## Changes
 
 ### `src-tauri/capabilities/default.json`
 
-Added three missing scope variables to all filesystem operations (`write-text-file`, `read-text-file`, `read-dir`, `mkdir`, `exists`):
+Replaced all per-variable scope lists with a single catch-all `**` pattern for each filesystem operation (`write-text-file`, `read-text-file`, `read-dir`, `mkdir`, `exists`). This allows the user to choose **any local folder** regardless of drive letter.
 
-- **`$RESOURCE/**/*`** — Covers workspaces stored alongside `worklog.exe` (the user-reported workaround)
-- **`$APPDATA/**/*`** — Covers workspaces in `AppData\Roaming`
-- **`$DESKTOP/**/*`** — Covers workspaces on the desktop (common choice)
+**Before:**
+```json
+{"path": "$DOCUMENT/**/*"},
+{"path": "$HOME/**/*"},
+{"path": "$APPDATA/**/*"},
+{"path": "$RESOURCE/**/*"},
+{"path": "$DESKTOP/**/*"}
+```
+
+**After:**
+```json
+{"path": "**"}
+```
 
 ### `src/lib/hooks/workspace.svelte.ts`
 
-Added two layers of resilience for unrecoverable path errors:
+**1. Path normalization** — Added `normalizePath()` that converts Windows backslashes to forward slashes. Applied at all three entry points:
+   - **Dialog result** in `pick()` — the OS file picker returns native paths (`E:\MyFiles\Worklog`)
+   - **Saved path** in `init()` — localStorage may contain backslash paths from previous sessions
+   - **`open_workspace()` body** — safety net for any callers that might pass raw paths
+
+   This prevents mixed-separator paths like `E:\MyFiles\Worklog/.worklog` which could confuse Tauri's filesystem scope matching.
+
+**2. Two layers of resilience** for unrecoverable path errors:
 
 1. **`classifyWorkspaceError()`** — Translates raw Tauri FS errors (`forbidden`, `not allowed`, `permission denied`, `ENOSYS`) into a user-friendly message explaining the folder is inaccessible and suggesting a different location.
 
@@ -45,5 +56,6 @@ Added two layers of resilience for unrecoverable path errors:
 | Workspace on Desktop | "forbidden path" error on relaunch | Works normally |
 | Workspace alongside worklog.exe | Works (workaround) | Works |
 | Workspace in AppData | "forbidden path" error on relaunch | Works normally |
+| Workspace on **external drive** (E:, D:, etc.) | "forbidden path" error (no scope matched) | ✅ **Fixed** — `**` covers any drive |
 | Workspace on now-unplugged drive | Stuck error screen on every relaunch | Saved path cleared; shows selector with clear message |
 | Workspace in restricted system dir | Raw error message shown | Friendly message: "choose a different folder" |

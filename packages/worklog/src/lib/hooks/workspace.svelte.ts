@@ -42,6 +42,11 @@ type WorkspaceStatus =
     | 'ready'       // fully loaded, show board view
     | 'error'       // something went wrong
 
+/** Normalize Windows backslashes to forward slashes for consistent path handling. */
+function normalizePath(p: string): string {
+    return p.replaceAll('\\', '/');
+}
+
 /** Classify common Tauri errors into user-friendly messages. */
 function classifyWorkspaceError(raw: string): string {
     // Tauri filesystem scope violations (Windows "forbidden path")
@@ -80,9 +85,10 @@ export function getWorkspace() {
                     return;
                 }
 
-                await open_workspace(saved);
+                const resolved = normalizePath(saved);
+                await open_workspace(resolved);
 
-                if (_path !== saved) {
+                if (_path !== resolved) {
                     _path = null;
                     _meta = null;
                     clearSavedWorkspacePath();
@@ -123,18 +129,19 @@ export function getWorkspace() {
             const { open } = await import('@tauri-apps/plugin-dialog');
             const selected = await open({ directory: true, multiple: false });
             if (!selected) return; // user cancelled
-            await open_workspace(selected as string);
+            await open_workspace(normalizePath(selected as string));
         } catch (e) {
             _error = String(e);
             _status = 'error';
         }
     }
 
-    async function open_workspace(path: string) {
+    async function open_workspace(rawPath: string) {
         try {
             _status = 'loading';
             _error = null;
 
+            const path = normalizePath(rawPath);
             const db = await getDb(path);
             await runMigrations(db);
             await WorkspaceRepo.initWorkspace(db, path.split('/').pop() ?? 'My Workspace');
