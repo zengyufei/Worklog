@@ -1,50 +1,163 @@
 <!-- src/lib/components/app/layout/command-palette/command-palette.svelte -->
 <script lang="ts">
     import { Search, ArrowRight, Keyboard } from "carbon-icons-svelte";
-    import { getCommandPalette } from "$lib/hooks/command-palette.svelte";
+    import { page } from "$app/stores";
+    import {
+        getCommandPalette,
+        fuzzyMatch,
+        highlightMatches,
+    } from "$lib/hooks/command-palette.svelte";
+    import type { PaletteMode } from "$lib/hooks/command-palette.svelte";
     import type { CommandAction } from "$lib/components/app/types";
 
     const palette = getCommandPalette();
 
-    // ── Filtered actions ───────────────────────────────────────────────────
-    const filtered = $derived.by<CommandAction[]>(() => {
-        const query = palette.query.trim().toLowerCase();
-        let list = query
-            ? palette.actions.filter(
-                  (action) =>
-                      action.label.toLowerCase().includes(query) ||
-                      action.subtitle.toLowerCase().includes(query) ||
-                      action.shortcut.toLowerCase().includes(query),
-              )
-            : [...palette.actions];
+    // ── Mode detection ─────────────────────────────────────────────────────
+    // Determined reactively from the first character of the query string.
+    const activeMode = $derived.by<PaletteMode>(() => {
+        const q = palette.query;
+        if (q.startsWith("?")) return "shortcuts";
+        if (q.startsWith("#")) return "boards";
+        if (q.startsWith("/")) return "navigate";
+        return "commands";
+    });
 
-        // Sort by category to match visual grouping
-        const categoryPriority: Record<string, number> = {
-            Application: 1,
-            Navigation: 2,
-            Workspace: 3,
-            Actions: 4,
-            Commands: 5,
-        };
+    // Clean query with mode prefix stripped
+    const searchQuery = $derived.by<string>(() => {
+        const q = palette.query;
+        const first = q[0];
+        if (first === "?" || first === "#" || first === "/") {
+            return q.slice(1).trimStart();
+        }
+        return q;
+    });
 
-        list.sort((a, b) => {
-            const catA = a.category ?? "Commands";
-            const catB = b.category ?? "Commands";
+    // ── Context: current route ─────────────────────────────────────────────
+    const currentPath = $derived($page.url.pathname);
 
-            if (catA !== catB) {
-                const priorityA = categoryPriority[catA] ?? 99;
-                const priorityB = categoryPriority[catB] ?? 99;
-                if (priorityA !== priorityB) return priorityA - priorityB;
-                return catA.localeCompare(catB);
+    const routeContext = $derived.by<string>(() => {
+        const path = currentPath;
+        if (path === "/") return "home";
+        if (path.startsWith("/workspace/settings")) return "settings";
+        if (path.startsWith("/workspace/calendar")) return "calendar";
+        if (path.startsWith("/workspace/overview")) return "overview";
+        if (path.startsWith("/workspace/")) {
+            const parts = path.split("/").filter(Boolean);
+            if (parts.length >= 2 && parts[1].length > 0) return "board-detail";
+            return "boards-list";
+        }
+        return "default";
+    });
+
+    // Priority boost per route context — command IDs that should rank higher
+    const contextPriorityIds: Record<string, Set<string>> = {
+        "boards-list": new Set(["create-board"]),
+        "board-detail": new Set(["create-ticket"]),
+        calendar: new Set(["create-ticket"]),
+        overview: new Set(["go-to-workspace", "export-data"]),
+        settings: new Set(["go-to-workspace"]),
+        home: new Set(["open-workspace"]),
+    };
+
+    // ── Filtered + scored actions ──────────────────────────────────────────
+    interface ScoredAction {
+        action: CommandAction;
+        score: number;
+        labelIndices: number[];
+        subtitleIndices: number[];
+    }
+
+    const CATEGORY_ORDER: Record<string, number> = {
+        Application: 1,
+        Navigation: 2,
+        Workspace: 3,
+        Boards: 4,
+        Actions: 5,
+        Commands: 6,
+    };
+
+    // Mode-specific category allowlist
+    const MODE_CATEGORIES: Record<PaletteMode, Set<string> | null> = {
+        commands: null, // all categories
+        shortcuts: null, // all categories (reference view)
+        boards: new Set(["Boards", "Workspace"]),
+        navigate: new Set(["Navigation"]),
+    };
+
+    const scored = $derived.by<ScoredAction[]>(() => {
+        const all = palette.actions;
+        const mode = activeMode;
+        const query = searchQuery.trim().toLowerCase();
+        const ctxPriorities = contextPriorityIds[routeContext] ?? new Set();
+
+        // Mode-based category filtering
+        const allowedCats = MODE_CATEGORIES[mode];
+
+        // In shortcuts mode, show ALL actions unsorted (reference list)
+        if (mode === "shortcuts") {
+            return all.map((action) => ({
+                action,
+                score: 0,
+                labelIndices: [],
+                subtitleIndices: [],
+            }));
+        }
+
+        const results: ScoredAction[] = [];
+
+        for (const action of all) {
+            // Apply mode category filter
+            if (allowedCats !== null) {
+                const cat = action.category ?? "Commands";
+                if (!allowedCats.has(cat)) continue;
             }
-            return 0; // Maintain relative order within category
+
+            // Fuzzy match against label, subtitle, shortcut
+            const labelMatch = fuzzyMatch(query, action.label);
+            const subMatch = query ? fuzzyMatch(query, action.subtitle) : null;
+            const scMatch = query ? fuzzyMatch(query, action.shortcut) : null;
+
+            const candidates = [labelMatch, subMatch, scMatch].filter(
+                (m): m is NonNullable<typeof m> => m !== null,
+            );
+
+            if (query && candidates.length === 0) continue;
+
+            // Best score across all matched fields
+            const best = candidates.reduce(
+                (best, c) => (c.score > best.score ? c : best),
+                candidates[0] ?? { score: 0, indices: [] },
+            );
+
+            // Context-aware priority boost: promoted commands get +200
+            const contextBoost =
+                query === "" && ctxPriorities.has(action.id) ? 200 : 0;
+
+            results.push({
+                action,
+                score: best.score + contextBoost,
+                labelIndices: labelMatch?.indices ?? [],
+                subtitleIndices: subMatch?.indices ?? [],
+            });
+        }
+
+        // Sort: by category order (so arrow-keys follow visual grouping),
+        // then by score (desc) within each category, then original position.
+        results.sort((a, b) => {
+            const catA = CATEGORY_ORDER[a.action.category ?? "Commands"] ?? 99;
+            const catB = CATEGORY_ORDER[b.action.category ?? "Commands"] ?? 99;
+            if (catA !== catB) return catA - catB;
+            if (a.score !== b.score) return b.score - a.score;
+            // Stable sort: preserve original order for equal scores
+            const idxA = all.indexOf(a.action);
+            const idxB = all.indexOf(b.action);
+            return idxA - idxB;
         });
 
-        return list;
+        return results;
     });
 
     // ── Grouped by category ────────────────────────────────────────────────
-    // Preserves insertion order within each group. Flat index tracks global ↑/↓.
     interface GroupEntry {
         category: string;
         actions: { action: CommandAction; flatIndex: number }[];
@@ -55,7 +168,7 @@
             string,
             { action: CommandAction; flatIndex: number }[]
         >();
-        filtered.forEach((action, i) => {
+        scored.forEach(({ action }, i) => {
             const cat = action.category ?? "Commands";
             if (!map.has(cat)) map.set(cat, []);
             map.get(cat)!.push({ action, flatIndex: i });
@@ -67,12 +180,39 @@
         return result;
     });
 
+    const filtered = $derived(scored.map((s) => s.action));
+
+    // ── Mode label map ─────────────────────────────────────────────────────
+    const MODE_LABEL: Record<PaletteMode, { badge: string; hint: string }> = {
+        commands: {
+            badge: "",
+            hint: "Type ? for shortcuts, # for boards, / to navigate",
+        },
+        shortcuts: {
+            badge: "?",
+            hint: "Keyboard shortcuts reference — press Esc to go back",
+        },
+        boards: { badge: "#", hint: "Board & workspace commands" },
+        navigate: { badge: "/", hint: "Navigation commands" },
+    };
+
+    // ── Resolve match data for a flat index ────────────────────────────────
+    function getMatchData(flatIndex: number) {
+        return scored[flatIndex] ?? null;
+    }
+
     // ── Keyboard navigation ────────────────────────────────────────────────
     function handleKeydown(e: KeyboardEvent) {
         if (!palette.isOpen) return;
 
         if (e.key === "Escape") {
             e.preventDefault();
+            // If in a sub-mode, return to commands mode first
+            if (activeMode !== "commands") {
+                palette.setQuery("");
+                palette.setMode("commands");
+                return;
+            }
             palette.close();
             return;
         }
@@ -93,6 +233,8 @@
 
         if (e.key === "Enter") {
             e.preventDefault();
+            // In shortcuts mode, Enter does nothing (reference view)
+            if (activeMode === "shortcuts") return;
             const action = filtered[palette.selectedIndex];
             if (action) {
                 palette.runAction(action);
@@ -156,11 +298,19 @@
             <!-- Search input -->
             <div class="palette-search">
                 <Search size={20} class="palette-search-icon" />
+                {#if activeMode !== "commands"}
+                    <span class="palette-mode-badge"
+                        >{MODE_LABEL[activeMode].badge}</span
+                    >
+                {/if}
                 <input
                     bind:this={inputRef}
                     type="text"
                     class="palette-input"
-                    placeholder="Type a command..."
+                    class:palette-input--has-mode={activeMode !== "commands"}
+                    placeholder={activeMode === "commands"
+                        ? "Type a command..."
+                        : MODE_LABEL[activeMode].hint}
                     value={palette.query}
                     oninput={(e) =>
                         palette.setQuery(
@@ -213,14 +363,43 @@
                                             />
                                         {/if}
                                         <div class="palette-item-text">
-                                            <span class="palette-item-label"
-                                                >{action.label}</span
-                                            >
+                                            <span class="palette-item-label">
+                                                {#if activeMode !== "shortcuts" && searchQuery.trim()}
+                                                    {@const md =
+                                                        getMatchData(flatIndex)}
+                                                    {#if md}
+                                                        {@html highlightMatches(
+                                                            action.label,
+                                                            md.labelIndices,
+                                                        )}
+                                                    {:else}
+                                                        {action.label}
+                                                    {/if}
+                                                {:else}
+                                                    {action.label}
+                                                {/if}
+                                            </span>
                                             {#if action.subtitle}
                                                 <span
                                                     class="palette-item-subtitle"
-                                                    >{action.subtitle}</span
                                                 >
+                                                    {#if activeMode !== "shortcuts" && searchQuery.trim()}
+                                                        {@const md =
+                                                            getMatchData(
+                                                                flatIndex,
+                                                            )}
+                                                        {#if md}
+                                                            {@html highlightMatches(
+                                                                action.subtitle,
+                                                                md.subtitleIndices,
+                                                            )}
+                                                        {:else}
+                                                            {action.subtitle}
+                                                        {/if}
+                                                    {:else}
+                                                        {action.subtitle}
+                                                    {/if}
+                                                </span>
                                             {/if}
                                         </div>
                                     </div>
@@ -244,11 +423,21 @@
             <div class="palette-footer">
                 <div class="palette-hint">
                     <Keyboard size={14} />
-                    <span
-                        ><kbd>↑↓</kbd> navigate &middot; <kbd>Enter</kbd> run
-                        &middot;
-                        <kbd>Esc</kbd> close</span
-                    >
+                    {#if activeMode === "shortcuts"}
+                        <span><kbd>Esc</kbd> go back</span>
+                    {:else if activeMode === "commands"}
+                        <span
+                            ><kbd>↑↓</kbd> navigate &middot;
+                            <kbd>Enter</kbd> run &middot;
+                            <kbd>Esc</kbd> close</span
+                        >
+                    {:else}
+                        <span
+                            ><kbd>↑↓</kbd> navigate &middot;
+                            <kbd>Enter</kbd> run &middot;
+                            <kbd>Esc</kbd> go back</span
+                        >
+                    {/if}
                 </div>
             </div>
         </div>
@@ -333,6 +522,41 @@
 
     .palette-input::placeholder {
         color: var(--cds-text-placeholder);
+    }
+
+    .palette-input--has-mode {
+        padding-left: 0.25rem;
+    }
+
+    /* ── Mode Badge ────────────────────────────────────────── */
+    .palette-mode-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.25rem;
+        height: 1.25rem;
+        font-size: 0.75rem;
+        font-weight: 700;
+        font-family: var(--cds-code-01-font-family, "IBM Plex Mono", monospace);
+        border-radius: 4px;
+        background: var(--cds-interactive-01, #0f62fe);
+        color: var(--cds-text-04, #fff);
+        flex-shrink: 0;
+        line-height: 1;
+        user-select: none;
+    }
+
+    /* ── Match Highlighting ────────────────────────────────── */
+    :global(.palette-match) {
+        background: transparent;
+        color: var(--cds-interactive-01, #0f62fe);
+        font-weight: 600;
+        border-radius: 1px;
+        padding: 0;
+    }
+
+    .palette-item--selected :global(.palette-match) {
+        color: var(--cds-link-01, #78a9ff);
     }
 
     .palette-esc-badge {
