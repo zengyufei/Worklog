@@ -196,7 +196,7 @@ export async function deleteDocFile(
         await remove(fullPath);
         return true;
     } catch (e) {
-                console.error(`[board-docs] Failed to delete file ${relativePath}:`, e);
+        console.error(`[board-docs] Failed to delete file ${relativePath}:`, e);
         return false;
     }
 }
@@ -224,7 +224,7 @@ export async function renameDocFile(
         await rename(oldFullPath, newFullPath);
         return newRelativePath;
     } catch (e) {
-                console.error(`[board-docs] Failed to rename ${oldRelativePath}:`, e);
+        console.error(`[board-docs] Failed to rename ${oldRelativePath}:`, e);
         return null;
     }
 }
@@ -244,7 +244,7 @@ export async function createDocFolder(
         await mkdir(fullPath, { recursive: true });
         return folderName;
     } catch (e) {
-                console.error(`[board-docs] Failed to create folder ${folderName}:`, e);
+        console.error(`[board-docs] Failed to create folder ${folderName}:`, e);
         return null;
     }
 }

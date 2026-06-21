@@ -51,18 +51,55 @@
     // Show "Saved!" feedback briefly after save
     function flashSaved() {
         savedIndicator = true;
-        setTimeout(() => { savedIndicator = false; }, 1500);
+        setTimeout(() => {
+            savedIndicator = false;
+        }, 1500);
     }
 
     // ── Formatting toolbar & slash commands ─────────────────────────────────
     const FORMAT_ACTIONS = [
-        { id: 'bold',      label: 'B',    title: 'Bold (Ctrl+B)',       action: () => insertWrap('**', '**') },
-        { id: 'h1',        label: 'H1',   title: 'Heading 1',    action: () => insertLine('# ') },
-        { id: 'h2',        label: 'H2',   title: 'Heading 2',    action: () => insertLine('## ') },
-        { id: 'h3',        label: 'H3',   title: 'Heading 3',    action: () => insertLine('### ') },
-        { id: 'bullet',    label: '\u2022', title: 'Bullet list', action: () => insertLine('- ') },
-        { id: 'numbered',  label: '1.',   title: 'Numbered list', action: () => insertLine('1. ') },
-        { id: 'codeblock', label: '<>',   title: 'Code block',    action: () => insertCodeBlock() },
+        {
+            id: "bold",
+            label: "B",
+            title: "Bold (Ctrl+B)",
+            action: () => insertWrap("**", "**"),
+        },
+        {
+            id: "h1",
+            label: "H1",
+            title: "Heading 1",
+            action: () => insertLine("# "),
+        },
+        {
+            id: "h2",
+            label: "H2",
+            title: "Heading 2",
+            action: () => insertLine("## "),
+        },
+        {
+            id: "h3",
+            label: "H3",
+            title: "Heading 3",
+            action: () => insertLine("### "),
+        },
+        {
+            id: "bullet",
+            label: "\u2022",
+            title: "Bullet list",
+            action: () => insertLine("- "),
+        },
+        {
+            id: "numbered",
+            label: "1.",
+            title: "Numbered list",
+            action: () => insertLine("1. "),
+        },
+        {
+            id: "codeblock",
+            label: "<>",
+            title: "Code block",
+            action: () => insertCodeBlock(),
+        },
     ] as const;
 
     interface SlashCmd {
@@ -73,34 +110,72 @@
     }
 
     const SLASH_COMMANDS: SlashCmd[] = [
-        { id: 'bold',      label: 'Bold',         match: 'bold b',        action: () => insertWrap('**', '**') },
-        { id: 'h1',        label: 'Heading 1',    match: 'h1 heading 1',  action: () => insertLine('# ') },
-        { id: 'h2',        label: 'Heading 2',    match: 'h2 heading 2',  action: () => insertLine('## ') },
-        { id: 'h3',        label: 'Heading 3',    match: 'h3 heading 3',  action: () => insertLine('### ') },
-        { id: 'bullet',    label: 'Bullet list',  match: 'bullet ul -',   action: () => insertLine('- ') },
-        { id: 'numbered',  label: 'Numbered list', match: 'numbered ol 1.', action: () => insertLine('1. ') },
-        { id: 'codeblock', label: 'Code block',   match: 'code block ```', action: () => insertCodeBlock() },
+        {
+            id: "bold",
+            label: "Bold",
+            match: "bold b",
+            action: () => insertWrap("**", "**"),
+        },
+        {
+            id: "h1",
+            label: "Heading 1",
+            match: "h1 heading 1",
+            action: () => insertLine("# "),
+        },
+        {
+            id: "h2",
+            label: "Heading 2",
+            match: "h2 heading 2",
+            action: () => insertLine("## "),
+        },
+        {
+            id: "h3",
+            label: "Heading 3",
+            match: "h3 heading 3",
+            action: () => insertLine("### "),
+        },
+        {
+            id: "bullet",
+            label: "Bullet list",
+            match: "bullet ul -",
+            action: () => insertLine("- "),
+        },
+        {
+            id: "numbered",
+            label: "Numbered list",
+            match: "numbered ol 1.",
+            action: () => insertLine("1. "),
+        },
+        {
+            id: "codeblock",
+            label: "Code block",
+            match: "code block ```",
+            action: () => insertCodeBlock(),
+        },
     ];
 
     // Slash menu state
     let slashOpen = $state(false);
-    let slashSearch = $state('');
+    let slashSearch = $state("");
     let slashIndex = $state(0);
     let slashMenuEl = $state<HTMLElement | null>(null);
 
     const slashFiltered = $derived(
         slashOpen && slashSearch
-            ? SLASH_COMMANDS.filter(c =>
-                  c.match.toLowerCase().includes(slashSearch.toLowerCase())
+            ? SLASH_COMMANDS.filter((c) =>
+                  c.match.toLowerCase().includes(slashSearch.toLowerCase()),
               )
-            : SLASH_COMMANDS
+            : SLASH_COMMANDS,
     );
 
     function openSlashMenu(cursor: number) {
         // Extract search term: text between '/' and cursor
         const before = draftContent.slice(0, cursor);
-        const slashIdx = before.lastIndexOf('/');
-        if (slashIdx === -1) { slashOpen = false; return; }
+        const slashIdx = before.lastIndexOf("/");
+        if (slashIdx === -1) {
+            slashOpen = false;
+            return;
+        }
         const term = before.slice(slashIdx + 1);
 
         slashSearch = term;
@@ -110,7 +185,7 @@
 
     function closeSlashMenu() {
         slashOpen = false;
-        slashSearch = '';
+        slashSearch = "";
         slashIndex = 0;
     }
 
@@ -119,7 +194,7 @@
         if (!ta) return;
         const cursor = ta.selectionStart;
         const before = draftContent.slice(0, cursor);
-        const slashIdx = before.lastIndexOf('/');
+        const slashIdx = before.lastIndexOf("/");
         const afterSlash = before.slice(slashIdx);
         const endOfWord = afterSlash.match(/^\/\w*/)?.[0]?.length ?? 0;
         const start = slashIdx;
@@ -138,23 +213,23 @@
     function handleSlashKeydown(e: KeyboardEvent) {
         if (!slashOpen) return;
 
-        if (e.key === 'ArrowDown') {
+        if (e.key === "ArrowDown") {
             e.preventDefault();
             slashIndex = Math.min(slashIndex + 1, slashFiltered.length - 1);
             return;
         }
-        if (e.key === 'ArrowUp') {
+        if (e.key === "ArrowUp") {
             e.preventDefault();
             slashIndex = Math.max(slashIndex - 1, 0);
             return;
         }
-        if (e.key === 'Enter' || e.key === 'Tab') {
+        if (e.key === "Enter" || e.key === "Tab") {
             e.preventDefault();
             const cmd = slashFiltered[slashIndex];
             if (cmd) applySlashCommand(cmd);
             return;
         }
-        if (e.key === 'Escape') {
+        if (e.key === "Escape") {
             e.preventDefault();
             closeSlashMenu();
             return;
@@ -166,16 +241,22 @@
         const ta = editDraftEl;
         if (!ta) return;
         const cursor = ta.selectionStart;
-        if (cursor === 0) { closeSlashMenu(); return; }
+        if (cursor === 0) {
+            closeSlashMenu();
+            return;
+        }
         const charBefore = draftContent[cursor - 1];
-        if (charBefore === '/') {
+        if (charBefore === "/") {
             openSlashMenu(cursor);
         } else if (slashOpen) {
             const before = draftContent.slice(0, cursor);
-            const slashIdx = before.lastIndexOf('/');
-            if (slashIdx === -1) { closeSlashMenu(); return; }
+            const slashIdx = before.lastIndexOf("/");
+            if (slashIdx === -1) {
+                closeSlashMenu();
+                return;
+            }
             const term = before.slice(slashIdx + 1);
-            if (term.includes(' ') || term.includes('\n')) {
+            if (term.includes(" ") || term.includes("\n")) {
                 closeSlashMenu();
             } else {
                 slashSearch = term;
@@ -194,9 +275,12 @@
         if (!ta) return;
         const start = ta.selectionStart;
         const end = ta.selectionEnd;
-        const selected = draftContent.slice(start, end) || 'text';
+        const selected = draftContent.slice(start, end) || "text";
         const replacement = `${before}${selected}${after}`;
-        draftContent = draftContent.slice(0, start) + replacement + draftContent.slice(end);
+        draftContent =
+            draftContent.slice(0, start) +
+            replacement +
+            draftContent.slice(end);
         requestAnimationFrame(() => {
             ta.focus();
             ta.selectionStart = start + before.length;
@@ -210,9 +294,12 @@
         const start = ta.selectionStart;
         // Find start of current line
         const before = draftContent.slice(0, start);
-        const lineStart = before.lastIndexOf('\n') + 1;
+        const lineStart = before.lastIndexOf("\n") + 1;
         const insertion = `${prefix}`;
-        draftContent = draftContent.slice(0, lineStart) + insertion + draftContent.slice(lineStart);
+        draftContent =
+            draftContent.slice(0, lineStart) +
+            insertion +
+            draftContent.slice(lineStart);
         requestAnimationFrame(() => {
             ta.focus();
             const newCursor = lineStart + insertion.length;
@@ -226,9 +313,12 @@
         if (!ta) return;
         const start = ta.selectionStart;
         const end = ta.selectionEnd;
-        const selected = draftContent.slice(start, end) || 'code';
-        const replacement = '```\n' + selected + '\n```';
-        draftContent = draftContent.slice(0, start) + replacement + draftContent.slice(end);
+        const selected = draftContent.slice(start, end) || "code";
+        const replacement = "```\n" + selected + "\n```";
+        draftContent =
+            draftContent.slice(0, start) +
+            replacement +
+            draftContent.slice(end);
         requestAnimationFrame(() => {
             ta.focus();
             const newCursor = start + replacement.length;
@@ -318,15 +408,15 @@
 
     // ── Create new note (inline filename input) ────────────────────────────
     let creatingFile = $state(false);
-    let newFileName = $state('');
+    let newFileName = $state("");
     let newFileInputEl = $state<HTMLInputElement | null>(null);
 
     function startCreateFile() {
         creatingFile = true;
-        newFileName = '';
+        newFileName = "";
         // If docs dir doesn't exist yet, suggest README.md as default
         if (!hasDocsDir) {
-            newFileName = 'README.md';
+            newFileName = "README.md";
         }
         requestAnimationFrame(() => {
             newFileInputEl?.focus();
@@ -342,14 +432,14 @@
         }
 
         clearError();
-        const fileName = name.endsWith('.md') ? name : `${name}.md`;
+        const fileName = name.endsWith(".md") ? name : `${name}.md`;
         creatingFile = false;
         try {
             const result = await createDocFile(
                 workspacePath,
                 boardId,
                 fileName,
-                `# ${fileName.replace('.md', '')}\n\n`,
+                `# ${fileName.replace(".md", "")}\n\n`,
             );
             if (result) {
                 await loadFiles();
@@ -358,7 +448,9 @@
                     selectedPath = newEntry.relativePath;
                 }
             } else {
-                showError('Failed to create file. Check that Tauri FS can write to the workspace and try again.');
+                showError(
+                    "Failed to create file. Check that Tauri FS can write to the workspace and try again.",
+                );
             }
         } catch (e) {
             showError(String(e));
@@ -366,10 +458,10 @@
     }
 
     function handleNewFileKeydown(e: KeyboardEvent) {
-        if (e.key === 'Enter') {
+        if (e.key === "Enter") {
             e.preventDefault();
             void confirmCreateFile();
-        } else if (e.key === 'Escape') {
+        } else if (e.key === "Escape") {
             e.preventDefault();
             creatingFile = false;
         }
@@ -453,19 +545,22 @@
             return;
         }
         // Arrow keys in slash menu
-        if (slashOpen && (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Tab')) {
+        if (
+            slashOpen &&
+            (e.key === "ArrowDown" || e.key === "ArrowUp" || e.key === "Tab")
+        ) {
             handleSlashKeydown(e);
             return;
         }
         // Enter in slash menu
-        if (slashOpen && e.key === 'Enter') {
+        if (slashOpen && e.key === "Enter") {
             handleSlashKeydown(e);
             return;
         }
         // Ctrl+B → bold
         if ((e.ctrlKey || e.metaKey) && e.key === "b") {
             e.preventDefault();
-            insertWrap('**', '**');
+            insertWrap("**", "**");
             return;
         }
     }
@@ -749,13 +844,13 @@
                     />
                 </div>
             {:else}
-            <Button
-                kind="primary"
-                icon={DocumentAdd}
-                onclick={startCreateFile}
-            >
-                New Note
-            </Button>
+                <Button
+                    kind="primary"
+                    icon={DocumentAdd}
+                    onclick={startCreateFile}
+                >
+                    New Note
+                </Button>
             {/if}
         </div>
     {:else}
@@ -1050,8 +1145,8 @@
                                     class="editor-toolbar-btn"
                                     onclick={fmt.action}
                                     title={fmt.title}
-                                    aria-label={fmt.title}
-                                >{fmt.label}</button>
+                                    aria-label={fmt.title}>{fmt.label}</button
+                                >
                             {/each}
                         </div>
                         <div class="board-docs-editor-panes">
@@ -1068,14 +1163,23 @@
                                         {#each slashFiltered as cmd, i (cmd.id)}
                                             <button
                                                 class="slash-menu-item"
-                                                class:slash-menu-item--active={i === slashIndex}
+                                                class:slash-menu-item--active={i ===
+                                                    slashIndex}
                                                 role="option"
                                                 aria-selected={i === slashIndex}
-                                                onclick={() => applySlashCommand(cmd)}
-                                                onmouseenter={() => (slashIndex = i)}
+                                                onclick={() =>
+                                                    applySlashCommand(cmd)}
+                                                onmouseenter={() =>
+                                                    (slashIndex = i)}
                                             >
-                                                <span class="slash-menu-label">{cmd.label}</span>
-                                                <span class="slash-menu-hint">/{cmd.match.split(' ')[0]}</span>
+                                                <span class="slash-menu-label"
+                                                    >{cmd.label}</span
+                                                >
+                                                <span class="slash-menu-hint"
+                                                    >/{cmd.match.split(
+                                                        " ",
+                                                    )[0]}</span
+                                                >
                                             </button>
                                         {/each}
                                     </div>
@@ -1551,8 +1655,10 @@
         color: var(--cds-text-02);
         cursor: pointer;
         border-radius: 3px;
-        transition: background 0.1s ease, color 0.1s ease;
-        font-family: 'IBM Plex Mono', 'SF Mono', 'Fira Code', monospace;
+        transition:
+            background 0.1s ease,
+            color 0.1s ease;
+        font-family: "IBM Plex Mono", "SF Mono", "Fira Code", monospace;
     }
 
     .editor-toolbar-btn:hover {
@@ -1645,7 +1751,7 @@
     .slash-menu-hint {
         font-size: 0.6875rem;
         color: var(--cds-text-03);
-        font-family: 'IBM Plex Mono', 'SF Mono', monospace;
+        font-family: "IBM Plex Mono", "SF Mono", monospace;
         margin-left: 1rem;
     }
 
@@ -1676,9 +1782,15 @@
     }
 
     @keyframes docs-saved-fade {
-        0% { opacity: 1; }
-        70% { opacity: 1; }
-        100% { opacity: 0; }
+        0% {
+            opacity: 1;
+        }
+        70% {
+            opacity: 1;
+        }
+        100% {
+            opacity: 0;
+        }
     }
 
     @keyframes docs-saving-pulse {
