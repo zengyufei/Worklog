@@ -2,9 +2,9 @@
  * Hook for browsing and reading board documentation markdown files.
  *
  * Files live on the filesystem at `.worklog/boards/<board_id>/docs/`.
- * All Tauri plugin calls are lazy-loaded with try/catch for safety
- * in browser dev mode.
  */
+
+import { exists, mkdir, readDir, readTextFile, remove, rename, writeTextFile } from '@tauri-apps/plugin-fs';
 
 export interface DocFileEntry {
     /** Display name (e.g. "README.md", "meeting-notes/2026-06-17.md") */
@@ -19,7 +19,7 @@ export interface DocFileEntry {
     children: DocFileEntry[];
 }
 
-function docsDir(workspacePath: string, boardId: string): string {
+export function docsDir(workspacePath: string, boardId: string): string {
     return `${workspacePath}/.worklog/boards/${boardId}/docs`;
 }
 
@@ -32,14 +32,13 @@ export async function listDocFiles(
     boardId: string,
 ): Promise<DocFileEntry[]> {
     try {
-        const { exists, readDir } = await import('@tauri-apps/plugin-fs');
         const dir = docsDir(workspacePath, boardId);
         const dirExists = await exists(dir);
         if (!dirExists) return [];
 
         return await listDirRecursive(dir, dir);
     } catch (e) {
-        console.warn('[board-docs] Failed to list doc files:', e);
+        console.error('[board-docs] Failed to list doc files:', e);
         return [];
     }
 }
@@ -48,7 +47,6 @@ async function listDirRecursive(
     absoluteDir: string,
     rootDir: string,
 ): Promise<DocFileEntry[]> {
-    const { readDir } = await import('@tauri-apps/plugin-fs');
     const entries = await readDir(absoluteDir);
     const results: DocFileEntry[] = [];
 
@@ -107,11 +105,10 @@ export async function readDocFile(
     relativePath: string,
 ): Promise<string | null> {
     try {
-        const { readTextFile } = await import('@tauri-apps/plugin-fs');
         const fullPath = `${docsDir(workspacePath, boardId)}/${relativePath}`;
         return await readTextFile(fullPath);
     } catch (e) {
-        console.warn(`[board-docs] Failed to read file ${relativePath}:`, e);
+        console.error(`[board-docs] Failed to read file ${relativePath}:`, e);
         return null;
     }
 }
@@ -128,7 +125,6 @@ export async function createDocFile(
     content = '',
 ): Promise<string | null> {
     try {
-        const { mkdir, exists, writeTextFile } = await import('@tauri-apps/plugin-fs');
         const dir = docsDir(workspacePath, boardId);
 
         // Ensure docs directory exists
@@ -149,9 +145,10 @@ export async function createDocFile(
         }
 
         await writeTextFile(fullPath, content);
+        console.log(`[board-docs] Created: ${fullPath}`);
         return fileName;
     } catch (e) {
-        console.warn(`[board-docs] Failed to create file ${fileName}:`, e);
+        console.error(`[board-docs] Failed to create file ${fileName}:`, e);
         return null;
     }
 }
@@ -168,7 +165,6 @@ export async function writeDocFile(
     content: string,
 ): Promise<boolean> {
     try {
-        const { mkdir, exists, writeTextFile } = await import('@tauri-apps/plugin-fs');
         const fullPath = `${docsDir(workspacePath, boardId)}/${relativePath}`;
 
         // Ensure parent directory exists
@@ -181,8 +177,75 @@ export async function writeDocFile(
         await writeTextFile(fullPath, content);
         return true;
     } catch (e) {
-        console.warn(`[board-docs] Failed to write file ${relativePath}:`, e);
+        console.error(`[board-docs] Failed to write file ${relativePath}:`, e);
         return false;
+    }
+}
+
+/**
+ * Delete a markdown file from the board's docs directory.
+ * Returns true on success, false on failure.
+ */
+export async function deleteDocFile(
+    workspacePath: string,
+    boardId: string,
+    relativePath: string,
+): Promise<boolean> {
+    try {
+        const fullPath = `${docsDir(workspacePath, boardId)}/${relativePath}`;
+        await remove(fullPath);
+        return true;
+    } catch (e) {
+                console.error(`[board-docs] Failed to delete file ${relativePath}:`, e);
+        return false;
+    }
+}
+
+/**
+ * Rename a file or directory inside the board's docs directory.
+ * Returns the new relative path on success, null on failure.
+ */
+export async function renameDocFile(
+    workspacePath: string,
+    boardId: string,
+    oldRelativePath: string,
+    newName: string,
+): Promise<string | null> {
+    try {
+        const dir = docsDir(workspacePath, boardId);
+        const oldFullPath = `${dir}/${oldRelativePath}`;
+
+        // Compute new relative path by replacing the last segment
+        const parts = oldRelativePath.split('/');
+        parts[parts.length - 1] = newName;
+        const newRelativePath = parts.join('/');
+        const newFullPath = `${dir}/${newRelativePath}`;
+
+        await rename(oldFullPath, newFullPath);
+        return newRelativePath;
+    } catch (e) {
+                console.error(`[board-docs] Failed to rename ${oldRelativePath}:`, e);
+        return null;
+    }
+}
+
+/**
+ * Create a new subdirectory inside the board's docs directory.
+ * Returns the relative path on success, null on failure.
+ */
+export async function createDocFolder(
+    workspacePath: string,
+    boardId: string,
+    folderName: string,
+): Promise<string | null> {
+    try {
+        const dir = docsDir(workspacePath, boardId);
+        const fullPath = `${dir}/${folderName}`;
+        await mkdir(fullPath, { recursive: true });
+        return folderName;
+    } catch (e) {
+                console.error(`[board-docs] Failed to create folder ${folderName}:`, e);
+        return null;
     }
 }
 
@@ -194,7 +257,6 @@ export async function docsDirectoryExists(
     boardId: string,
 ): Promise<boolean> {
     try {
-        const { exists } = await import('@tauri-apps/plugin-fs');
         return await exists(docsDir(workspacePath, boardId));
     } catch {
         return false;

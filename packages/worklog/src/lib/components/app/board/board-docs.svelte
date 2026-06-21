@@ -4,8 +4,10 @@
         DocumentAdd,
         Edit,
         Folder,
+        FolderAdd,
         ChevronRight,
         ChevronDown,
+        TrashCan,
         Notebook,
     } from "carbon-icons-svelte";
     import { Button } from "carbon-components-svelte";
@@ -14,7 +16,11 @@
         readDocFile,
         writeDocFile,
         createDocFile,
+        deleteDocFile,
+        renameDocFile,
+        createDocFolder,
         docsDirectoryExists,
+        docsDir,
         type DocFileEntry,
     } from "$lib/hooks/board-docs.svelte";
 
@@ -40,6 +46,213 @@
     let pendingSave = $state(false);
     let editDraftEl = $state<HTMLTextAreaElement | null>(null);
     let saving = $state(false);
+    let savedIndicator = $state(false);
+
+    // Show "Saved!" feedback briefly after save
+    function flashSaved() {
+        savedIndicator = true;
+        setTimeout(() => { savedIndicator = false; }, 1500);
+    }
+
+    // ── Formatting toolbar & slash commands ─────────────────────────────────
+    const FORMAT_ACTIONS = [
+        { id: 'bold',      label: 'B',    title: 'Bold (Ctrl+B)',       action: () => insertWrap('**', '**') },
+        { id: 'h1',        label: 'H1',   title: 'Heading 1',    action: () => insertLine('# ') },
+        { id: 'h2',        label: 'H2',   title: 'Heading 2',    action: () => insertLine('## ') },
+        { id: 'h3',        label: 'H3',   title: 'Heading 3',    action: () => insertLine('### ') },
+        { id: 'bullet',    label: '\u2022', title: 'Bullet list', action: () => insertLine('- ') },
+        { id: 'numbered',  label: '1.',   title: 'Numbered list', action: () => insertLine('1. ') },
+        { id: 'codeblock', label: '<>',   title: 'Code block',    action: () => insertCodeBlock() },
+    ] as const;
+
+    interface SlashCmd {
+        id: string;
+        label: string;
+        match: string;
+        action: () => void;
+    }
+
+    const SLASH_COMMANDS: SlashCmd[] = [
+        { id: 'bold',      label: 'Bold',         match: 'bold b',        action: () => insertWrap('**', '**') },
+        { id: 'h1',        label: 'Heading 1',    match: 'h1 heading 1',  action: () => insertLine('# ') },
+        { id: 'h2',        label: 'Heading 2',    match: 'h2 heading 2',  action: () => insertLine('## ') },
+        { id: 'h3',        label: 'Heading 3',    match: 'h3 heading 3',  action: () => insertLine('### ') },
+        { id: 'bullet',    label: 'Bullet list',  match: 'bullet ul -',   action: () => insertLine('- ') },
+        { id: 'numbered',  label: 'Numbered list', match: 'numbered ol 1.', action: () => insertLine('1. ') },
+        { id: 'codeblock', label: 'Code block',   match: 'code block ```', action: () => insertCodeBlock() },
+    ];
+
+    // Slash menu state
+    let slashOpen = $state(false);
+    let slashSearch = $state('');
+    let slashIndex = $state(0);
+    let slashMenuEl = $state<HTMLElement | null>(null);
+
+    const slashFiltered = $derived(
+        slashOpen && slashSearch
+            ? SLASH_COMMANDS.filter(c =>
+                  c.match.toLowerCase().includes(slashSearch.toLowerCase())
+              )
+            : SLASH_COMMANDS
+    );
+
+    function openSlashMenu(cursor: number) {
+        // Extract search term: text between '/' and cursor
+        const before = draftContent.slice(0, cursor);
+        const slashIdx = before.lastIndexOf('/');
+        if (slashIdx === -1) { slashOpen = false; return; }
+        const term = before.slice(slashIdx + 1);
+
+        slashSearch = term;
+        slashOpen = true;
+        slashIndex = 0;
+    }
+
+    function closeSlashMenu() {
+        slashOpen = false;
+        slashSearch = '';
+        slashIndex = 0;
+    }
+
+    function applySlashCommand(cmd: SlashCmd) {
+        const ta = editDraftEl;
+        if (!ta) return;
+        const cursor = ta.selectionStart;
+        const before = draftContent.slice(0, cursor);
+        const slashIdx = before.lastIndexOf('/');
+        const afterSlash = before.slice(slashIdx);
+        const endOfWord = afterSlash.match(/^\/\w*/)?.[0]?.length ?? 0;
+        const start = slashIdx;
+        const end = start + endOfWord;
+        // Remove the /command text
+        draftContent = draftContent.slice(0, start) + draftContent.slice(end);
+        // Reset cursor to where / was
+        ta.selectionStart = start;
+        ta.selectionEnd = start;
+        // Run the formatting action
+        cmd.action();
+        closeSlashMenu();
+        requestAnimationFrame(() => ta?.focus());
+    }
+
+    function handleSlashKeydown(e: KeyboardEvent) {
+        if (!slashOpen) return;
+
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            slashIndex = Math.min(slashIndex + 1, slashFiltered.length - 1);
+            return;
+        }
+        if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            slashIndex = Math.max(slashIndex - 1, 0);
+            return;
+        }
+        if (e.key === 'Enter' || e.key === 'Tab') {
+            e.preventDefault();
+            const cmd = slashFiltered[slashIndex];
+            if (cmd) applySlashCommand(cmd);
+            return;
+        }
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            closeSlashMenu();
+            return;
+        }
+    }
+
+    // Detect slash in textarea input
+    function handleFormatInput() {
+        const ta = editDraftEl;
+        if (!ta) return;
+        const cursor = ta.selectionStart;
+        if (cursor === 0) { closeSlashMenu(); return; }
+        const charBefore = draftContent[cursor - 1];
+        if (charBefore === '/') {
+            openSlashMenu(cursor);
+        } else if (slashOpen) {
+            const before = draftContent.slice(0, cursor);
+            const slashIdx = before.lastIndexOf('/');
+            if (slashIdx === -1) { closeSlashMenu(); return; }
+            const term = before.slice(slashIdx + 1);
+            if (term.includes(' ') || term.includes('\n')) {
+                closeSlashMenu();
+            } else {
+                slashSearch = term;
+                slashIndex = 0;
+            }
+        }
+    }
+
+    // ── Markdown insertion helpers ─────────────────────────────────────────
+    function getTa(): HTMLTextAreaElement | null {
+        return editDraftEl;
+    }
+
+    function insertWrap(before: string, after: string) {
+        const ta = getTa();
+        if (!ta) return;
+        const start = ta.selectionStart;
+        const end = ta.selectionEnd;
+        const selected = draftContent.slice(start, end) || 'text';
+        const replacement = `${before}${selected}${after}`;
+        draftContent = draftContent.slice(0, start) + replacement + draftContent.slice(end);
+        requestAnimationFrame(() => {
+            ta.focus();
+            ta.selectionStart = start + before.length;
+            ta.selectionEnd = start + before.length + selected.length;
+        });
+    }
+
+    function insertLine(prefix: string) {
+        const ta = getTa();
+        if (!ta) return;
+        const start = ta.selectionStart;
+        // Find start of current line
+        const before = draftContent.slice(0, start);
+        const lineStart = before.lastIndexOf('\n') + 1;
+        const insertion = `${prefix}`;
+        draftContent = draftContent.slice(0, lineStart) + insertion + draftContent.slice(lineStart);
+        requestAnimationFrame(() => {
+            ta.focus();
+            const newCursor = lineStart + insertion.length;
+            ta.selectionStart = newCursor;
+            ta.selectionEnd = newCursor;
+        });
+    }
+
+    function insertCodeBlock() {
+        const ta = getTa();
+        if (!ta) return;
+        const start = ta.selectionStart;
+        const end = ta.selectionEnd;
+        const selected = draftContent.slice(start, end) || 'code';
+        const replacement = '```\n' + selected + '\n```';
+        draftContent = draftContent.slice(0, start) + replacement + draftContent.slice(end);
+        requestAnimationFrame(() => {
+            ta.focus();
+            const newCursor = start + replacement.length;
+            ta.selectionStart = newCursor;
+            ta.selectionEnd = newCursor;
+        });
+    }
+
+    // ── Error surfacing ────────────────────────────────────────────────────
+    let actionError = $state<string | null>(null);
+    let actionErrorTimer: ReturnType<typeof setTimeout> | null = null;
+
+    function showError(msg: string) {
+        actionError = msg;
+        if (actionErrorTimer) clearTimeout(actionErrorTimer);
+        actionErrorTimer = setTimeout(() => {
+            actionError = null;
+        }, 6000);
+    }
+
+    function clearError() {
+        if (actionErrorTimer) clearTimeout(actionErrorTimer);
+        actionError = null;
+    }
 
     // ── Load file tree ─────────────────────────────────────────────────────
     async function loadFiles() {
@@ -103,28 +316,62 @@
         })();
     });
 
-    // ── Create new note ────────────────────────────────────────────────────
-    let creating = $state(false);
+    // ── Create new note (inline filename input) ────────────────────────────
+    let creatingFile = $state(false);
+    let newFileName = $state('');
+    let newFileInputEl = $state<HTMLInputElement | null>(null);
 
-    async function handleCreateNote() {
-        creating = true;
+    function startCreateFile() {
+        creatingFile = true;
+        newFileName = '';
+        // If docs dir doesn't exist yet, suggest README.md as default
+        if (!hasDocsDir) {
+            newFileName = 'README.md';
+        }
+        requestAnimationFrame(() => {
+            newFileInputEl?.focus();
+            newFileInputEl?.select();
+        });
+    }
+
+    async function confirmCreateFile() {
+        const name = newFileName.trim();
+        if (!name) {
+            creatingFile = false;
+            return;
+        }
+
+        clearError();
+        const fileName = name.endsWith('.md') ? name : `${name}.md`;
+        creatingFile = false;
         try {
             const result = await createDocFile(
                 workspacePath,
                 boardId,
-                "README.md",
-                `# ${boardId}\n\nNotes for this board.\n`,
+                fileName,
+                `# ${fileName.replace('.md', '')}\n\n`,
             );
             if (result) {
                 await loadFiles();
-                // Auto-select the new file
                 const newEntry = findEntry(files, result);
                 if (newEntry) {
                     selectedPath = newEntry.relativePath;
                 }
+            } else {
+                showError('Failed to create file. Check that Tauri FS can write to the workspace and try again.');
             }
-        } finally {
-            creating = false;
+        } catch (e) {
+            showError(String(e));
+        }
+    }
+
+    function handleNewFileKeydown(e: KeyboardEvent) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            void confirmCreateFile();
+        } else if (e.key === 'Escape') {
+            e.preventDefault();
+            creatingFile = false;
         }
     }
 
@@ -154,6 +401,15 @@
         });
     }
 
+    // Global Ctrl+S handler (catches it even if textarea isn't focused)
+    function handleWindowKeydown(e: KeyboardEvent) {
+        if (!editing) return;
+        if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+            e.preventDefault();
+            void handleSave();
+        }
+    }
+
     async function handleSave() {
         if (!selectedPath || saving) return;
         saving = true;
@@ -166,6 +422,7 @@
             );
             if (saved) {
                 fileContent = draftContent;
+                flashSaved();
             }
         } finally {
             saving = false;
@@ -185,10 +442,30 @@
             void handleSave();
             return;
         }
-        // Esc → save & exit
+        // Esc → save & exit (only if slash menu is closed)
         if (e.key === "Escape") {
+            if (slashOpen) {
+                closeSlashMenu();
+                return;
+            }
             e.preventDefault();
             void exitEditMode();
+            return;
+        }
+        // Arrow keys in slash menu
+        if (slashOpen && (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Tab')) {
+            handleSlashKeydown(e);
+            return;
+        }
+        // Enter in slash menu
+        if (slashOpen && e.key === 'Enter') {
+            handleSlashKeydown(e);
+            return;
+        }
+        // Ctrl+B → bold
+        if ((e.ctrlKey || e.metaKey) && e.key === "b") {
+            e.preventDefault();
+            insertWrap('**', '**');
             return;
         }
     }
@@ -203,6 +480,130 @@
             });
         }
     });
+
+    // ── File management: rename ───────────────────────────────────────────
+    let renamingPath = $state<string | null>(null);
+    let renameValue = $state("");
+    let renameInputEl = $state<HTMLInputElement | null>(null);
+
+    function startRename(entry: DocFileEntry) {
+        if (editing) return;
+        renamingPath = entry.relativePath;
+        renameValue = entry.name;
+        requestAnimationFrame(() => {
+            renameInputEl?.focus();
+            renameInputEl?.select();
+        });
+    }
+
+    async function confirmRename() {
+        const oldPath = renamingPath;
+        if (!oldPath || !renameValue.trim()) {
+            renamingPath = null;
+            return;
+        }
+
+        const newName = renameValue.trim();
+        // Preserve extension for files (not dirs)
+        const isDir = oldPath === oldPath.replace(/\//g, "") ? false : true;
+        const finalName = isDir
+            ? newName
+            : newName.endsWith(".md")
+              ? newName
+              : `${newName}.md`;
+
+        renamingPath = null;
+        const result = await renameDocFile(
+            workspacePath,
+            boardId,
+            oldPath,
+            finalName,
+        );
+        if (result) {
+            // If the renamed file was selected, update selection
+            if (selectedPath === oldPath) {
+                selectedPath = result;
+            }
+            await loadFiles();
+        }
+    }
+
+    function cancelRename() {
+        renamingPath = null;
+    }
+
+    function handleRenameKeydown(e: KeyboardEvent) {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            void confirmRename();
+        } else if (e.key === "Escape") {
+            e.preventDefault();
+            cancelRename();
+        }
+    }
+
+    // ── File management: delete ────────────────────────────────────────────
+    let deletingPath = $state<string | null>(null);
+
+    async function confirmDelete(entry: DocFileEntry) {
+        if (editing) return;
+        const confirmed = window.confirm(
+            `Delete "${entry.name}"?${entry.isDir ? " This will also remove all files inside." : ""}`,
+        );
+        if (!confirmed) return;
+
+        deletingPath = entry.relativePath;
+        try {
+            const deleted = await deleteDocFile(
+                workspacePath,
+                boardId,
+                entry.relativePath,
+            );
+            if (deleted) {
+                // If the deleted file was selected, clear selection
+                if (selectedPath === entry.relativePath) {
+                    selectedPath = null;
+                    fileContent = null;
+                }
+                await loadFiles();
+            }
+        } finally {
+            deletingPath = null;
+        }
+    }
+
+    // ── File management: create folder ─────────────────────────────────────
+    let creatingFolder = $state(false);
+    let newFolderValue = $state("");
+    let newFolderInputEl = $state<HTMLInputElement | null>(null);
+
+    function startCreateFolder() {
+        creatingFolder = true;
+        newFolderValue = "";
+        requestAnimationFrame(() => {
+            newFolderInputEl?.focus();
+        });
+    }
+
+    async function confirmCreateFolder() {
+        if (!newFolderValue.trim()) {
+            creatingFolder = false;
+            return;
+        }
+        creatingFolder = false;
+        await createDocFolder(workspacePath, boardId, newFolderValue.trim());
+        await loadFiles();
+    }
+
+    function handleNewFolderKeydown(e: KeyboardEvent) {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            void confirmCreateFolder();
+        } else if (e.key === "Escape") {
+            e.preventDefault();
+            creatingFolder = false;
+        }
+    }
 
     // ── Folder toggle ──────────────────────────────────────────────────────
     function toggleFolder(relativePath: string) {
@@ -243,7 +644,7 @@
             if (headingMatch) {
                 closeParagraph();
                 const level = headingMatch[1].length;
-                const text = escapeHtml(inlineMarkdown(headingMatch[2]));
+                const text = inlineMarkdown(escapeHtml(headingMatch[2]));
                 htmlParts.push(`<h${level}>${text}</h${level}>`);
                 continue;
             }
@@ -252,7 +653,7 @@
             const listMatch = trimmed.match(/^[-*+]\s+(.+)$/);
             if (listMatch) {
                 closeParagraph();
-                const text = escapeHtml(inlineMarkdown(listMatch[1]));
+                const text = inlineMarkdown(escapeHtml(listMatch[1]));
                 htmlParts.push(`<li>${text}</li>`);
                 continue;
             }
@@ -271,7 +672,7 @@
             } else {
                 htmlParts.push("<br>");
             }
-            htmlParts.push(escapeHtml(inlineMarkdown(trimmed)));
+            htmlParts.push(inlineMarkdown(escapeHtml(trimmed)));
         }
 
         closeParagraph();
@@ -318,6 +719,8 @@
     }
 </script>
 
+<svelte:window onkeydown={handleWindowKeydown} />
+
 <div class="board-docs">
     {#if loading}
         <div class="board-docs-loading">
@@ -328,14 +731,32 @@
             <Notebook size={48} />
             <h2>No docs yet</h2>
             <p>Create your first markdown note for this board.</p>
+            {#if actionError}
+                <p class="board-docs-error-msg">{actionError}</p>
+            {/if}
+            {#if creatingFile}
+                <div class="board-docs-inline-create">
+                    <Document size={16} />
+                    <input
+                        bind:this={newFileInputEl}
+                        type="text"
+                        class="board-docs-inline-input"
+                        placeholder="filename.md"
+                        bind:value={newFileName}
+                        onkeydown={handleNewFileKeydown}
+                        onblur={confirmCreateFile}
+                        aria-label="New file name"
+                    />
+                </div>
+            {:else}
             <Button
                 kind="primary"
                 icon={DocumentAdd}
-                onclick={handleCreateNote}
-                disabled={creating}
+                onclick={startCreateFile}
             >
-                {creating ? "Creating..." : "New Note"}
+                New Note
             </Button>
+            {/if}
         </div>
     {:else}
         <div class="board-docs-layout">
@@ -343,17 +764,59 @@
             <aside class="board-docs-tree">
                 <div class="board-docs-tree-header">
                     <span class="board-docs-tree-title">Docs</span>
-                    <button
-                        class="board-docs-new-btn"
-                        onclick={handleCreateNote}
-                        disabled={creating}
-                        aria-label="Create new note"
-                        title="New note"
-                    >
-                        <DocumentAdd size={16} />
-                    </button>
+                    <div class="board-docs-tree-toolbar">
+                        <button
+                            class="board-docs-tree-toolbar-btn"
+                            onclick={startCreateFolder}
+                            aria-label="Create new folder"
+                            title="New folder"
+                        >
+                            <FolderAdd size={14} />
+                        </button>
+                        <button
+                            class="board-docs-tree-toolbar-btn"
+                            onclick={startCreateFile}
+                            aria-label="Create new note"
+                            title="New note"
+                        >
+                            <DocumentAdd size={14} />
+                        </button>
+                    </div>
                 </div>
+                {#if actionError}
+                    <div class="board-docs-error-bar">{actionError}</div>
+                {/if}
                 <nav class="board-docs-tree-list" aria-label="Document files">
+                    {#if creatingFile}
+                        <div class="tree-create-input">
+                            <Document size={14} />
+                            <input
+                                bind:this={newFileInputEl}
+                                type="text"
+                                class="tree-inline-input"
+                                placeholder="filename.md"
+                                bind:value={newFileName}
+                                onkeydown={handleNewFileKeydown}
+                                onblur={confirmCreateFile}
+                                aria-label="New file name"
+                            />
+                        </div>
+                    {/if}
+                    {#if creatingFolder}
+                        <div class="tree-create-input">
+                            <Folder size={14} />
+                            <input
+                                bind:this={newFolderInputEl}
+                                type="text"
+                                class="tree-inline-input"
+                                placeholder="folder name"
+                                bind:value={newFolderValue}
+                                onkeydown={handleNewFolderKeydown}
+                                onblur={confirmCreateFolder}
+                                aria-label="New folder name"
+                            />
+                        </div>
+                    {/if}
                     {#each files as entry (entry.relativePath)}
                         {#if entry.isDir}
                             <div class="tree-folder">
@@ -369,35 +832,136 @@
                                         <ChevronRight size={14} />
                                     {/if}
                                     <Folder size={14} />
-                                    <span>{entry.name}</span>
+                                    {#if renamingPath === entry.relativePath}
+                                        <input
+                                            bind:this={renameInputEl}
+                                            type="text"
+                                            class="tree-inline-input"
+                                            bind:value={renameValue}
+                                            onkeydown={handleRenameKeydown}
+                                            onblur={confirmRename}
+                                            onclick={(e) => e.stopPropagation()}
+                                            aria-label="Rename folder"
+                                        />
+                                    {:else}
+                                        <span>{entry.name}</span>
+                                    {/if}
                                 </button>
                                 {#if isExpanded(entry)}
                                     <div class="tree-folder-children">
                                         {#each entry.children as child (child.relativePath)}
-                                            <button
-                                                class="tree-file"
-                                                class:tree-file--selected={isSelected(
+                                            <!-- svelte-ignore a11y_click_events_have_key_events -->
+                                            <div
+                                                class="tree-file-row"
+                                                class:tree-file-row--selected={isSelected(
                                                     child,
                                                 )}
-                                                onclick={() =>
-                                                    selectFile(child)}
                                             >
-                                                <Document size={14} />
-                                                <span>{child.name}</span>
-                                            </button>
+                                                <button
+                                                    class="tree-file"
+                                                    onclick={() =>
+                                                        selectFile(child)}
+                                                >
+                                                    <Document size={14} />
+                                                    {#if renamingPath === child.relativePath}
+                                                        <input
+                                                            bind:this={
+                                                                renameInputEl
+                                                            }
+                                                            type="text"
+                                                            class="tree-inline-input"
+                                                            bind:value={
+                                                                renameValue
+                                                            }
+                                                            onkeydown={handleRenameKeydown}
+                                                            onblur={confirmRename}
+                                                            onclick={(e) =>
+                                                                e.stopPropagation()}
+                                                            aria-label="Rename file"
+                                                        />
+                                                    {:else}
+                                                        <span>{child.name}</span
+                                                        >
+                                                    {/if}
+                                                </button>
+                                                <div class="tree-file-actions">
+                                                    <button
+                                                        class="tree-action-btn"
+                                                        onclick={() =>
+                                                            startRename(child)}
+                                                        aria-label="Rename"
+                                                        title="Rename"
+                                                    >
+                                                        <Edit size={12} />
+                                                    </button>
+                                                    <button
+                                                        class="tree-action-btn tree-action-btn--delete"
+                                                        onclick={() =>
+                                                            confirmDelete(
+                                                                child,
+                                                            )}
+                                                        disabled={deletingPath ===
+                                                            child.relativePath}
+                                                        aria-label="Delete"
+                                                        title="Delete"
+                                                    >
+                                                        <TrashCan size={12} />
+                                                    </button>
+                                                </div>
+                                            </div>
                                         {/each}
                                     </div>
                                 {/if}
                             </div>
                         {:else}
-                            <button
-                                class="tree-file"
-                                class:tree-file--selected={isSelected(entry)}
-                                onclick={() => selectFile(entry)}
+                            <!-- svelte-ignore a11y_click_events_have_key_events -->
+                            <div
+                                class="tree-file-row"
+                                class:tree-file-row--selected={isSelected(
+                                    entry,
+                                )}
                             >
-                                <Document size={14} />
-                                <span>{entry.name}</span>
-                            </button>
+                                <button
+                                    class="tree-file"
+                                    onclick={() => selectFile(entry)}
+                                >
+                                    <Document size={14} />
+                                    {#if renamingPath === entry.relativePath}
+                                        <input
+                                            bind:this={renameInputEl}
+                                            type="text"
+                                            class="tree-inline-input"
+                                            bind:value={renameValue}
+                                            onkeydown={handleRenameKeydown}
+                                            onblur={confirmRename}
+                                            onclick={(e) => e.stopPropagation()}
+                                            aria-label="Rename file"
+                                        />
+                                    {:else}
+                                        <span>{entry.name}</span>
+                                    {/if}
+                                </button>
+                                <div class="tree-file-actions">
+                                    <button
+                                        class="tree-action-btn"
+                                        onclick={() => startRename(entry)}
+                                        aria-label="Rename"
+                                        title="Rename"
+                                    >
+                                        <Edit size={12} />
+                                    </button>
+                                    <button
+                                        class="tree-action-btn tree-action-btn--delete"
+                                        onclick={() => confirmDelete(entry)}
+                                        disabled={deletingPath ===
+                                            entry.relativePath}
+                                        aria-label="Delete"
+                                        title="Delete"
+                                    >
+                                        <TrashCan size={12} />
+                                    </button>
+                                </div>
+                            </div>
                         {/if}
                     {/each}
                 </nav>
@@ -465,6 +1029,10 @@
                                     <span class="board-docs-editor-saving"
                                         >Saving...</span
                                     >
+                                {:else if savedIndicator}
+                                    <span class="board-docs-editor-saved"
+                                        >Saved</span
+                                    >
                                 {/if}
                                 <button
                                     class="board-docs-done-btn"
@@ -475,20 +1043,58 @@
                                 </button>
                             </div>
                         </div>
+                        <!-- ── Formatting toolbar ────────────────────────── -->
+                        <div class="editor-toolbar">
+                            {#each FORMAT_ACTIONS as fmt}
+                                <button
+                                    class="editor-toolbar-btn"
+                                    onclick={fmt.action}
+                                    title={fmt.title}
+                                    aria-label={fmt.title}
+                                >{fmt.label}</button>
+                            {/each}
+                        </div>
                         <div class="board-docs-editor-panes">
-                            <textarea
-                                bind:this={editDraftEl}
-                                class="board-docs-editor-textarea"
-                                bind:value={draftContent}
-                                onkeydown={handleEditorKeydown}
-                                onblur={() => {
-                                    if (editing) {
-                                        void handleSave();
-                                    }
-                                }}
-                                spellcheck="false"
-                                aria-label="Markdown editor"
-                            ></textarea>
+                            <div class="editor-textarea-wrap">
+                                <!-- ── Slash command menu ────────────────── -->
+                                {#if slashOpen}
+                                    <!-- svelte-ignore a11y_no_static_element_interactions -->
+                                    <div
+                                        bind:this={slashMenuEl}
+                                        class="slash-menu"
+                                        role="listbox"
+                                        aria-label="Slash commands"
+                                    >
+                                        {#each slashFiltered as cmd, i (cmd.id)}
+                                            <button
+                                                class="slash-menu-item"
+                                                class:slash-menu-item--active={i === slashIndex}
+                                                role="option"
+                                                aria-selected={i === slashIndex}
+                                                onclick={() => applySlashCommand(cmd)}
+                                                onmouseenter={() => (slashIndex = i)}
+                                            >
+                                                <span class="slash-menu-label">{cmd.label}</span>
+                                                <span class="slash-menu-hint">/{cmd.match.split(' ')[0]}</span>
+                                            </button>
+                                        {/each}
+                                    </div>
+                                {/if}
+                                <textarea
+                                    bind:this={editDraftEl}
+                                    class="board-docs-editor-textarea"
+                                    bind:value={draftContent}
+                                    onkeydown={handleEditorKeydown}
+                                    oninput={handleFormatInput}
+                                    onblur={() => {
+                                        if (editing) {
+                                            void handleSave();
+                                        }
+                                    }}
+                                    spellcheck="false"
+                                    aria-label="Markdown editor"
+                                ></textarea>
+                            </div>
                             <div class="board-docs-editor-preview">
                                 <!-- svelte-ignore a11y_click_events_have_key_events -->
                                 <!-- svelte-ignore a11y_no_static_element_interactions -->
@@ -523,6 +1129,10 @@
             </main>
         </div>
     {/if}
+    <footer class="board-docs-debug">
+        <code>docs: {docsDir(workspacePath, boardId)}</code>
+        <code>ws: {workspacePath || "(empty)"}</code>
+    </footer>
 </div>
 
 <style>
@@ -559,6 +1169,66 @@
         color: var(--cds-text-02);
         max-width: 24rem;
         line-height: 1.5;
+    }
+
+    /* ── Inline create input (empty state) ───────────────────────────────── */
+    .board-docs-inline-create {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.4375rem 0.75rem;
+        background: var(--cds-field-01, #f4f4f4);
+        border: 1px solid var(--cds-interactive-01, #0f62fe);
+        border-radius: 4px;
+        width: 100%;
+        max-width: 20rem;
+        box-sizing: border-box;
+    }
+
+    :global(.t--dark) .board-docs-inline-create {
+        background: var(--cds-field-01, #333);
+    }
+
+    .board-docs-inline-input {
+        all: unset;
+        flex: 1;
+        min-width: 0;
+        font-size: 0.875rem;
+        font-family: inherit;
+        color: var(--cds-text-01);
+        line-height: 1.4;
+    }
+
+    .board-docs-inline-input::placeholder {
+        color: var(--cds-text-03);
+    }
+
+    /* ── Error states ────────────────────────────────────────────────────── */
+    .board-docs-error-msg {
+        color: var(--cds-support-01, #da1e28) !important;
+        font-size: 0.8125rem !important;
+        background: color-mix(
+            in srgb,
+            var(--cds-support-01, #da1e28) 10%,
+            transparent
+        );
+        padding: 0.5rem 0.75rem;
+        border-radius: 4px;
+        max-width: 28rem;
+    }
+
+    .board-docs-error-bar {
+        margin: 0.25rem 0.5rem;
+        padding: 0.375rem 0.5rem;
+        font-size: 0.75rem;
+        color: var(--cds-support-01, #da1e28);
+        background: color-mix(
+            in srgb,
+            var(--cds-support-01, #da1e28) 10%,
+            transparent
+        );
+        border-radius: 3px;
+        line-height: 1.4;
     }
 
     /* ── Layout: tree sidebar + content ──────────────────────────────────── */
@@ -599,24 +1269,30 @@
         color: var(--cds-text-02);
     }
 
-    .board-docs-new-btn {
+    .board-docs-tree-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 0.125rem;
+    }
+
+    .board-docs-tree-toolbar-btn {
         all: unset;
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 24px;
-        height: 24px;
+        width: 22px;
+        height: 22px;
         border-radius: 4px;
         cursor: pointer;
         color: var(--cds-text-02);
         transition: background 0.12s ease;
     }
 
-    .board-docs-new-btn:hover {
+    .board-docs-tree-toolbar-btn:hover {
         background: var(--cds-hover-ui, #e8e8e8);
     }
 
-    .board-docs-new-btn:disabled {
+    .board-docs-tree-toolbar-btn:disabled {
         opacity: 0.4;
         cursor: default;
     }
@@ -627,32 +1303,76 @@
         padding: 0.25rem 0;
     }
 
+    /* ── Inline rename / create inputs ──────────────────────────────────── */
+    .tree-inline-input {
+        all: unset;
+        flex: 1;
+        min-width: 0;
+        font-size: inherit;
+        font-family: inherit;
+        color: inherit;
+        background: var(--cds-field-01, #f4f4f4);
+        padding: 0.0625rem 0.25rem;
+        border: 1px solid var(--cds-interactive-01, #0f62fe);
+        border-radius: 2px;
+        line-height: 1.4;
+    }
+
+    :global(.t--dark) .tree-inline-input {
+        background: var(--cds-field-01, #333);
+    }
+
+    .tree-create-input {
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+        padding: 0.3125rem 0.625rem;
+        font-size: 0.8125rem;
+        color: var(--cds-text-01);
+        line-height: 1.3;
+    }
+
     /* ── Tree nodes ──────────────────────────────────────────────────────── */
+    .tree-file-row {
+        display: flex;
+        align-items: center;
+        transition: background 0.1s ease;
+    }
+
+    .tree-file-row:hover {
+        background: var(--cds-hover-ui, #e8e8e8);
+    }
+
+    .tree-file-row--selected {
+        background: var(--cds-selected-ui, #e0e0e0);
+    }
+
+    .tree-file-row--selected .tree-file span {
+        font-weight: 500;
+    }
+
     .tree-file,
     .tree-folder-toggle {
         all: unset;
         display: flex;
         align-items: center;
         gap: 0.375rem;
-        width: 100%;
+        flex: 1;
+        min-width: 0;
         padding: 0.3125rem 0.625rem;
         font-size: 0.8125rem;
         color: var(--cds-text-01);
         cursor: pointer;
         box-sizing: border-box;
-        transition: background 0.1s ease;
         line-height: 1.3;
     }
 
-    .tree-file:hover,
-    .tree-folder-toggle:hover {
-        background: var(--cds-hover-ui, #e8e8e8);
+    .tree-file:hover {
+        background: transparent;
     }
 
-    .tree-file--selected {
-        background: var(--cds-selected-ui, #e0e0e0);
-        color: var(--cds-text-01);
-        font-weight: 500;
+    .tree-folder-toggle:hover {
+        background: var(--cds-hover-ui, #e8e8e8);
     }
 
     .tree-folder-toggle {
@@ -668,6 +1388,49 @@
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+    }
+
+    /* ── Tree item action buttons (rename, delete) ───────────────────────── */
+    .tree-file-actions {
+        display: none;
+        align-items: center;
+        gap: 0.125rem;
+        padding-right: 0.25rem;
+        flex-shrink: 0;
+    }
+
+    .tree-file-row:hover .tree-file-actions {
+        display: flex;
+    }
+
+    .tree-action-btn {
+        all: unset;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 20px;
+        height: 20px;
+        border-radius: 3px;
+        cursor: pointer;
+        color: var(--cds-text-03);
+        transition:
+            color 0.1s ease,
+            background 0.1s ease;
+        flex-shrink: 0;
+    }
+
+    .tree-action-btn:hover {
+        background: var(--cds-hover-ui, #d8d8d8);
+        color: var(--cds-text-01);
+    }
+
+    .tree-action-btn--delete:hover {
+        color: var(--cds-support-01, #da1e28);
+    }
+
+    .tree-action-btn:disabled {
+        opacity: 0.3;
+        cursor: default;
     }
 
     /* ── Content Area ────────────────────────────────────────────────────── */
@@ -744,16 +1507,75 @@
         background: var(--cds-hover-ui, #e8e8e8);
     }
 
-    /* ── Editor split pane ───────────────────────────────────────────────── */
+    /* ── Editor ──────────────────────────────────────────────────────────── */
+    .board-docs-editor {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+    }
+
     .board-docs-editor-panes {
         flex: 1;
         display: flex;
+        flex-direction: row;
+        min-height: 0;
+    }
+
+    /* ── Formatting toolbar ──────────────────────────────────────────────── */
+    .editor-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 0.125rem;
+        padding: 0.25rem 0.5rem;
+        border-bottom: 1px solid var(--cds-ui-03);
+        background: var(--cds-ui-01, #f4f4f4);
+        flex-shrink: 0;
+        flex-wrap: wrap;
+    }
+
+    :global(.t--dark) .editor-toolbar {
+        background: var(--cds-ui-01, #2c2c2c);
+    }
+
+    .editor-toolbar-btn {
+        all: unset;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 28px;
+        height: 26px;
+        padding: 0 0.25rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--cds-text-02);
+        cursor: pointer;
+        border-radius: 3px;
+        transition: background 0.1s ease, color 0.1s ease;
+        font-family: 'IBM Plex Mono', 'SF Mono', 'Fira Code', monospace;
+    }
+
+    .editor-toolbar-btn:hover {
+        background: var(--cds-hover-ui, #e8e8e8);
+        color: var(--cds-text-01);
+    }
+
+    .editor-toolbar-btn:active {
+        background: var(--cds-selected-ui, #d8d8d8);
+    }
+
+    /* ── Textarea wrapper (for slash menu positioning) ───────────────────── */
+    .editor-textarea-wrap {
+        flex: 1;
+        display: flex;
+        position: relative;
         min-height: 0;
     }
 
     .board-docs-editor-textarea {
         flex: 1;
         min-width: 0;
+        min-height: 0;
         resize: none;
         border: none;
         outline: none;
@@ -775,6 +1597,58 @@
         color: var(--cds-text-03);
     }
 
+    /* ── Slash command menu ──────────────────────────────────────────────── */
+    .slash-menu {
+        position: absolute;
+        top: 0.25rem;
+        left: 0.5rem;
+        z-index: 100;
+        min-width: 180px;
+        max-height: 240px;
+        overflow-y: auto;
+        background: var(--cds-ui-01, #f4f4f4);
+        border: 1px solid var(--cds-ui-03);
+        border-radius: 6px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        padding: 0.25rem;
+    }
+
+    :global(.t--dark) .slash-menu {
+        background: var(--cds-ui-01, #2c2c2c);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+
+    .slash-menu-item {
+        all: unset;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        padding: 0.375rem 0.625rem;
+        font-size: 0.8125rem;
+        color: var(--cds-text-01);
+        cursor: pointer;
+        border-radius: 4px;
+        box-sizing: border-box;
+        transition: background 0.08s ease;
+    }
+
+    .slash-menu-item:hover,
+    .slash-menu-item--active {
+        background: var(--cds-hover-ui, #e8e8e8);
+    }
+
+    .slash-menu-label {
+        font-weight: 500;
+    }
+
+    .slash-menu-hint {
+        font-size: 0.6875rem;
+        color: var(--cds-text-03);
+        font-family: 'IBM Plex Mono', 'SF Mono', monospace;
+        margin-left: 1rem;
+    }
+
     .board-docs-editor-preview {
         flex: 1;
         min-width: 0;
@@ -792,6 +1666,19 @@
         font-size: 0.75rem;
         color: var(--cds-text-03);
         animation: docs-saving-pulse 1s ease-in-out infinite;
+    }
+
+    .board-docs-editor-saved {
+        font-size: 0.75rem;
+        color: var(--cds-support-02, #24a148);
+        font-weight: 500;
+        animation: docs-saved-fade 1.5s ease-out forwards;
+    }
+
+    @keyframes docs-saved-fade {
+        0% { opacity: 1; }
+        70% { opacity: 1; }
+        100% { opacity: 0; }
     }
 
     @keyframes docs-saving-pulse {
@@ -896,5 +1783,28 @@
 
     .markdown-body :global(strong) {
         font-weight: 600;
+    }
+
+    /* ── Debug footer ────────────────────────────────────────────────────── */
+    .board-docs-debug {
+        flex-shrink: 0;
+        display: flex;
+        gap: 1rem;
+        padding: 0.25rem 0.625rem;
+        font-size: 0.6875rem;
+        color: var(--cds-text-03);
+        background: var(--cds-ui-02, #f4f4f4);
+        border-top: 1px solid var(--cds-ui-03);
+        overflow: hidden;
+    }
+
+    :global(.t--dark) .board-docs-debug {
+        background: var(--cds-ui-02, #393939);
+    }
+
+    .board-docs-debug code {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 </style>
