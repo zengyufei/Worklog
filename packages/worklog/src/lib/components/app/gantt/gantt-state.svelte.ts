@@ -7,6 +7,7 @@ import {
 } from "$lib/components/app/types";
 import { getTicketSort } from "$lib/hooks/ticket-sort.svelte";
 import { Pending, TaskComplete, InProgress as InProgressIcon, CheckmarkFilled } from "carbon-icons-svelte";
+import * as m from "$lib/paraglide/messages.js";
 
 export type RowItem =
     | { kind: "group"; status: TicketStatus; label: string; color: string; icon: any; count: number }
@@ -226,17 +227,17 @@ export class GanttState {
 
     getDaysLeft(ticket: Ticket): string {
         const now = new Date();
-        if (!ticket.due_date) return "No due date";
+        if (!ticket.due_date) return m.gantt_no_due_date();
         const diff = Math.ceil((new Date(ticket.due_date).getTime() - now.getTime()) / this.DAY_MS);
 
         if (ticket.status === "done") {
-            return "Completed";
+            return m.gantt_completed();
         }
 
-        if (diff < 0) return `${Math.abs(diff)}d overdue`;
-        if (diff === 0) return "Due today";
-        if (diff === 1) return "Tomorrow";
-        return `${diff}d left`;
+        if (diff < 0) return m.gantt_days_overdue({ count: Math.abs(diff) });
+        if (diff === 0) return m.table_due_today();
+        if (diff === 1) return m.table_tomorrow();
+        return m.gantt_days_left({ count: diff });
     }
 
     handleBarHover(e: MouseEvent, ticketId: string) {

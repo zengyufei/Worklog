@@ -2,6 +2,7 @@
     import type { Ticket } from "$lib/components/app/types";
     import { TICKET_STATUS_CONFIG } from "$lib/components/app/types";
     import type { CalendarDay } from "./calendar-state.svelte";
+    import * as m from "$lib/paraglide/messages.js";
 
     const MAX_VISIBLE_TICKETS = 3;
 
@@ -103,9 +104,9 @@
                     <button
                         class="overflow-btn"
                         onclick={handleIndicatorClick}
-                        title="{overflowCount} more ticket{overflowCount !== 1 ? 's' : ''}"
+                        title={m.calendar_more_tickets({ count: overflowCount })}
                     >
-                        +{overflowCount} more
+                        {m.calendar_more_tickets_short({ count: overflowCount })}
                     </button>
                 {/if}
 
@@ -115,12 +116,12 @@
                         class="overflow-popover"
                         role="dialog"
                         tabindex="-1"
-                        aria-label="All tickets for this day"
+                        aria-label={m.calendar_all_tickets_for_day()}
                         onkeydown={handlePopoverKeydown}
                     >
                         <div class="popover-header">
                             {day.date.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                            <span class="popover-count">{day.tickets.length} ticket{day.tickets.length !== 1 ? 's' : ''}</span>
+                            <span class="popover-count">{m.calendar_ticket_count({ count: day.tickets.length })}</span>
                         </div>
                         {#each day.tickets as ticket (ticket.id)}
                             <button

@@ -1142,7 +1142,7 @@
                                     <div class="add-type-inputs">
                                         <TextInput
                                             labelText={m.modal_board_name()}
-                                            placeholder="e.g. Research"
+                                            placeholder={m.settings_ticket_type_name_placeholder()}
                                             bind:value={newTypeName}
                                         />
                                         <div class="color-picker-group">

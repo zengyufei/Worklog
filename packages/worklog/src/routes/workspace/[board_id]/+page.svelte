@@ -179,7 +179,7 @@
             </div>
         </header>
 
-        <section class="workspace-board-content" aria-label="Board content">
+        <section class="workspace-board-content" aria-label={m.board_content_aria()}>
             {#if loadError}
                 <div class="workspace-board-error">
                     <InlineNotification
@@ -202,7 +202,7 @@
             <!-- ── Controls Bar: tabs left, search+sort right ─────────────────── -->
             <div class="board-controls-bar">
                 <!-- Tab buttons -->
-                <div class="board-tabs" role="tablist" aria-label="Board views">
+                <div class="board-tabs" role="tablist" aria-label={m.board_views_aria()}>
                     <button
                         bind:this={tabBtn0}
                         role="tab"
@@ -256,7 +256,7 @@
                         onclick={() => (selectedTab = 4)}
                     >
                         <Document size={16} />
-                        <span>Docs</span>
+                        <span>{m.board_tab_docs()}</span>
                     </button>
                     <span
                         bind:this={indicatorEl}
