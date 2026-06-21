@@ -94,14 +94,15 @@ jobs:
       # signing secret is intentionally reintroduced.
       - name: disable updater artifacts for CI bundle
         working-directory: packages/worklog
+        shell: pwsh
         run: |
-          cat > tauri.ci.conf.json <<'JSON'
+          @'
           {
             "bundle": {
               "createUpdaterArtifacts": false
             }
           }
-          JSON
+          '@ | Set-Content -Path tauri.ci.conf.json -Encoding utf8
 
       # Tauri build + release artifacts
       - uses: tauri-apps/tauri-action@v0
