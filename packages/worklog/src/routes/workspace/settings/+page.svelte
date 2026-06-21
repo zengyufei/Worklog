@@ -118,6 +118,11 @@
     const syncConfig = getSyncConfig();
     const appZoom = getAppZoom();
     const appAppearance = useAppAppearance();
+    const languageOptions = [
+        { label: "English", value: "en" },
+        { label: "Français", value: "fr" },
+        { label: "简体中文", value: "zh-CN" },
+    ] as const;
 
     const workspaceName = $derived(workspace.meta?.name ?? "Workspace");
     const workspacePath = $derived(workspace.path ?? "Not available");
@@ -845,7 +850,7 @@
             <!-- ── Appearance Category ────────────────────────────────── -->
             {#if activeCategory === "appearance"}
                 <div class="category-view">
-                    {#if matchesSearch("Language Locale English French")}
+                    {#if matchesSearch("Language Locale English French Chinese Simplified Chinese 中文 简体中文")}
                         <section class="settings-section">
                             <h2>{m.settings_language()}</h2>
                             <p class="section-desc">
@@ -853,13 +858,19 @@
                             </p>
                             <div class="settings-card">
                                 <ContentSwitcher
-                                    selectedIndex={getReactiveLocale() === "fr"
-                                        ? 1
-                                        : 0}
+                                    selectedIndex={Math.max(
+                                        languageOptions.findIndex(
+                                            (option) =>
+                                                option.value ===
+                                                getReactiveLocale(),
+                                        ),
+                                        0,
+                                    )}
                                     on:change={(e) => {
                                         const index = e.detail;
                                         const newLang =
-                                            index === 1 ? "fr" : "en";
+                                            languageOptions[index]?.value ??
+                                            "en";
                                         setReactiveLocale(newLang);
                                         localStorage.setItem(
                                             "app_lang",
@@ -867,8 +878,9 @@
                                         );
                                     }}
                                 >
-                                    <Switch text="English" />
-                                    <Switch text="Français" />
+                                    {#each languageOptions as option}
+                                        <Switch text={option.label} />
+                                    {/each}
                                 </ContentSwitcher>
                             </div>
                         </section>

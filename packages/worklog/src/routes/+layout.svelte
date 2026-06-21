@@ -9,11 +9,13 @@
 	// Initialize language
 	if (typeof localStorage !== "undefined") {
 		const savedLang = localStorage.getItem("app_lang");
-		if (savedLang === "fr" || savedLang === "en") {
+		if (savedLang === "fr" || savedLang === "en" || savedLang === "zh-CN") {
 			setReactiveLocale(savedLang);
 		} else {
-			const browserLang = navigator.language.split("-")[0];
-			const initLang = browserLang === "fr" ? "fr" : "en";
+			const browserLang = navigator.language;
+			const baseLang = browserLang.split("-")[0];
+			const initLang =
+				baseLang === "zh" ? "zh-CN" : baseLang === "fr" ? "fr" : "en";
 			setReactiveLocale(initLang);
 			localStorage.setItem("app_lang", initLang);
 		}
