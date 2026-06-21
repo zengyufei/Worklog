@@ -118,3 +118,15 @@ jobs:
           prerelease: false
           args: ${{ matrix.args }} --config tauri.ci.conf.json
           includeUpdaterJson: false
+
+      - name: upload Windows portable executable
+        if: matrix.platform == 'windows-latest'
+        working-directory: packages/worklog
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $config = Get-Content -Raw src-tauri/tauri.conf.json | ConvertFrom-Json
+          $assetName = "$($config.productName)_$($config.version)_x64_portable.exe"
+          Copy-Item src-tauri/target/release/worklog.exe $assetName -Force
+          gh release upload "${{ github.ref_name }}" $assetName --clobber
