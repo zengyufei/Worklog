@@ -4,6 +4,7 @@
     import TableView from "$lib/components/app/table/table-board.svelte";
     import GanttView from "$lib/components/app/gantt/gantt-board.svelte";
     import CalendarView from "$lib/components/app/calendar/calendar-board.svelte";
+    import BoardDocs from "$lib/components/app/board/board-docs.svelte";
     import {
         Loading,
         InlineNotification,
@@ -15,6 +16,7 @@
         Table,
         ChartBarFloating,
         Calendar,
+        Document,
         WarningHex,
         ArrowLeft,
         Search,
@@ -66,10 +68,11 @@
     let tabBtn1 = $state<HTMLButtonElement | null>(null);
     let tabBtn2 = $state<HTMLButtonElement | null>(null);
     let tabBtn3 = $state<HTMLButtonElement | null>(null);
+    let tabBtn4 = $state<HTMLButtonElement | null>(null);
     let indicatorEl = $state<HTMLElement | null>(null);
 
     $effect(() => {
-        const btns = [tabBtn0, tabBtn1, tabBtn2, tabBtn3];
+        const btns = [tabBtn0, tabBtn1, tabBtn2, tabBtn3, tabBtn4];
         const btn = btns[selectedTab];
         const el = indicatorEl;
         if (!btn || !el) return;
@@ -244,6 +247,17 @@
                         <Calendar size={16} />
                         <span>{m.board_tab_calendar()}</span>
                     </button>
+                    <button
+                        bind:this={tabBtn4}
+                        role="tab"
+                        aria-selected={selectedTab === 4}
+                        class="view-tab"
+                        class:view-tab--active={selectedTab === 4}
+                        onclick={() => (selectedTab = 4)}
+                    >
+                        <Document size={16} />
+                        <span>Docs</span>
+                    </button>
                     <span
                         bind:this={indicatorEl}
                         class="tab-indicator"
@@ -298,6 +312,11 @@
                     <GanttView {searchQuery} />
                 {:else if selectedTab === 3}
                     <CalendarView {searchQuery} />
+                {:else if selectedTab === 4 && board}
+                    <BoardDocs
+                        workspacePath={shell.workspace.path ?? ""}
+                        boardId={board.id}
+                    />
                 {/if}
             </div>
         </section>
