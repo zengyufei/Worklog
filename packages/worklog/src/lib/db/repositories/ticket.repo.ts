@@ -73,7 +73,7 @@ export async function getTicketById(db: Database, id: string): Promise<Ticket | 
 export async function createTicket(db: Database, input: CreateTicketInput): Promise<Ticket> {
     let position = input.position;
     if (position === undefined) {
-        const rows = await db.select<{maxPos: number | null}[]>(
+        const rows = await db.select<{ maxPos: number | null }[]>(
             `SELECT MAX(position) as maxPos FROM tickets WHERE board_id = ? AND status = ?`,
             [input.board_id, input.status ?? 'todo']
         );
@@ -150,4 +150,62 @@ export async function updateTicket(db: Database, id: string, input: UpdateTicket
 
 export async function deleteTicket(db: Database, id: string): Promise<void> {
     await db.execute(`DELETE FROM tickets WHERE id = ?`, [id]);
+}
+
+// ── Aggregation Queries ─────────────────────────────────────────────────────
+
+export interface OverdueByPriority {
+    priority: string;
+    count: number;
+}
+
+/**
+ * Count overdue tickets grouped by priority.
+ * Overdue = due_date before today and status != 'done'.
+ */
+export async function getOverdueByPriority(
+    db: Database,
+): Promise<OverdueByPriority[]> {
+    const rows = await db.select<OverdueByPriority[]>(
+        `SELECT priority, COUNT(*) as count
+         FROM tickets
+         WHERE due_date IS NOT NULL
+           AND due_date < date('now')
+           AND status != 'done'
+         GROUP BY priority
+         ORDER BY count DESC`,
+    );
+    return rows;
+}
+
+/**
+ * Get tickets with upcoming deadlines (due_date >= today), sorted by due_date.
+ */
+export async function getUpcomingDeadlines(
+    db: Database,
+    limit: number = 10,
+): Promise<Ticket[]> {
+    const rows = await db.select<any[]>(
+        `SELECT * FROM tickets
+         WHERE due_date IS NOT NULL
+           AND due_date >= date('now')
+         ORDER BY due_date ASC
+         LIMIT ?`,
+        [limit],
+    );
+    return rows.map(deserialize);
+}
+
+/**
+ * Count total overdue tickets.
+ */
+export async function countOverdueTickets(db: Database): Promise<number> {
+    const rows = await db.select<{ count: number }[]>(
+        `SELECT COUNT(*) as count
+         FROM tickets
+         WHERE due_date IS NOT NULL
+           AND due_date < date('now')
+           AND status != 'done'`,
+    );
+    return rows[0]?.count ?? 0;
 }
