@@ -1,5 +1,5 @@
 import type Database from '@tauri-apps/plugin-sql';
-import type { Board, CreateBoardInput } from '$lib/components/app/types';
+import type { Board, CreateBoardInput, TabType } from '$lib/components/app/types';
 import { generateId } from '$lib/utils';
 
 export async function listBoards(
@@ -38,15 +38,16 @@ export async function createBoard(db: Database, input: CreateBoardInput): Promis
         id: generateId('BRD'),
         name: input.name,
         description: input.description ?? '',
+        tabs_config: JSON.stringify(['kanban']),
         archived_at: null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
     };
 
     await db.execute(
-        `INSERT INTO boards (id, name, description, archived_at, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?)`,
-        [board.id, board.name, board.description, board.archived_at, board.created_at, board.updated_at]
+        `INSERT INTO boards (id, name, description, tabs_config, archived_at, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [board.id, board.name, board.description, board.tabs_config, board.archived_at, board.created_at, board.updated_at]
     );
 
     return board;
@@ -88,6 +89,56 @@ export async function renameBoard(
          SET name = ?, description = ?, updated_at = ?
          WHERE id = ?`,
         [name, description, updatedAt, id],
+    );
+
+    return getBoardById(db, id);
+}
+
+/**
+ * Parse the tabs_config JSON column safely.
+ * Returns the default tabs if the value is empty, null, or malformed.
+ */
+export function parseBoardTabs(raw: string | null | undefined): TabType[] {
+    if (!raw) return ['kanban'];
+    try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+            // Filter to only valid TabType values
+            const valid: TabType[] = ['kanban', 'table', 'timeline', 'calendar', 'docs'];
+            return parsed.filter((t: string) => valid.includes(t as TabType));
+        }
+    } catch {
+        // Malformed JSON — fall back to default
+    }
+    return ['kanban'];
+}
+
+/**
+ * Get the enabled tabs for a board.
+ * Returns the parsed tabs_config, falling back to default if missing/broken.
+ */
+export async function getBoardTabs(db: Database, id: string): Promise<TabType[]> {
+    const board = await getBoardById(db, id);
+    return parseBoardTabs(board?.tabs_config);
+}
+
+/**
+ * Update the enabled tabs for a board.
+ * Ensures 'kanban' is always present in the list.
+ */
+export async function updateBoardTabs(
+    db: Database,
+    id: string,
+    tabs: TabType[],
+): Promise<Board | null> {
+    // Ensure kanban is always present
+    const safeTabs = tabs.includes('kanban') ? tabs : ['kanban', ...tabs];
+    const tabsConfig = JSON.stringify(safeTabs);
+    const updatedAt = new Date().toISOString();
+
+    await db.execute(
+        `UPDATE boards SET tabs_config = ?, updated_at = ? WHERE id = ?`,
+        [tabsConfig, updatedAt, id],
     );
 
     return getBoardById(db, id);

@@ -51,6 +51,8 @@
   "board_tab_table": "Table",
   "board_tab_timeline": "Timeline",
   "board_tab_calendar": "Calendar",
+  "board_tab_manage": "Manage tabs",
+  "board_tab_always_visible": "Kanban is always visible",
   "board_search_placeholder": "Search tickets...",
   "board_search_label": "Search tickets",
   "board_sort_asc": "Sort Ascending",

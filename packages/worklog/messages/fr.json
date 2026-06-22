@@ -51,6 +51,8 @@
   "board_tab_table": "Liste",
   "board_tab_timeline": "Chronologie",
   "board_tab_calendar": "Calendrier",
+  "board_tab_manage": "Gérer les onglets",
+  "board_tab_always_visible": "Kanban est toujours visible",
   "board_search_placeholder": "Rechercher des tickets...",
   "board_search_label": "Rechercher des tickets",
   "board_sort_asc": "Tri ascendant",

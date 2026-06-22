@@ -1,4 +1,4 @@
-export const SCHEMA_VERSION = 14;
+export const SCHEMA_VERSION = 15;
 
 export const CREATE_TABLES = `
   CREATE TABLE IF NOT EXISTS workspace_meta (
@@ -13,6 +13,7 @@ export const CREATE_TABLES = `
     id          TEXT PRIMARY KEY,
     name        TEXT NOT NULL,
     description TEXT NOT NULL DEFAULT '',
+    tabs_config TEXT NOT NULL DEFAULT '["kanban"]',
     archived_at TEXT,
     created_at  TEXT NOT NULL,
     updated_at  TEXT NOT NULL
