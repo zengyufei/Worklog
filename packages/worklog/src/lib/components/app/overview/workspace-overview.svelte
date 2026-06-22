@@ -234,9 +234,10 @@
                         ),
                     )}
                     {@const barH = 80}
+                    {@const bars = d.progressTimeline.slice(-30)}
                     <div class="chart-container">
                         <svg
-                            viewBox="0 0 340 {barH + 16}"
+                            viewBox="0 0 340 {barH + 4}"
                             class="mini-chart"
                             preserveAspectRatio="none"
                         >
@@ -268,27 +269,18 @@
                                 stroke-width="0.5"
                                 opacity="0.4"
                             />
-                            {#each d.progressTimeline.slice(-30) as point, i}
+                            {#each bars as point, i}
                                 {@const x =
                                     4 +
                                     i *
-                                        (336 /
-                                            Math.min(
-                                                d.progressTimeline.length,
-                                                30,
-                                            ))}
+                                        (336 / Math.min(bars.length, 30))}
                                 {@const bw = Math.max(
                                     2,
-                                    336 /
-                                        Math.min(
-                                            d.progressTimeline.length,
-                                            30,
-                                        ) -
-                                        2,
+                                    336 / Math.min(bars.length, 30) - 2,
                                 )}
                                 {@const total = point.created + point.completed}
                                 {@const barHeight =
-                                    total > 0 ? (total / chartMax) * barH : 1}
+                                    total > 0 ? (total / chartMax) * barH : 0}
                                 {@const createdH =
                                     total > 0
                                         ? (point.created / total) * barHeight
@@ -297,40 +289,56 @@
                                     total > 0
                                         ? (point.completed / total) * barHeight
                                         : 0}
-                                <!-- svelte-ignore a11y_no_static_element_interactions -->
-                                <g
-                                    onmouseenter={(e) =>
-                                        showTooltip(
-                                            e,
-                                            point.date,
-                                            point.created,
-                                            point.completed,
-                                        )}
-                                    onmousemove={moveTooltip}
-                                    onmouseleave={hideTooltip}
-                                    style="cursor:pointer"
-                                >
-                                    <!-- Completed bar (top segment — stacked above created) -->
+
+                                {#if total > 0}
+                                    <!-- svelte-ignore a11y_no_static_element_interactions -->
+                                    <g
+                                        onmouseenter={(e) =>
+                                            showTooltip(
+                                                e,
+                                                point.date,
+                                                point.created,
+                                                point.completed,
+                                            )}
+                                        onmousemove={moveTooltip}
+                                        onmouseleave={hideTooltip}
+                                        style="cursor:pointer"
+                                    >
+                                        <rect
+                                            {x}
+                                            y={barH + 4 - barHeight}
+                                            width={bw}
+                                            height={completedH}
+                                            fill="var(--cds-support-02)"
+                                            opacity="0.85"
+                                            rx="1"
+                                        />
+                                        <rect
+                                            {x}
+                                            y={barH +
+                                                4 -
+                                                barHeight +
+                                                completedH}
+                                            width={bw}
+                                            height={createdH}
+                                            fill="var(--cds-support-01)"
+                                            opacity="0.6"
+                                            rx="1"
+                                        />
+                                    </g>
+                                {:else}
+                                    <!-- Placeholder for zero-activity day -->
                                     <rect
                                         {x}
-                                        y={barH + 4 - barHeight}
+                                        y={barH + 2}
                                         width={bw}
-                                        height={completedH}
-                                        fill="var(--cds-support-02)"
-                                        opacity="0.85"
+                                        height="2"
+                                        fill="var(--cds-ui-03)"
+                                        opacity="0.3"
                                         rx="1"
                                     />
-                                    <!-- Created bar (bottom segment — sits below completed) -->
-                                    <rect
-                                        {x}
-                                        y={barH + 4 - barHeight + completedH}
-                                        width={bw}
-                                        height={createdH}
-                                        fill="var(--cds-support-01)"
-                                        opacity="0.6"
-                                        rx="1"
-                                    />
-                                </g>
+                                {/if}
+
                             {/each}
                         </svg>
 
