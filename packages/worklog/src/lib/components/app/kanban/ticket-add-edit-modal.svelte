@@ -407,7 +407,9 @@
 <Modal
     bind:open
     modalHeading={isEditing ? m.modal_edit_ticket() : m.modal_new_ticket()}
-    primaryButtonText={isEditing ? m.modal_save_changes() : m.modal_create_ticket()}
+    primaryButtonText={isEditing
+        ? m.modal_save_changes()
+        : m.modal_create_ticket()}
     secondaryButtonText={m.modal_cancel()}
     on:click:button--primary={handleSubmit}
     on:click:button--secondary={handleRequestClose}
@@ -440,7 +442,8 @@
             />
             <div class="description-section">
                 <div class="description-header">
-                    <span class="cds--label">{m.modal_description_label()}</span>
+                    <span class="cds--label">{m.modal_description_label()}</span
+                    >
                     <ContentSwitcher
                         bind:selectedIndex={descriptionMode}
                         size="sm"
@@ -620,30 +623,34 @@
                 />
             </div>
             <div class="attr-field">
-                <DatePicker
-                    bind:value={form.startDate}
-                    datePickerType="single"
-                    dateFormat="Y-m-d"
-                >
-                    <DatePickerInput
-                        labelText={m.modal_start_date()}
-                        placeholder="yyyy-mm-dd"
-                        size="sm"
-                    />
-                </DatePicker>
+                {#key open}
+                    <DatePicker
+                        bind:value={form.startDate}
+                        datePickerType="single"
+                        dateFormat="Y-m-d"
+                    >
+                        <DatePickerInput
+                            labelText={m.modal_start_date()}
+                            placeholder="yyyy-mm-dd"
+                            size="sm"
+                        />
+                    </DatePicker>
+                {/key}
             </div>
             <div class="attr-field">
-                <DatePicker
-                    bind:value={form.dueDate}
-                    datePickerType="single"
-                    dateFormat="Y-m-d"
-                >
-                    <DatePickerInput
-                        labelText={m.modal_due_date()}
-                        placeholder="yyyy-mm-dd"
-                        size="sm"
-                    />
-                </DatePicker>
+                {#key open}
+                    <DatePicker
+                        bind:value={form.dueDate}
+                        datePickerType="single"
+                        dateFormat="Y-m-d"
+                    >
+                        <DatePickerInput
+                            labelText={m.modal_due_date()}
+                            placeholder="yyyy-mm-dd"
+                            size="sm"
+                        />
+                    </DatePicker>
+                {/key}
             </div>
             <div class="attr-field attr-field--tags">
                 <TagManager
