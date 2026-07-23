@@ -432,6 +432,8 @@
   "board_content_aria": "Contenu du tableau",
   "board_views_aria": "Vues du tableau",
   "board_tab_docs": "Docs",
+  "board_tab_manage": "Gérer les vues",
+  "board_tab_always_visible": "Toujours visible",
   "markdown_toolbar_bold": "Gras (Ctrl+B)",
   "markdown_toolbar_bold_label": "Gras",
   "markdown_toolbar_italic": "Italique (Ctrl+I)",

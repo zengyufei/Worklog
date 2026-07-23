@@ -5,6 +5,7 @@
     import GanttView from "$lib/components/app/gantt/gantt-board.svelte";
     import CalendarView from "$lib/components/app/calendar/calendar-board.svelte";
     import BoardDocs from "$lib/components/app/board/board-docs.svelte";
+    import BoardTabManager from "$lib/components/app/board/board-tab-manager.svelte";
     import {
         Loading,
         InlineNotification,
@@ -26,6 +27,8 @@
     import { getTicketSort } from "$lib/hooks/ticket-sort.svelte";
     import { getWorkspaceShellContext } from "$lib/hooks/workspace-shell-context";
     import { getTickets } from "$lib/hooks/tickets.svelte";
+    import { getBoardTabs } from "$lib/hooks/board-tabs.svelte";
+    import type { TabType } from "$lib/components/app/types";
     import * as m from "$lib/paraglide/messages.js";
 
     import type { PageProps } from "./$types";
@@ -44,11 +47,16 @@
         () => board?.id ?? null,
     );
 
+    const boardTabsApi = getBoardTabs(
+        () => shell.workspace.path,
+        () => board?.id ?? null,
+    );
+
     function goToWorkspaceRoot() {
         void goto("/workspace");
     }
 
-    let selectedTab = $state(0);
+    let selectedTabType = $state<TabType>("kanban");
     let lastRestoredBoardId = $state<string | null>(null);
 
     // ── Search & Sort (shared across all views) ────────────────────────────────
@@ -63,17 +71,18 @@
         { id: "ticket_type", text: m.board_sort_type() },
     ]);
 
-    // ── Tab indicator ──────────────────────────────────────────────────────────────────────
-    let tabBtn0 = $state<HTMLButtonElement | null>(null);
-    let tabBtn1 = $state<HTMLButtonElement | null>(null);
-    let tabBtn2 = $state<HTMLButtonElement | null>(null);
-    let tabBtn3 = $state<HTMLButtonElement | null>(null);
-    let tabBtn4 = $state<HTMLButtonElement | null>(null);
+    // ── Tab indicator (dynamic via map) ────────────────────────────────────────
+    let tabBtnRefs = $state<Record<TabType, HTMLButtonElement | null>>({
+        kanban: null,
+        table: null,
+        timeline: null,
+        calendar: null,
+        docs: null,
+    });
     let indicatorEl = $state<HTMLElement | null>(null);
 
     $effect(() => {
-        const btns = [tabBtn0, tabBtn1, tabBtn2, tabBtn3, tabBtn4];
-        const btn = btns[selectedTab];
+        const btn = tabBtnRefs[selectedTabType];
         const el = indicatorEl;
         if (!btn || !el) return;
         el.style.setProperty("--tab-x", `${btn.offsetLeft}px`);
@@ -110,37 +119,79 @@
         })();
     });
 
-    // Save/Restore tab index (Board-specific)
+    // Load tab config from DB when board changes
+    $effect(() => {
+        if (!board) return;
+        void boardTabsApi.load();
+    });
+
+    // Save/Restore tab type (Board-specific) — uses tab type string, not index
     $effect(() => {
         if (!board) return;
 
+        const enabledTabs = boardTabsApi.enabledTabs;
+
         if (lastRestoredBoardId !== board.id) {
             const saved = localStorage.getItem(
-                `worklog:last_tab_index:${board.id}`,
+                `worklog:last_tab_type:${board.id}`,
             );
-            if (saved !== null) {
-                selectedTab = parseInt(saved, 10);
+            if (saved !== null && enabledTabs.includes(saved as TabType)) {
+                selectedTabType = saved as TabType;
             } else {
-                // Global fallback or default to Kanban (0)
+                // Global fallback or default to Kanban
                 const globalSaved = localStorage.getItem(
-                    "worklog:last_tab_index",
+                    "worklog:last_tab_type",
                 );
-                selectedTab =
-                    globalSaved !== null ? parseInt(globalSaved, 10) : 0;
+                if (
+                    globalSaved !== null &&
+                    enabledTabs.includes(globalSaved as TabType)
+                ) {
+                    selectedTabType = globalSaved as TabType;
+                } else {
+                    selectedTabType = "kanban";
+                }
             }
             lastRestoredBoardId = board.id;
         } else {
             // Save both board-specific and global preference
             localStorage.setItem(
-                `worklog:last_tab_index:${board.id}`,
-                selectedTab.toString(),
+                `worklog:last_tab_type:${board.id}`,
+                selectedTabType,
             );
-            localStorage.setItem(
-                "worklog:last_tab_index",
-                selectedTab.toString(),
-            );
+            localStorage.setItem("worklog:last_tab_type", selectedTabType);
         }
     });
+
+    // If the currently selected tab is no longer enabled, fall back to Kanban
+    $effect(() => {
+        if (!board) return;
+        const enabledTabs = boardTabsApi.enabledTabs;
+        if (!enabledTabs.includes(selectedTabType)) {
+            selectedTabType = "kanban";
+        }
+    });
+
+    // ── Tab config ────────────────────────────────────────────────────────────
+    const TAB_LABELS: Record<TabType, () => string> = {
+        kanban: () => m.board_tab_board(),
+        table: () => m.board_tab_table(),
+        timeline: () => m.board_tab_timeline(),
+        calendar: () => m.board_tab_calendar(),
+        docs: () => m.board_tab_docs(),
+    };
+
+    function selectTab(tab: TabType) {
+        selectedTabType = tab;
+    }
+
+    function handleToggleTab(tab: TabType) {
+        const wasEnabled = boardTabsApi.enabledTabs.includes(tab);
+        void boardTabsApi.toggleTab(tab);
+        // If we just disabled the active tab, switch back to kanban
+        if (wasEnabled && tab === selectedTabType) {
+            selectedTabType = "kanban";
+        }
+    }
 </script>
 
 {#if boardsApi.loading}
@@ -179,7 +230,7 @@
             </div>
         </header>
 
-        <section class="workspace-board-content" aria-label={m.board_content_aria()}>
+        <section class="workspace-board-content" aria-label="Board content">
             {#if loadError}
                 <div class="workspace-board-error">
                     <InlineNotification
@@ -201,63 +252,35 @@
             {/if}
             <!-- ── Controls Bar: tabs left, search+sort right ─────────────────── -->
             <div class="board-controls-bar">
-                <!-- Tab buttons -->
+                <!-- Tab buttons (dynamic from DB config) -->
                 <div class="board-tabs" role="tablist" aria-label={m.board_views_aria()}>
-                    <button
-                        bind:this={tabBtn0}
-                        role="tab"
-                        aria-selected={selectedTab === 0}
-                        class="view-tab"
-                        class:view-tab--active={selectedTab === 0}
-                        onclick={() => (selectedTab = 0)}
-                    >
-                        <Dashboard size={16} />
-                        <span>{m.board_tab_board()}</span>
-                    </button>
-                    <button
-                        bind:this={tabBtn1}
-                        role="tab"
-                        aria-selected={selectedTab === 1}
-                        class="view-tab"
-                        class:view-tab--active={selectedTab === 1}
-                        onclick={() => (selectedTab = 1)}
-                    >
-                        <Table size={16} />
-                        <span>{m.board_tab_table()}</span>
-                    </button>
-                    <button
-                        bind:this={tabBtn2}
-                        role="tab"
-                        aria-selected={selectedTab === 2}
-                        class="view-tab"
-                        class:view-tab--active={selectedTab === 2}
-                        onclick={() => (selectedTab = 2)}
-                    >
-                        <ChartBarFloating size={16} />
-                        <span>{m.board_tab_timeline()}</span>
-                    </button>
-                    <button
-                        bind:this={tabBtn3}
-                        role="tab"
-                        aria-selected={selectedTab === 3}
-                        class="view-tab"
-                        class:view-tab--active={selectedTab === 3}
-                        onclick={() => (selectedTab = 3)}
-                    >
-                        <Calendar size={16} />
-                        <span>{m.board_tab_calendar()}</span>
-                    </button>
-                    <button
-                        bind:this={tabBtn4}
-                        role="tab"
-                        aria-selected={selectedTab === 4}
-                        class="view-tab"
-                        class:view-tab--active={selectedTab === 4}
-                        onclick={() => (selectedTab = 4)}
-                    >
-                        <Document size={16} />
-                        <span>{m.board_tab_docs()}</span>
-                    </button>
+                    {#each boardTabsApi.enabledTabs as tab}
+                        <button
+                            bind:this={tabBtnRefs[tab]}
+                            role="tab"
+                            aria-selected={selectedTabType === tab}
+                            class="view-tab"
+                            class:view-tab--active={selectedTabType === tab}
+                            onclick={() => selectTab(tab)}
+                        >
+                            {#if tab === "kanban"}
+                                <Dashboard size={16} />
+                            {:else if tab === "table"}
+                                <Table size={16} />
+                            {:else if tab === "timeline"}
+                                <ChartBarFloating size={16} />
+                            {:else if tab === "calendar"}
+                                <Calendar size={16} />
+                            {:else if tab === "docs"}
+                                <Document size={16} />
+                            {/if}
+                            <span>{TAB_LABELS[tab]()}</span>
+                        </button>
+                    {/each}
+                    <BoardTabManager
+                        enabledTabs={boardTabsApi.enabledTabs}
+                        onToggleTab={handleToggleTab}
+                    />
                     <span
                         bind:this={indicatorEl}
                         class="tab-indicator"
@@ -302,17 +325,17 @@
                 </div>
             </div>
 
-            <!-- ── Tab Content ─────────────────────────────────────────────────── -->
+            <!-- ── Tab Content (dynamic by tab type) ──────────────────────────── -->
             <div class="view-tab-content">
-                {#if selectedTab === 0}
+                {#if selectedTabType === "kanban"}
                     <KanbanBoard {searchQuery} />
-                {:else if selectedTab === 1}
+                {:else if selectedTabType === "table"}
                     <TableView {searchQuery} />
-                {:else if selectedTab === 2}
+                {:else if selectedTabType === "timeline"}
                     <GanttView {searchQuery} />
-                {:else if selectedTab === 3}
+                {:else if selectedTabType === "calendar"}
                     <CalendarView {searchQuery} />
-                {:else if selectedTab === 4 && board}
+                {:else if selectedTabType === "docs" && board}
                     <BoardDocs
                         workspacePath={shell.workspace.path ?? ""}
                         boardId={board.id}

@@ -432,6 +432,8 @@
   "board_content_aria": "看板内容",
   "board_views_aria": "看板视图",
   "board_tab_docs": "文档",
+  "board_tab_manage": "管理视图",
+  "board_tab_always_visible": "始终显示",
   "markdown_toolbar_bold": "加粗 (Ctrl+B)",
   "markdown_toolbar_bold_label": "加粗",
   "markdown_toolbar_italic": "斜体 (Ctrl+I)",

@@ -456,6 +456,19 @@ async function migrate_v14(db: Database) {
     );
 }
 
+/**
+ * Migration v15:
+ * Add tabs_config column to boards for per-board configurable tab sets.
+ * Default is '["kanban"]' — only Kanban visible; users opt in to others.
+ */
+async function migrate_v15(db: Database) {
+    try {
+        await db.execute(`ALTER TABLE boards ADD COLUMN tabs_config TEXT NOT NULL DEFAULT '["kanban"]'`);
+    } catch {
+        // Column may already exist on fresh installations with updated schema
+    }
+}
+
 export async function runMigrations(db: Database): Promise<void> {
     const rows = await db.select<{ schema_version: number }[]>(
         `SELECT schema_version FROM workspace_meta WHERE id = 1`
@@ -515,6 +528,10 @@ export async function runMigrations(db: Database): Promise<void> {
 
     if (current < 14) {
         await migrate_v14(db);
+    }
+
+    if (current < 15) {
+        await migrate_v15(db);
     }
 
     await db.execute(

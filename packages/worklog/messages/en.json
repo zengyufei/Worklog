@@ -432,6 +432,8 @@
   "board_content_aria": "Board content",
   "board_views_aria": "Board views",
   "board_tab_docs": "Docs",
+  "board_tab_manage": "Manage views",
+  "board_tab_always_visible": "Always visible",
   "markdown_toolbar_bold": "Bold (Ctrl+B)",
   "markdown_toolbar_bold_label": "Bold",
   "markdown_toolbar_italic": "Italic (Ctrl+I)",
