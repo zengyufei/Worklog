@@ -515,6 +515,7 @@
   "gantt_completed": "Completed",
   "gantt_days_overdue": "{count}d overdue",
   "gantt_days_left": "{count}d left",
+  "gantt_week_number": "W{number}",
   "table_today": "Today",
   "table_yesterday": "Yesterday",
   "table_days_ago": "{count}d ago",

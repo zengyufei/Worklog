@@ -515,6 +515,7 @@
   "gantt_completed": "已完成",
   "gantt_days_overdue": "已逾期 {count} 天",
   "gantt_days_left": "剩余 {count} 天",
+  "gantt_week_number": "第 {number} 周",
   "table_today": "今天",
   "table_yesterday": "昨天",
   "table_days_ago": "{count} 天前",

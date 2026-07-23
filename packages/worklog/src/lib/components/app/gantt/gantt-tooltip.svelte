@@ -9,6 +9,7 @@
 
     import { getWorkspaceShellContext } from "$lib/hooks/workspace-shell-context";
     import * as m from "$lib/paraglide/messages.js";
+    import { formatDate } from "$lib/utils/date-format";
 
     const state = getGanttState();
     const context = getWorkspaceShellContext();
@@ -68,9 +69,7 @@
                 <Calendar size={12} />
                 <span class="tip-label">{m.gantt_start()}</span>
                 <span class="tip-val"
-                    >{new Date(
-                        state.hoveredTicket.start_date,
-                    ).toLocaleDateString("en-US", {
+                    >{formatDate(new Date(state.hoveredTicket.start_date), {
                         month: "short",
                         day: "numeric",
                         year: "numeric",
@@ -83,10 +82,11 @@
                 <Calendar size={12} />
                 <span class="tip-label">{m.gantt_due()}</span>
                 <span class="tip-val"
-                    >{new Date(state.hoveredTicket.due_date).toLocaleDateString(
-                        "en-US",
-                        { month: "short", day: "numeric", year: "numeric" },
-                    )}</span
+                    >{formatDate(new Date(state.hoveredTicket.due_date), {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                    })}</span
                 >
             </div>
         {/if}

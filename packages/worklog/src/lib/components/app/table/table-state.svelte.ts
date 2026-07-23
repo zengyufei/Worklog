@@ -32,6 +32,7 @@ import {
     Document,
 } from "carbon-icons-svelte";
 import * as m from "$lib/paraglide/messages.js";
+import { formatDate } from "$lib/utils/date-format";
 
 export const statusIconMap: Record<TicketStatus, any> = {
     backlog: Pending,
@@ -135,7 +136,7 @@ export class TableState {
         if (diffDays === 1) return m.table_yesterday();
         if (diffDays < 7) return m.table_days_ago({ count: diffDays });
         if (diffDays < 30) return m.table_weeks_ago({ count: Math.floor(diffDays / 7) });
-        return date.toLocaleDateString("en-US", {
+        return formatDate(date, {
             month: "short",
             day: "numeric",
         });
@@ -160,7 +161,7 @@ export class TableState {
         if (diffDays === 1) return { text: m.table_tomorrow(), overdue: false };
         if (diffDays < 7) return { text: m.table_in_days({ count: diffDays }), overdue: false };
         return {
-            text: date.toLocaleDateString("en-US", {
+            text: formatDate(date, {
                 month: "short",
                 day: "numeric",
             }),

@@ -3,6 +3,7 @@
     import { TICKET_STATUS_CONFIG } from "$lib/components/app/types";
     import type { CalendarDay } from "./calendar-state.svelte";
     import * as m from "$lib/paraglide/messages.js";
+    import { formatDate } from "$lib/utils/date-format";
 
     const MAX_VISIBLE_TICKETS = 3;
 
@@ -62,7 +63,7 @@
     onclick={handleCellClick}
     role="gridcell"
     tabindex="-1"
-    aria-label={day.date.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
+    aria-label={formatDate(day.date, { weekday: "long", month: "long", day: "numeric" })}
 >
     <div class="day-number-row">
         <span class="day-number" class:today-badge={day.isToday}>
@@ -120,7 +121,7 @@
                         onkeydown={handlePopoverKeydown}
                     >
                         <div class="popover-header">
-                            {day.date.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                            {formatDate(day.date, { month: "short", day: "numeric" })}
                             <span class="popover-count">{m.calendar_ticket_count({ count: day.tickets.length })}</span>
                         </div>
                         {#each day.tickets as ticket (ticket.id)}
